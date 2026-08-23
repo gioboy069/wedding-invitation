@@ -13,7 +13,7 @@ const UPLOAD_DIR = join(ROOT, "uploads");
 const PORT = Number(process.env.PORT || 4317);
 const HOST = process.env.HOST || "0.0.0.0";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "gomeZ120822@";
-const RSVP_EMAIL = process.env.RSVP_EMAIL || "gomez.wed2027@gmail.com";
+const RSVP_EMAIL = process.env.RSVP_EMAIL || "gomezgioanthony@gmail.com";
 
 if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
