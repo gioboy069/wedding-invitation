@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="You're invited to celebrate the wedding of Augiela Shane & Gio Anthony — June 14, 2027 in Napa Valley." />
+  <title>Augiela & Gio Anthony — Wedding Invitation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/shared.css" />
+  <script src="/js/shared.js" defer></script>
+  <style>
+    :root {
+      --bg: #f2f5ef;
+      --bg-alt: #e4ebdf;
+      --sage: #7a8b6f;
+      --sage-muted: #a3b298;
+      --sage-light: #c5d4ba;
+      --sea: #1b4965;
+      --sea-light: #5fa8b8;
+      --sea-soft: #b8d4de;
+      --sea-deep: #0f2e3d;
+      --text: #1a3340;
+      --text-soft: #3d5a6c;
+      --white: #ffffff;
+      --shadow: rgba(27, 73, 101, 0.08);
+      --shadow-deep: rgba(27, 73, 101, 0.15);
+      --font-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+      --font-sans: "Montserrat", system-ui, sans-serif;
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --intro-ease: cubic-bezier(0.33, 1, 0.68, 1);
+      --intro-flap: 2.4s;
+      --intro-card: 2.2s;
+      --intro-card-delay: 1.4s;
+      --intro-exit: 2.2s;
+      --intro-exit-delay: 3.2s;
+      --intro-fade: 2s;
+      --intro-site-delay: 2s;
+      --section-pad: clamp(4rem, 10vw, 7rem);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-weight: 300;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.7;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+      background: var(--sea-soft);
+      color: var(--text);
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* ── Navigation ── */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out), padding 0.4s var(--ease-out);
+    }
+
+    .nav.scrolled {
+      background: rgba(242, 245, 239, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 1px 0 rgba(122, 139, 111, 0.25);
+      padding: 0.85rem 2rem;
+    }
+
+    .nav-logo {
+      font-family: var(--font-serif);
+      font-size: 1.35rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--text);
+    }
+
+    .nav-logo span {
+      color: var(--sea);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      position: relative;
+      transition: color 0.3s;
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--sea);
+      transition: width 0.4s var(--ease-out);
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 28px;
+      height: 20px;
+      position: relative;
+    }
+
+    .nav-toggle span,
+    .nav-toggle span::before,
+    .nav-toggle span::after {
+      display: block;
+      width: 100%;
+      height: 1.5px;
+      background: var(--text);
+      transition: transform 0.4s var(--ease-out), opacity 0.3s;
+    }
+
+    .nav-toggle span {
+      position: relative;
+    }
+
+    .nav-toggle span::before,
+    .nav-toggle span::after {
+      content: "";
+      position: absolute;
+      left: 0;
+    }
+
+    .nav-toggle span::before { top: -7px; }
+    .nav-toggle span::after { top: 7px; }
+
+    .nav-toggle.open span { background: transparent; }
+    .nav-toggle.open span::before { transform: translateY(7px) rotate(45deg); }
+    .nav-toggle.open span::after { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 1.5rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(95, 168, 184, 0.14) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 80% 100%, rgba(122, 139, 111, 0.12) 0%, transparent 60%),
+        var(--bg);
+      z-index: 0;
+    }
+
+    .hero-ornament {
+      position: absolute;
+      width: clamp(280px, 50vw, 500px);
+      height: clamp(280px, 50vw, 500px);
+      border: 1px solid rgba(95, 168, 184, 0.3);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse-ring 6s ease-in-out infinite;
+    }
+
+    .hero-ornament::before {
+      content: "";
+      position: absolute;
+      inset: 20px;
+      border: 1px solid rgba(95, 168, 184, 0.2);
+      border-radius: 50%;
+    }
+
+    @keyframes pulse-ring {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+      50% { transform: translate(-50%, -50%) scale(1.03); opacity: 1; }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+    }
+
+    .hero-pre {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fade-up 1s var(--ease-out) 0.2s forwards;
+    }
+
+    .hero-names {
+      font-family: var(--font-serif);
+      font-size: clamp(3.5rem, 12vw, 7rem);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: 0.02em;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      opacity: 0;
+      animation: fade-up 1.2s var(--ease-out) 0.4s forwards;
+    }
+
+    .hero-names em {
+      font-style: italic;
+      font-weight: 400;
+      color: var(--sea);
+    }
+
+    .hero-date {
+      font-family: var(--font-serif);
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      color: var(--text-soft);
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: fade-up 1s var(--ease-out) 0.6s forwards;
+    }
+
+    .hero-divider {
+      width: 60px;
+      height: 1px;
+      background: var(--sea);
+      margin: 0 auto 3rem;
+      opacity: 0;
+      animation: fade-up 1s var(--ease-out) 0.7s forwards;
+    }
+
+    /* Countdown */
+    .countdown {
+      display: flex;
+      gap: clamp(1rem, 4vw, 2.5rem);
+      justify-content: center;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fade-up 1s var(--ease-out) 0.9s forwards;
+    }
+
+    .countdown-item {
+      text-align: center;
+      min-width: 70px;
+    }
+
+    .countdown-value {
+      font-family: var(--font-serif);
+      font-size: clamp(2.5rem, 6vw, 3.5rem);
+      font-weight: 400;
+      line-height: 1;
+      color: var(--text);
+      display: block;
+    }
+
+    .countdown-label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-top: 0.5rem;
+      display: block;
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--sage-muted);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fade-up 1s var(--ease-out) 1.2s forwards;
+    }
+
+    .hero-scroll-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--sea), transparent);
+      animation: scroll-line 2s ease-in-out infinite;
+    }
+
+    @keyframes scroll-line {
+      0%, 100% { transform: scaleY(1); opacity: 1; }
+      50% { transform: scaleY(0.5); opacity: 0.4; }
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Shared section styles ── */
+    section {
+      padding: var(--section-pad) 1.5rem;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      font-weight: 400;
+      text-align: center;
+      color: var(--text);
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    .section-subtitle {
+      font-family: var(--font-serif);
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      font-style: italic;
+      text-align: center;
+      color: var(--text-soft);
+      max-width: 540px;
+      margin: 0 auto 3.5rem;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ── Story / Timeline ── */
+    .story {
+      background: var(--white);
+    }
+
+    .timeline {
+      position: relative;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, var(--sage-light), var(--sea-soft), transparent);
+      transform: translateX(-50%);
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 3.5rem;
+      position: relative;
+    }
+
+    .timeline-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: 50%;
+      top: 0.5rem;
+      width: 10px;
+      height: 10px;
+      background: var(--sage);
+      border: 2px solid var(--white);
+      border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 0 4px rgba(122, 139, 111, 0.25);
+      z-index: 1;
+    }
+
+    .timeline-content {
+      padding: 0.5rem 0;
+    }
+
+    .timeline-item:nth-child(odd) .timeline-content:first-child {
+      text-align: right;
+      padding-right: 2.5rem;
+    }
+
+    .timeline-item:nth-child(odd) .timeline-content:last-child {
+      padding-left: 2.5rem;
+    }
+
+    .timeline-item:nth-child(even) .timeline-content:first-child {
+      order: 2;
+      padding-left: 2.5rem;
+    }
+
+    .timeline-item:nth-child(even) .timeline-content:last-child {
+      order: 1;
+      text-align: right;
+      padding-right: 2.5rem;
+    }
+
+    .timeline-year {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: var(--sea);
+      margin-bottom: 0.35rem;
+    }
+
+    .timeline-heading {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .timeline-text {
+      font-size: 0.875rem;
+      color: var(--text-soft);
+      line-height: 1.75;
+    }
+
+    .timeline-spacer {
+      visibility: hidden;
+    }
+
+    /* ── Venue ── */
+    .venue {
+      background: var(--bg-alt);
+    }
+
+    .venue-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+
+    .venue-card {
+      background: var(--white);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      border: 1px solid rgba(95, 168, 184, 0.2);
+      transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
+    }
+
+    .venue-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px var(--shadow);
+    }
+
+    .venue-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--sea-soft);
+      border-radius: 50%;
+      color: var(--sea);
+    }
+
+    .venue-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .venue-name {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .venue-time {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 1rem;
+    }
+
+    .venue-address {
+      font-size: 0.875rem;
+      color: var(--text-soft);
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .venue-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--sea);
+      border-bottom: 1px solid var(--sea-soft);
+      padding-bottom: 2px;
+      transition: color 0.3s, border-color 0.3s;
+    }
+
+    .venue-link:hover {
+      color: var(--text);
+      border-color: var(--text);
+    }
+
+    .venue-link svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ── Gallery ── */
+    .gallery {
+      background: var(--sea-deep);
+      color: var(--bg);
+    }
+
+    .gallery .section-label {
+      color: var(--sage-light);
+    }
+
+    .gallery .section-title {
+      color: var(--bg);
+    }
+
+    .gallery .section-subtitle {
+      color: rgba(242, 245, 239, 0.72);
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      background: var(--sea);
+      aspect-ratio: 4 / 5;
+    }
+
+    .gallery-item:nth-child(1) { grid-column: span 5; aspect-ratio: 3 / 4; }
+    .gallery-item:nth-child(2) { grid-column: span 4; margin-top: 3rem; }
+    .gallery-item:nth-child(3) { grid-column: span 3; }
+    .gallery-item:nth-child(4) { grid-column: span 4; margin-top: -2rem; }
+    .gallery-item:nth-child(5) { grid-column: span 5; aspect-ratio: 16 / 10; }
+    .gallery-item:nth-child(6) { grid-column: span 3; margin-top: 1.5rem; }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.7s var(--ease-out), opacity 0.4s;
+    }
+
+    .gallery-item::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(15, 46, 61, 0.45) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.05);
+    }
+
+    .gallery-item:hover::after {
+      opacity: 1;
+    }
+
+    .gallery-item:focus-visible {
+      outline: 2px solid var(--sage-light);
+      outline-offset: 3px;
+    }
+
+    .gallery-caption {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      right: 1rem;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--bg);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s, transform 0.4s var(--ease-out);
+      z-index: 1;
+      text-align: left;
+    }
+
+    .gallery-item:hover .gallery-caption {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(15, 46, 61, 0.94);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s, visibility 0.4s;
+    }
+
+    .lightbox.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .lightbox img {
+      max-width: min(900px, 100%);
+      max-height: 85vh;
+      object-fit: contain;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+    }
+
+    .lightbox-close,
+    .lightbox-prev,
+    .lightbox-next {
+      position: absolute;
+      background: none;
+      border: 1px solid rgba(242, 245, 239, 0.3);
+      color: var(--bg);
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .lightbox-close:hover,
+    .lightbox-prev:hover,
+    .lightbox-next:hover {
+      background: rgba(242, 245, 239, 0.1);
+      border-color: var(--sage-light);
+    }
+
+    .lightbox-close {
+      top: 1.5rem;
+      right: 1.5rem;
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .lightbox-prev { left: 1.5rem; top: 50%; transform: translateY(-50%); }
+    .lightbox-next { right: 1.5rem; top: 50%; transform: translateY(-50%); }
+
+    .lightbox-caption {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: rgba(242, 245, 239, 0.85);
+      text-align: center;
+      max-width: 600px;
+    }
+
+    /* ── Attire teaser ── */
+    .attire-teaser {
+      background: var(--bg-alt);
+      text-align: center;
+    }
+
+    .attire-teaser-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      max-width: 880px;
+      margin: 0 auto;
+      background: var(--white);
+      border: 1px solid rgba(95, 168, 184, 0.2);
+      overflow: hidden;
+      text-align: left;
+    }
+
+    .attire-teaser-image {
+      position: relative;
+      min-height: 320px;
+    }
+
+    .attire-teaser-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+    }
+
+    .attire-teaser-content {
+      padding: clamp(2rem, 5vw, 3rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .attire-teaser-content h3 {
+      font-family: var(--font-serif);
+      font-size: 1.75rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+
+    .attire-teaser-content p {
+      font-size: 0.9rem;
+      color: var(--text-soft);
+      line-height: 1.75;
+      margin-bottom: 1.75rem;
+    }
+
+    .attire-teaser-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--sea);
+      border-bottom: 1px solid var(--sea-soft);
+      padding-bottom: 3px;
+      align-self: flex-start;
+      transition: color 0.3s, border-color 0.3s;
+    }
+
+    .attire-teaser-link:hover {
+      color: var(--sage);
+      border-color: var(--sage-light);
+    }
+
+    .attire-teaser-link svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ── RSVP ── */
+    .rsvp {
+      background: var(--white);
+    }
+
+    .rsvp-form {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .form-group {
+      margin-bottom: 1.75rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 0.6rem;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 300;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid rgba(95, 168, 184, 0.3);
+      padding: 0.9rem 1.1rem;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--sea);
+      box-shadow: 0 0 0 3px rgba(95, 168, 184, 0.15);
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+      color: var(--sage-muted);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .meal-group {
+      display: none;
+    }
+
+    /* Attendance toggle */
+    .attendance-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .attendance-option {
+      position: relative;
+    }
+
+    .attendance-option input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .attendance-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      border: 1px solid rgba(95, 168, 184, 0.3);
+      background: var(--bg);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      transition: all 0.3s var(--ease-out);
+    }
+
+    .attendance-label svg {
+      width: 16px;
+      height: 16px;
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+
+    .attendance-option input:checked + .attendance-label {
+      border-color: var(--sea);
+      background: rgba(95, 168, 184, 0.1);
+      color: var(--text);
+    }
+
+    .attendance-option input:checked + .attendance-label svg {
+      opacity: 1;
+      color: var(--sea);
+    }
+
+    .attendance-option input:focus-visible + .attendance-label {
+      box-shadow: 0 0 0 3px rgba(95, 168, 184, 0.2);
+    }
+
+    .meal-group.hidden {
+      display: none;
+    }
+
+    .form-submit {
+      width: 100%;
+      font-family: var(--font-sans);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--sea-deep);
+      border: none;
+      padding: 1.15rem 2rem;
+      cursor: pointer;
+      transition: background 0.4s, transform 0.3s var(--ease-out);
+      margin-top: 0.5rem;
+    }
+
+    .form-submit:hover {
+      background: var(--sage);
+      color: var(--white);
+    }
+
+    .form-submit:active {
+      transform: scale(0.98);
+    }
+
+    .form-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .form-error {
+      font-size: 0.8rem;
+      color: #b85450;
+      margin-top: 0.4rem;
+      display: none;
+    }
+
+    .form-group.invalid .form-error {
+      display: block;
+    }
+
+    .form-group.invalid .form-input,
+    .form-group.invalid .form-select,
+    .form-group.invalid .attendance-label {
+      border-color: #b85450;
+    }
+
+    /* Success state */
+    .rsvp-success {
+      display: none;
+      text-align: center;
+      padding: 3rem 1rem;
+      animation: fade-up 0.8s var(--ease-out);
+    }
+
+    .rsvp-success.show {
+      display: block;
+    }
+
+    .rsvp-success-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.5rem;
+      border: 1px solid var(--sea);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--sea);
+    }
+
+    .rsvp-success-icon svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .rsvp-success h3 {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      font-weight: 400;
+      margin-bottom: 0.75rem;
+    }
+
+    .rsvp-success p {
+      color: var(--text-soft);
+      font-size: 0.95rem;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      background: var(--bg);
+      text-align: center;
+      padding: 3rem 1.5rem;
+      border-top: 1px solid rgba(201, 169, 98, 0.15);
+    }
+
+    .footer-names {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-date {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-note {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--text-soft);
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 768px) {
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: min(280px, 80vw);
+        height: 100vh;
+        height: 100dvh;
+        background: var(--bg);
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 5rem 2.5rem 2rem;
+        gap: 1.75rem;
+        box-shadow: -4px 0 24px var(--shadow);
+        transition: right 0.5s var(--ease-out);
+      }
+
+      .nav-links.open {
+        right: 0;
+      }
+
+      .nav-toggle {
+        display: block;
+        z-index: 101;
+      }
+
+      .nav-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 46, 61, 0.35);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.4s, visibility 0.4s;
+        z-index: 99;
+      }
+
+      .nav-overlay.open {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .timeline::before {
+        left: 12px;
+      }
+
+      .timeline-item {
+        grid-template-columns: 1fr;
+        padding-left: 2.5rem;
+      }
+
+      .timeline-dot {
+        left: 12px;
+      }
+
+      .timeline-item:nth-child(odd) .timeline-content:first-child,
+      .timeline-item:nth-child(even) .timeline-content:last-child {
+        text-align: left;
+        padding: 0;
+        order: unset;
+      }
+
+      .timeline-item:nth-child(odd) .timeline-content:last-child,
+      .timeline-item:nth-child(even) .timeline-content:first-child {
+        display: none;
+      }
+
+      .attendance-group {
+        grid-template-columns: 1fr;
+      }
+
+      .gallery-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .gallery-item,
+      .gallery-item:nth-child(n) {
+        grid-column: span 1;
+        margin-top: 0;
+        aspect-ratio: 4 / 5;
+      }
+
+      .gallery-item:nth-child(5) {
+        grid-column: span 2;
+        aspect-ratio: 16 / 9;
+      }
+
+      .attire-teaser-card {
+        grid-template-columns: 1fr;
+      }
+
+      .attire-teaser-image {
+        min-height: 240px;
+      }
+
+      .lightbox-prev,
+      .lightbox-next {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      html {
+        scroll-behavior: auto;
+      }
+
+      .reveal {
+        opacity: 1;
+        transform: none;
+      }
+
+      .envelope-intro { display: none !important; }
+      body.intro-locked { overflow: auto !important; }
+    }
+
+    /* ── Envelope intro ── */
+    body.intro-locked {
+      overflow: hidden;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    .envelope-intro {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 40%, rgba(95, 168, 184, 0.18) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(122, 139, 111, 0.12) 0%, transparent 60%),
+        var(--sea-deep);
+      transition: opacity var(--intro-fade) var(--intro-ease), visibility var(--intro-fade);
+    }
+
+    .envelope-intro.revealed {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .envelope-scene {
+      text-align: center;
+      animation: intro-float 4s ease-in-out infinite;
+    }
+
+    @keyframes intro-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .envelope-intro.opening .envelope-scene {
+      animation: none;
+    }
+
+    .envelope-wrap {
+      position: relative;
+      width: min(360px, 90vw);
+      height: 240px;
+      margin: 0 auto;
+      perspective: 1400px;
+    }
+
+    .envelope-btn {
+      position: absolute;
+      inset: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      z-index: 30;
+      border-radius: 4px;
+    }
+
+    .envelope-btn:focus-visible {
+      outline: 2px solid var(--sage-light);
+      outline-offset: 8px;
+    }
+
+    .envelope {
+      position: absolute;
+      inset: 0;
+      transform-style: preserve-3d;
+    }
+
+    /* Back of envelope (full rectangle) */
+    .env-back {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(165deg, #e8e3d6 0%, #ddd7c8 100%);
+      border-radius: 4px;
+      box-shadow:
+        0 28px 64px rgba(0, 0, 0, 0.38),
+        0 8px 20px rgba(15, 46, 61, 0.2);
+    }
+
+    /* Invitation card tucked inside */
+    .env-card {
+      position: absolute;
+      left: 50%;
+      bottom: 14px;
+      width: 86%;
+      height: 90%;
+      transform: translateX(-50%);
+      background: var(--bg);
+      border: 1px solid rgba(95, 168, 184, 0.2);
+      border-radius: 2px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      box-shadow: 0 2px 12px rgba(15, 46, 61, 0.1);
+      transition: transform var(--intro-card) var(--intro-ease) var(--intro-card-delay);
+    }
+
+    .env-card-monogram {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      color: var(--sea);
+      line-height: 1;
+    }
+
+    .env-card-monogram span {
+      color: var(--sage);
+      font-style: italic;
+    }
+
+    .env-card-text {
+      font-size: 0.6rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+
+    /* Front face — single flat panel (proper envelope body) */
+    .env-front {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #f3efe6 0%, #f7f4ec 35%, #ebe6da 100%);
+      border-radius: 4px;
+      z-index: 3;
+      overflow: hidden;
+    }
+
+    /* Subtle bottom-corner tuck creases (not extra flaps) */
+    .env-front::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(33deg, transparent 66%, rgba(122, 139, 111, 0.07) 66.2%, rgba(122, 139, 111, 0.07) 66.8%, transparent 67%),
+        linear-gradient(-33deg, transparent 66%, rgba(122, 139, 111, 0.07) 66.2%, rgba(122, 139, 111, 0.07) 66.8%, transparent 67%);
+      pointer-events: none;
+    }
+
+    /* Top flap — the only flap visible when closed */
+    .env-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 54%;
+      z-index: 5;
+      transform-origin: top center;
+      transform-style: preserve-3d;
+      transition: transform var(--intro-flap) var(--intro-ease);
+    }
+
+    .env-flap-face {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(175deg, #faf7f2 0%, #f0ebe3 50%, #e6e0d2 100%);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      box-shadow: 0 6px 16px rgba(15, 46, 61, 0.12);
+    }
+
+    .env-flap-face::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.45), transparent 55%);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
+
+    /* Fold line where flap meets body */
+    .env-fold-line {
+      position: absolute;
+      top: 54%;
+      left: 8%;
+      right: 8%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(122, 139, 111, 0.25), transparent);
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .env-seal {
+      position: absolute;
+      left: 50%;
+      top: 54%;
+      transform: translate(-50%, -50%);
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, var(--sea-light), var(--sea) 70%, var(--sea-deep));
+      box-shadow:
+        0 5px 16px rgba(15, 46, 61, 0.4),
+        inset 0 2px 5px rgba(255, 255, 255, 0.28),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-serif);
+      font-size: 0.95rem;
+      color: var(--bg);
+      letter-spacing: 0.04em;
+      transition: transform 1.2s var(--intro-ease), opacity 1s var(--intro-ease);
+      pointer-events: none;
+    }
+
+    .envelope-intro.opening .env-flap {
+      transform: rotateX(-170deg);
+    }
+
+    .envelope-intro.opening .env-seal {
+      transform: translate(-50%, -50%) scale(0.5);
+      opacity: 0;
+    }
+
+    .envelope-intro.opening .env-card {
+      transform: translateX(-50%) translateY(-108%);
+    }
+
+    .envelope-intro.opening .envelope-wrap {
+      animation: envelope-exit var(--intro-exit) var(--intro-ease) var(--intro-exit-delay) forwards;
+    }
+
+    @keyframes envelope-exit {
+      to {
+        transform: scale(0.9) translateY(24px);
+        opacity: 0;
+      }
+    }
+
+    .envelope-hint {
+      margin-top: 2rem;
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(242, 245, 239, 0.55);
+      animation: hint-pulse 2.5s ease-in-out infinite;
+    }
+
+    .envelope-hint::after {
+      content: "";
+      display: block;
+      width: 1px;
+      height: 28px;
+      margin: 0.75rem auto 0;
+      background: linear-gradient(to bottom, var(--sage-light), transparent);
+    }
+
+    @keyframes hint-pulse {
+      0%, 100% { opacity: 0.55; }
+      50% { opacity: 1; }
+    }
+
+    .envelope-intro.opening .envelope-hint,
+    .envelope-intro.revealed .envelope-hint {
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .site-reveal {
+      opacity: 1;
+      transform: none;
+    }
+
+    body.intro-locked:not(.intro-open) .site-reveal {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    body.intro-open .site-reveal {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+      transition: opacity 2s var(--intro-ease) var(--intro-site-delay), transform 2.4s var(--intro-ease) var(--intro-site-delay);
+    }
+  </style>
+</head>
+<body class="intro-locked">
+
+  <!-- Envelope intro -->
+  <div class="envelope-intro" id="envelopeIntro" aria-hidden="false">
+    <div class="envelope-scene">
+      <div class="envelope-wrap" id="envelopeWrap">
+        <div class="envelope">
+          <div class="env-back"></div>
+          <div class="env-card" aria-hidden="true">
+            <p class="env-card-monogram">A <span>&</span> G</p>
+            <p class="env-card-text">You're Invited</p>
+          </div>
+          <div class="env-front"></div>
+          <div class="env-fold-line"></div>
+          <div class="env-flap">
+            <div class="env-flap-face"></div>
+          </div>
+          <div class="env-seal" aria-hidden="true">A&G</div>
+        </div>
+        <button type="button" class="envelope-btn" id="envelopeBtn" aria-label="Open wedding invitation"></button>
+      </div>
+      <p class="envelope-hint" id="envelopeHint">Tap to open</p>
+    </div>
+  </div>
+
+  <div class="site-reveal" id="siteReveal">
+
+  <!-- Navigation -->
+  <nav class="nav" id="nav" aria-label="Main navigation">
+    <a href="#" class="nav-logo">A <span>&</span> G</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#story">Our Story</a></li>
+      <li><a href="gallery.html">Gallery</a></li>
+      <li><a href="#venue">Venue</a></li>
+      <li><a href="attire.html">Attire</a></li>
+      <li><a href="#rsvp">RSVP</a></li>
+    </ul>
+  </nav>
+  <div class="nav-overlay" id="navOverlay"></div>
+
+  <!-- Hero -->
+  <header class="hero" id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-ornament" aria-hidden="true"></div>
+    <div class="hero-content">
+      <p class="hero-pre" id="heroPre">Together with their families</p>
+      <h1 class="hero-names" id="heroNames">Augiela <em>&</em> Gio Anthony</h1>
+      <p class="hero-date" id="heroDate">June 14, 2027 · Napa Valley, California</p>
+      <div class="hero-divider" aria-hidden="true"></div>
+      <div class="countdown" id="countdown" aria-live="polite" aria-label="Countdown to wedding">
+        <div class="countdown-item">
+          <span class="countdown-value" id="cd-days">—</span>
+          <span class="countdown-label">Days</span>
+        </div>
+        <div class="countdown-item">
+          <span class="countdown-value" id="cd-hours">—</span>
+          <span class="countdown-label">Hours</span>
+        </div>
+        <div class="countdown-item">
+          <span class="countdown-value" id="cd-minutes">—</span>
+          <span class="countdown-label">Minutes</span>
+        </div>
+        <div class="countdown-item">
+          <span class="countdown-value" id="cd-seconds">—</span>
+          <span class="countdown-label">Seconds</span>
+        </div>
+      </div>
+    </div>
+    <a href="#story" class="hero-scroll" aria-label="Scroll to our story">
+      <span>Discover</span>
+      <div class="hero-scroll-line"></div>
+    </a>
+  </header>
+
+  <!-- Our Story -->
+  <section class="story" id="story">
+    <div class="container">
+      <p class="section-label reveal">Our Story</p>
+      <h2 class="section-title reveal reveal-delay-1" id="storyTitle">A Love Written in Time</h2>
+      <p class="section-subtitle reveal reveal-delay-2" id="storySubtitle">Every great love story has a beginning. Ours started with a chance encounter and grew into something extraordinary.</p>
+
+      <div class="timeline" id="timeline">
+        <div class="timeline-item reveal">
+          <div class="timeline-content">
+            <p class="timeline-year">2018</p>
+            <h3 class="timeline-heading">First Glance</h3>
+            <p class="timeline-text">A rainy afternoon at a bookstore in San Francisco. Gio asked for directions; Augiela handed him the map. They talked for hours.</p>
+          </div>
+          <div class="timeline-content timeline-spacer"></div>
+          <div class="timeline-dot" aria-hidden="true"></div>
+        </div>
+
+        <div class="timeline-item reveal reveal-delay-1">
+          <div class="timeline-content timeline-spacer"></div>
+          <div class="timeline-content">
+            <p class="timeline-year">2020</p>
+            <h3 class="timeline-heading">Building a Life</h3>
+            <p class="timeline-text">Through quiet mornings and long adventures, they discovered that home wasn't a place — it was each other.</p>
+          </div>
+          <div class="timeline-dot" aria-hidden="true"></div>
+        </div>
+
+        <div class="timeline-item reveal reveal-delay-2">
+          <div class="timeline-content">
+            <p class="timeline-year">2024</p>
+            <h3 class="timeline-heading">The Proposal</h3>
+            <p class="timeline-text">At sunset on the cliffs of Big Sur, Gio got down on one knee. Augiela said yes before he could finish the question.</p>
+          </div>
+          <div class="timeline-content timeline-spacer"></div>
+          <div class="timeline-dot" aria-hidden="true"></div>
+        </div>
+
+        <div class="timeline-item reveal reveal-delay-3">
+          <div class="timeline-content timeline-spacer"></div>
+          <div class="timeline-content">
+            <p class="timeline-year">2027</p>
+            <h3 class="timeline-heading">Forever Begins</h3>
+            <p class="timeline-text">Surrounded by the people we love most, we begin the next chapter of our story — and we want you there.</p>
+          </div>
+          <div class="timeline-dot" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery Teaser -->
+  <section class="gallery" id="gallery">
+    <div class="container">
+      <p class="section-label reveal">Our Moments</p>
+      <h2 class="section-title reveal reveal-delay-1">Prenup Gallery</h2>
+      <p class="section-subtitle reveal reveal-delay-2">A glimpse of the journey that brought us here — vineyards, coastlines, and quiet golden hours.</p>
+
+      <div class="gallery-grid" id="homeGallery"></div>
+
+      <div class="reveal reveal-delay-2" style="text-align:center;margin-top:2.5rem">
+        <a href="gallery.html" class="attire-teaser-link" style="color:var(--sage-light);border-color:rgba(197,212,186,0.45)">
+          View Full Gallery
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Venue -->
+  <section class="venue" id="venue">
+    <div class="container">
+      <p class="section-label reveal">The Celebration</p>
+      <h2 class="section-title reveal reveal-delay-1">Venue & Schedule</h2>
+      <p class="section-subtitle reveal reveal-delay-2">Nestled among the vineyards of Napa Valley, our weekend unfolds across two breathtaking locations.</p>
+
+      <div class="venue-grid" id="venueGrid">
+        <article class="venue-card reveal">
+          <div class="venue-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <h3 class="venue-name">Ceremony</h3>
+          <p class="venue-time">Saturday · 4:00 PM</p>
+          <p class="venue-address">
+            Auberge du Soleil<br />
+            180 Rutherford Hill Road<br />
+            Rutherford, CA 94573
+          </p>
+          <a href="https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA" target="_blank" rel="noopener noreferrer" class="venue-link">
+            View on Map
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+          </a>
+        </article>
+
+        <article class="venue-card reveal reveal-delay-1">
+          <div class="venue-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+          </div>
+          <h3 class="venue-name">Reception</h3>
+          <p class="venue-time">Saturday · 6:00 PM</p>
+          <p class="venue-address">
+            The Estate Garden<br />
+            180 Rutherford Hill Road<br />
+            Rutherford, CA 94573
+          </p>
+          <a href="https://maps.google.com/?q=180+Rutherford+Hill+Road+Rutherford+CA" target="_blank" rel="noopener noreferrer" class="venue-link">
+            View on Map
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+          </a>
+        </article>
+
+        <article class="venue-card reveal reveal-delay-2">
+          <div class="venue-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M9 22V12h6v10"/>
+            </svg>
+          </div>
+          <h3 class="venue-name">Brunch</h3>
+          <p class="venue-time">Sunday · 11:00 AM</p>
+          <p class="venue-address">
+            Vineyard Terrace<br />
+            180 Rutherford Hill Road<br />
+            Rutherford, CA 94573
+          </p>
+          <a href="https://maps.google.com/?q=Vineyard+Terrace+Napa+Valley" target="_blank" rel="noopener noreferrer" class="venue-link">
+            View on Map
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+          </a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Attire Teaser -->
+  <section class="attire-teaser" id="attire">
+    <div class="container">
+      <p class="section-label reveal">Attire</p>
+      <h2 class="section-title reveal reveal-delay-1">Dress the Occasion</h2>
+      <p class="section-subtitle reveal reveal-delay-2">Black tie optional with a touch of garden romance — see our full guide for what we'll be wearing and how to dress for the celebration.</p>
+
+      <div class="attire-teaser-card reveal reveal-delay-3">
+        <div class="attire-teaser-image">
+          <img src="https://images.unsplash.com/photo-1591604466377-1a63d07d9268?w=900&q=80" alt="Elegant wedding attire inspiration" loading="lazy" />
+        </div>
+        <div class="attire-teaser-content">
+          <h3>What to Wear</h3>
+          <p id="attireSummary">We've curated a detailed attire guide with photos of our wedding day looks, wedding party styles, and guest dress code inspiration — all in our sage and sea palette.</p>
+          <a href="attire.html" class="attire-teaser-link">
+            View Full Attire Guide
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RSVP -->
+  <section class="rsvp" id="rsvp">
+    <div class="container">
+      <p class="section-label reveal">RSVP</p>
+      <h2 class="section-title reveal reveal-delay-1">Kindly Respond</h2>
+      <p class="section-subtitle reveal reveal-delay-2"><span id="rsvpSubtitle">Please let us know if you'll be joining us by May 1, 2027. We can't wait to celebrate with you.</span></p>
+
+      <form class="rsvp-form reveal reveal-delay-3" id="rsvpForm" novalidate>
+        <div class="form-group" id="nameGroup">
+          <label class="form-label" for="guestName">Full Name</label>
+          <input type="text" id="guestName" name="name" class="form-input" placeholder="Your full name" autocomplete="name" required />
+          <p class="form-error">Please enter your full name.</p>
+        </div>
+
+        <div class="form-group" id="attendanceGroup">
+          <span class="form-label">Will you be attending?</span>
+          <div class="attendance-group">
+            <div class="attendance-option">
+              <input type="radio" id="attending" name="attendance" value="attending" required />
+              <label class="attendance-label" for="attending">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                Joyfully Accepts
+              </label>
+            </div>
+            <div class="attendance-option">
+              <input type="radio" id="declined" name="attendance" value="declined" required />
+              <label class="attendance-label" for="declined">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                Regretfully Declines
+              </label>
+            </div>
+          </div>
+          <p class="form-error">Please select your response.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="guestMessage">Message to the Couple</label>
+          <textarea id="guestMessage" name="message" class="form-textarea" placeholder="Share your well wishes, dietary notes, or a fond memory..." rows="4"></textarea>
+        </div>
+
+        <button type="submit" class="form-submit" id="submitBtn">Send RSVP</button>
+      </form>
+
+      <div class="rsvp-success" id="rsvpSuccess" role="status">
+        <div class="rsvp-success-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <h3>Thank You</h3>
+        <p id="successMessage">Your response has been received. We are deeply grateful you took the time to reply, and we look forward to celebrating with you.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p class="footer-names" id="footerNames">Augiela Shane & Gio Anthony</p>
+    <p class="footer-date" id="footerDate">June 14, 2027</p>
+    <p class="footer-note" id="footerQuote">"And now these three remain: faith, hope, and love. But the greatest of these is love."</p>
+  </footer>
+
+  </div><!-- /.site-reveal -->
+
+  <script>
+    (function () {
+      "use strict";
+
+      // ── Envelope intro ──
+      const envelopeIntro = document.getElementById("envelopeIntro");
+      const envelopeBtn = document.getElementById("envelopeBtn");
+      const introSeen = sessionStorage.getItem("invitation-opened") === "1";
+      let introOpening = false;
+
+      function skipIntro() {
+        document.body.classList.remove("intro-locked");
+        document.body.classList.add("intro-open");
+        var curtain = document.getElementById("pageCurtain");
+        if (curtain) {
+          curtain.classList.remove("is-entering", "is-leaving");
+          curtain.classList.add("is-revealed");
+        }
+        if (envelopeIntro) {
+          envelopeIntro.classList.add("revealed");
+          envelopeIntro.setAttribute("aria-hidden", "true");
+          setTimeout(function () { envelopeIntro.remove(); }, 1200);
+        }
+      }
+
+      function openEnvelope() {
+        if (introOpening || !envelopeIntro) return;
+        introOpening = true;
+        envelopeBtn.disabled = true;
+        sessionStorage.setItem("invitation-opened", "1");
+        envelopeIntro.classList.add("opening");
+        document.body.classList.add("intro-open");
+
+        setTimeout(function () {
+          document.body.classList.remove("intro-locked");
+        }, 2000);
+
+        setTimeout(function () {
+          envelopeIntro.classList.add("revealed");
+          envelopeIntro.setAttribute("aria-hidden", "true");
+        }, 5200);
+
+        setTimeout(function () {
+          envelopeIntro.remove();
+        }, 7600);
+      }
+
+      if (introSeen) {
+        skipIntro();
+      } else {
+        envelopeBtn.addEventListener("click", openEnvelope);
+        envelopeBtn.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openEnvelope();
+          }
+        });
+      }
+
+      let weddingDate = new Date("2027-06-14T16:00:00-07:00");
+
+      function updateCountdown() {
+        const now = new Date();
+        const diff = weddingDate - now;
+        if (diff <= 0) {
+          ["cd-days", "cd-hours", "cd-minutes", "cd-seconds"].forEach(function (id) {
+            document.getElementById(id).textContent = "0";
+          });
+          return;
+        }
+        document.getElementById("cd-days").textContent = Math.floor(diff / (1000 * 60 * 60 * 24));
+        document.getElementById("cd-hours").textContent = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, "0");
+        document.getElementById("cd-minutes").textContent = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, "0");
+        document.getElementById("cd-seconds").textContent = String(Math.floor((diff / 1000) % 60)).padStart(2, "0");
+      }
+
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+
+      const nav = document.getElementById("nav");
+      const navToggle = document.getElementById("navToggle");
+      const navLinks = document.getElementById("navLinks");
+      const navOverlay = document.getElementById("navOverlay");
+
+      function closeMenu() {
+        navToggle.classList.remove("open");
+        navLinks.classList.remove("open");
+        navOverlay.classList.remove("open");
+        navToggle.setAttribute("aria-expanded", "false");
+      }
+
+      window.addEventListener("scroll", function () {
+        nav.classList.toggle("scrolled", window.scrollY > 40);
+      }, { passive: true });
+
+      navToggle.addEventListener("click", function () {
+        const isOpen = navLinks.classList.toggle("open");
+        navToggle.classList.toggle("open", isOpen);
+        navOverlay.classList.toggle("open", isOpen);
+        navToggle.setAttribute("aria-expanded", String(isOpen));
+      });
+
+      navOverlay.addEventListener("click", closeMenu);
+      navLinks.querySelectorAll("a").forEach(function (link) {
+        link.addEventListener("click", closeMenu);
+      });
+
+      function observeReveals() {
+        const revealEls = document.querySelectorAll(".reveal:not(.visible)");
+        const revealObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15, rootMargin: "0px 0px -40px 0px" });
+        revealEls.forEach(function (el) { revealObserver.observe(el); });
+      }
+      observeReveals();
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function formatHeroDate(c) {
+        const d = c.weddingDate ? new Date(c.weddingDate) : null;
+        if (d && !isNaN(d.getTime())) {
+          const datePart = d.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+          const timePart = d.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          });
+          return datePart + " · " + timePart + (c.location ? " · " + c.location : "");
+        }
+        return (c.weddingDateDisplay || "") + (c.location ? " · " + c.location : "");
+      }
+
+      function applyContent(c) {
+        if (!c) return;
+        if (c.weddingDate) {
+          const parsed = new Date(c.weddingDate);
+          if (!isNaN(parsed.getTime())) weddingDate = parsed;
+        }
+        const brideFirst = (c.bride || "").split(" ")[0] || "Augiela";
+        const groom = c.groom || "Gio Anthony";
+        document.getElementById("heroPre").textContent = c.heroPre || "";
+        document.getElementById("heroNames").innerHTML = escapeHtml(brideFirst) + " <em>&</em> " + escapeHtml(groom);
+        document.getElementById("heroDate").textContent = formatHeroDate(c);
+        document.title = brideFirst + " & " + groom + " — Wedding Invitation";
+        document.getElementById("storyTitle").textContent = c.storyTitle || "";
+        document.getElementById("storySubtitle").textContent = c.storySubtitle || "";
+        document.getElementById("footerNames").textContent = (c.bride || "") + " & " + (c.groom || "");
+        const footerD = c.weddingDate ? new Date(c.weddingDate) : null;
+        document.getElementById("footerDate").textContent = footerD && !isNaN(footerD.getTime())
+          ? footerD.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+          : (c.weddingDateDisplay || "");
+        document.getElementById("footerQuote").textContent = c.footerQuote || "";
+        const attire = document.getElementById("attireSummary");
+        if (attire && c.attireSummary) attire.textContent = c.attireSummary;
+        const rsvpSub = document.getElementById("rsvpSubtitle");
+        if (rsvpSub && c.rsvpDeadline) {
+          rsvpSub.textContent = "Please let us know if you'll be joining us by " + c.rsvpDeadline + ". We can't wait to celebrate with you.";
+        }
+
+        if (Array.isArray(c.timeline) && c.timeline.length) {
+          const tl = document.getElementById("timeline");
+          tl.innerHTML = c.timeline.map(function (item, i) {
+            const delay = i ? " reveal-delay-" + Math.min(i, 3) : "";
+            const odd = i % 2 === 0;
+            const content = '<div class="timeline-content"><p class="timeline-year">' + escapeHtml(item.year || "") +
+              '</p><h3 class="timeline-heading">' + escapeHtml(item.heading || "") +
+              '</h3><p class="timeline-text">' + escapeHtml(item.text || "") + '</p></div>';
+            const spacer = '<div class="timeline-content timeline-spacer"></div>';
+            return '<div class="timeline-item reveal' + delay + '">' +
+              (odd ? content + spacer : spacer + content) +
+              '<div class="timeline-dot" aria-hidden="true"></div></div>';
+          }).join("");
+        }
+
+        if (Array.isArray(c.venues) && c.venues.length) {
+          const icons = [
+            '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>',
+            '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+            '<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M9 22V12h6v10"/>'
+          ];
+          document.getElementById("venueGrid").innerHTML = c.venues.map(function (v, i) {
+            const delay = i ? " reveal-delay-" + Math.min(i, 2) : "";
+            const addr = escapeHtml(v.address || "").replace(/\n/g, "<br />");
+            return '<article class="venue-card reveal' + delay + '">' +
+              '<div class="venue-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+              (icons[i % icons.length]) + '</svg></div>' +
+              '<h3 class="venue-name">' + escapeHtml(v.name || "") + '</h3>' +
+              '<p class="venue-time">' + escapeHtml(v.time || "") + '</p>' +
+              '<p class="venue-address">' + addr + '</p>' +
+              '<a href="' + escapeHtml(v.mapUrl || "#") + '" target="_blank" rel="noopener noreferrer" class="venue-link">View on Map' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a></article>';
+          }).join("");
+        }
+
+        observeReveals();
+        updateCountdown();
+      }
+
+      function renderHomeGallery(photos) {
+        const grid = document.getElementById("homeGallery");
+        if (!grid) return;
+        const preview = (photos || []).slice(0, 6);
+        if (!preview.length) {
+          grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:rgba(242,245,239,0.7);font-family:var(--font-serif);font-style:italic">Photos coming soon.</p>';
+          return;
+        }
+        grid.innerHTML = preview.map(function (p, i) {
+          const delay = i % 3 ? " reveal-delay-" + (i % 3) : "";
+          return '<a class="gallery-item reveal' + delay + '" href="gallery.html" aria-label="' + escapeHtml(p.caption || "View gallery") + '">' +
+            '<img src="' + escapeHtml(p.src) + '" alt="' + escapeHtml(p.alt || p.caption || "") + '" loading="lazy" />' +
+            '<span class="gallery-caption">' + escapeHtml(p.caption || "") + '</span></a>';
+        }).join("");
+        observeReveals();
+      }
+
+      Promise.all([
+        fetch("/api/content").then(function (r) { return r.json(); }).catch(function () { return null; }),
+        fetch("/api/gallery").then(function (r) { return r.json(); }).catch(function () { return []; })
+      ]).then(function (results) {
+        applyContent(results[0]);
+        renderHomeGallery(results[1]);
+      });
+
+      const form = document.getElementById("rsvpForm");
+      const successEl = document.getElementById("rsvpSuccess");
+      const successMessage = document.getElementById("successMessage");
+      const attendingRadio = document.getElementById("attending");
+      const declinedRadio = document.getElementById("declined");
+      const submitBtn = document.getElementById("submitBtn");
+
+      function validateForm() {
+        let valid = true;
+        const nameGroup = document.getElementById("nameGroup");
+        const nameInput = document.getElementById("guestName");
+        if (!nameInput.value.trim()) {
+          nameGroup.classList.add("invalid");
+          valid = false;
+        } else {
+          nameGroup.classList.remove("invalid");
+        }
+        const attendanceGroup = document.getElementById("attendanceGroup");
+        if (!(attendingRadio.checked || declinedRadio.checked)) {
+          attendanceGroup.classList.add("invalid");
+          valid = false;
+        } else {
+          attendanceGroup.classList.remove("invalid");
+        }
+        return valid;
+      }
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (!validateForm()) return;
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending…";
+
+        const data = {
+          name: document.getElementById("guestName").value.trim(),
+          attendance: attendingRadio.checked ? "attending" : "declined",
+          message: document.getElementById("guestMessage").value.trim()
+        };
+
+        const RSVP_EMAIL = "gomez.wed2027@gmail.com";
+
+        function showSuccess() {
+          form.style.display = "none";
+          successEl.classList.add("show");
+          if (data.attendance === "declined") {
+            successMessage.textContent = "Thank you for letting us know, " + data.name.split(" ")[0] + ". We'll miss you dearly and hold you close in our hearts on our special day.";
+          } else {
+            successMessage.textContent = "Thank you, " + data.name.split(" ")[0] + "! We're thrilled you'll be joining us. Your RSVP has been received — see you in Napa Valley.";
+          }
+          successEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+
+        function emailCouple() {
+          return fetch("https://formsubmit.co/ajax/" + encodeURIComponent(RSVP_EMAIL), {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({
+              name: data.name,
+              attendance: data.attendance === "attending" ? "Joyfully Accepts" : "Regretfully Declines",
+              message: data.message || "(no message)",
+              submittedAt: new Date().toISOString(),
+              _subject: "Wedding RSVP: " + data.name + " — " + data.attendance,
+              _template: "table",
+              _captcha: "false"
+            })
+          }).then(function (res) {
+            if (!res.ok) throw new Error("Email delivery failed");
+            return res.json();
+          });
+        }
+
+        // Prefer API (saves + emails). Fall back to direct email if API is unavailable.
+        fetch("/api/rsvp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        })
+          .then(function (res) {
+            if (!res.ok) throw new Error("API failed");
+            return res.json();
+          })
+          .then(function (result) {
+            if (result && result.emailed === false) {
+              return emailCouple().then(function () { return result; });
+            }
+            return result;
+          })
+          .then(function () {
+            showSuccess();
+          })
+          .catch(function () {
+            emailCouple()
+              .then(function () {
+                showSuccess();
+              })
+              .catch(function () {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Send RSVP";
+                alert("Unable to send RSVP right now. Please try again in a moment.");
+              });
+          });
+      });
+
+      document.querySelectorAll(".form-input, .form-textarea").forEach(function (el) {
+        el.addEventListener("input", function () {
+          el.closest(".form-group").classList.remove("invalid");
+        });
+      });
+
+      document.querySelectorAll('input[name="attendance"]').forEach(function (el) {
+        el.addEventListener("change", function () {
+          document.getElementById("attendanceGroup").classList.remove("invalid");
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
