@@ -551,14 +551,33 @@
       <!-- Gallery -->
       <section class="panel" id="panel-gallery">
         <h2>Gallery</h2>
-        <p class="lead">Upload prenup photos and edit captions. Photos appear on the public gallery page.</p>
+        <p class="lead">Add prenup photos from Google Drive (recommended on Render) or upload a file.</p>
+
+        <div class="card" style="margin-bottom:1.25rem">
+          <h3>Google Drive photos (permanent)</h3>
+          <ol style="font-size:0.85rem;color:var(--text-soft);line-height:1.7;padding-left:1.2rem;margin-bottom:1rem;text-align:left">
+            <li>Upload your photo to Google Drive</li>
+            <li>Right-click the file → <strong>Share</strong> → General access: <strong>Anyone with the link</strong></li>
+            <li>Click <strong>Copy link</strong></li>
+            <li>Paste the link below and save</li>
+          </ol>
+          <form id="urlForm">
+            <label for="photoUrl">Google Drive link or image URL</label>
+            <input type="url" id="photoUrl" placeholder="https://drive.google.com/file/d/xxxxx/view?usp=sharing" required />
+            <label for="urlCaption">Caption</label>
+            <input type="text" id="urlCaption" placeholder="Golden hour in the vineyard" />
+            <button type="submit" class="btn btn-primary">Add Drive Photo</button>
+          </form>
+        </div>
+
         <div class="upload-zone">
+          <p style="font-size:0.8rem;color:var(--text-soft);margin-bottom:1rem">File upload is temporary on Render Free and may be deleted on redeploy. Prefer Google Drive links above.</p>
           <form id="uploadForm">
-            <label for="photoFile">Choose photo</label>
+            <label for="photoFile">Choose photo (optional / temporary)</label>
             <input type="file" id="photoFile" accept="image/jpeg,image/png,image/webp,image/gif" required />
             <label for="photoCaption">Caption</label>
             <input type="text" id="photoCaption" placeholder="Golden hour in the vineyard" />
-            <button type="submit" class="btn btn-primary">Upload Photo</button>
+            <button type="submit" class="btn btn-ghost">Upload File</button>
           </form>
         </div>
         <div class="gallery-admin" id="galleryAdmin"></div>
@@ -839,14 +858,15 @@
         document.getElementById("statPhotos").textContent = gallery.length;
         const wrap = document.getElementById("galleryAdmin");
         if (!gallery.length) {
-          wrap.innerHTML = "<p class='lead'>No photos yet. Upload your first prenup photo above.</p>";
+          wrap.innerHTML = "<p class='lead'>No photos yet. Add a Google Drive link above.</p>";
           return;
         }
         wrap.innerHTML = gallery.map((g) => `
           <div class="gallery-admin-item" data-id="${g.id}">
-            <img src="${escapeAttr(g.src)}" alt="${escapeAttr(g.alt || "")}" />
+            <img src="${escapeAttr(g.src)}" alt="${escapeAttr(g.alt || "")}" onerror="this.style.opacity=0.3" />
             <div class="meta">
               <input data-cap value="${escapeAttr(g.caption || "")}" placeholder="Caption" />
+              <input data-url value="${escapeAttr(g.src || "")}" placeholder="Image URL" style="font-size:0.7rem" />
               <div class="actions">
                 <button type="button" class="btn btn-ghost" data-save="${g.id}">Save</button>
                 <button type="button" class="btn btn-danger" data-del="${g.id}">Delete</button>
@@ -855,6 +875,25 @@
           </div>
         `).join("");
       }
+
+      document.getElementById("urlForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        try {
+          await api("/api/admin/gallery/url", {
+            method: "POST",
+            body: JSON.stringify({
+              url: document.getElementById("photoUrl").value,
+              caption: document.getElementById("urlCaption").value,
+            }),
+          });
+          document.getElementById("urlForm").reset();
+          gallery = await api("/api/gallery");
+          renderGalleryAdmin();
+          toast("Drive photo added");
+        } catch (ex) {
+          toast(ex.message, true);
+        }
+      });
 
       document.getElementById("uploadForm").addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -868,7 +907,7 @@
           document.getElementById("uploadForm").reset();
           gallery = await api("/api/gallery");
           renderGalleryAdmin();
-          toast("Photo uploaded");
+          toast("Photo uploaded (temporary on Render Free)");
         } catch (ex) {
           toast(ex.message, true);
         }
@@ -882,11 +921,14 @@
           try {
             await api("/api/admin/gallery/" + save.dataset.save, {
               method: "PATCH",
-              body: JSON.stringify({ caption: item.querySelector("[data-cap]").value }),
+              body: JSON.stringify({
+                caption: item.querySelector("[data-cap]").value,
+                url: item.querySelector("[data-url]").value,
+              }),
             });
             gallery = await api("/api/gallery");
             renderGalleryAdmin();
-            toast("Caption updated");
+            toast("Photo updated");
           } catch (ex) {
             toast(ex.message, true);
           }
