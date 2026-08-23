@@ -12,7 +12,7 @@ const DATA_DIR = join(ROOT, "data");
 const UPLOAD_DIR = join(ROOT, "uploads");
 const PORT = Number(process.env.PORT || 4317);
 const HOST = process.env.HOST || "0.0.0.0";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "augiela-gio-2027";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "gomeZ120822@";
 const RSVP_EMAIL = process.env.RSVP_EMAIL || "gomez.wed2027@gmail.com";
 
 if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -89,7 +89,19 @@ app.get(["/download", "/download.zip"], (_req, res) => {
 });
 
 app.use("/uploads", express.static(UPLOAD_DIR));
+
+// Admin dashboard — explicit routes so /admin and /admin/ always work on Render
+const adminIndex = join(ROOT, "admin", "index.html");
+app.get(["/admin", "/admin/"], (_req, res) => {
+  if (!existsSync(adminIndex)) {
+    return res.status(404).type("text").send(
+      "Admin page not found. Make sure the admin/index.html folder was uploaded to your GitHub repo, then redeploy on Render."
+    );
+  }
+  res.sendFile(adminIndex);
+});
 app.use("/admin", express.static(join(ROOT, "admin")));
+
 app.use(express.static(ROOT, {
   index: "index.html",
   extensions: ["html"],
