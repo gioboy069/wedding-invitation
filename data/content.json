@@ -1,0 +1,55 @@
+{
+  "bride": "Augiela Shane",
+  "groom": "Gio Anthony",
+  "weddingDate": "2027-02-18T06:00:00.000Z",
+  "weddingDateDisplay": "February 18, 2027",
+  "location": "Napa Valley, California",
+  "heroPre": "Together with their families!",
+  "rsvpDeadline": "January 1, 2027",
+  "storyTitle": "A Love Written in Time",
+  "storySubtitle": "Every great love story has a beginning. Ours started with a chance encounter and grew into something extraordinary.",
+  "timeline": [
+    {
+      "year": "2018",
+      "heading": "First Glance",
+      "text": "A rainy afternoon at a bookstore in San Francisco. Gio asked for directions; Augiela handed him the map. They talked for hours."
+    },
+    {
+      "year": "2020",
+      "heading": "Building a Life",
+      "text": "Through quiet mornings and long adventures, they discovered that home wasn't a place — it was each other."
+    },
+    {
+      "year": "2024",
+      "heading": "The Proposal",
+      "text": "At sunset on the cliffs of Big Sur, Gio got down on one knee. Augiela said yes before he could finish the question."
+    },
+    {
+      "year": "2027",
+      "heading": "Forever Begins",
+      "text": "Surrounded by the people we love most, we begin the next chapter of our story — and we want you there."
+    }
+  ],
+  "venues": [
+    {
+      "name": "Ceremony",
+      "time": "Saturday · 4:00 PM",
+      "address": "Auberge du Soleil\n180 Rutherford Hill Road\nRutherford, CA 94573",
+      "mapUrl": "https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA"
+    },
+    {
+      "name": "Reception",
+      "time": "Saturday · 6:00 PM",
+      "address": "The Estate Garden\n180 Rutherford Hill Road\nRutherford, CA 94573",
+      "mapUrl": "https://maps.google.com/?q=180+Rutherford+Hill+Road+Rutherford+CA"
+    },
+    {
+      "name": "Brunch",
+      "time": "Sunday · 11:00 AM",
+      "address": "Vineyard Terrace\n180 Rutherford Hill Road\nRutherford, CA 94573",
+      "mapUrl": "https://maps.google.com/?q=Vineyard+Terrace+Napa+Valley"
+    }
+  ],
+  "attireSummary": "Black tie optional with a touch of garden romance — see our full guide for what we'll be wearing and how to dress for the celebration.",
+  "footerQuote": "\"And now these three remain: faith, hope, and love. But the greatest of these is love.\""
+}

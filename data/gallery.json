@@ -1,0 +1,74 @@
+[
+  {
+    "id": "g1",
+    "src": "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80",
+    "caption": "Golden hour in the vineyard",
+    "alt": "Augiela and Gio Anthony in a sunlit vineyard"
+  },
+  {
+    "id": "g2",
+    "src": "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1200&q=80",
+    "caption": "Where the land meets the sea",
+    "alt": "Couple walking along the coastline"
+  },
+  {
+    "id": "g3",
+    "src": "https://images.unsplash.com/photo-1469371670803-013ccf25f16a?w=1200&q=80",
+    "caption": "Pure joy, unscripted",
+    "alt": "Couple laughing together outdoors"
+  },
+  {
+    "id": "g4",
+    "src": "https://images.unsplash.com/photo-1606216794074-735e91aa2cfc?w=1200&q=80",
+    "caption": "Among the vines",
+    "alt": "Engagement portrait among grapevines"
+  },
+  {
+    "id": "g5",
+    "src": "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=1200&q=80",
+    "caption": "The glow of forever",
+    "alt": "Romantic couple portrait at sunset"
+  },
+  {
+    "id": "g6",
+    "src": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&q=80",
+    "caption": "Dancing in the light",
+    "alt": "Couple dancing in soft light"
+  },
+  {
+    "id": "g7",
+    "src": "https://images.unsplash.com/photo-1529636798458-92182e662485?w=1200&q=80",
+    "caption": "Hands intertwined",
+    "alt": "Close-up of couple holding hands"
+  },
+  {
+    "id": "g8",
+    "src": "https://images.unsplash.com/photo-1460978812857-470ed1c77af0?w=1200&q=80",
+    "caption": "Quiet morning light",
+    "alt": "Couple in soft morning light"
+  },
+  {
+    "id": "g9",
+    "src": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&q=80",
+    "caption": "Garden path",
+    "alt": "Couple walking a garden path"
+  },
+  {
+    "id": "g10",
+    "src": "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=1200&q=80",
+    "caption": "Forehead to forehead",
+    "alt": "Intimate couple portrait"
+  },
+  {
+    "id": "g11",
+    "src": "https://images.unsplash.com/photo-1537633552985-df8429e804cb?w=1200&q=80",
+    "caption": "Under the canopy",
+    "alt": "Couple beneath leafy trees"
+  },
+  {
+    "id": "g12",
+    "src": "https://images.unsplash.com/photo-1591604466107-ec95d7c0d4b2?w=1200&q=80",
+    "caption": "Twilight embrace",
+    "alt": "Couple embracing at twilight"
+  }
+]
