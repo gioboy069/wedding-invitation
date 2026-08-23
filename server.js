@@ -231,6 +231,32 @@ app.put("/api/admin/content", requireAdmin, (req, res) => {
 
 // ── Admin gallery ──
 
+function normalizeImageUrl(raw) {
+  const input = String(raw || "").trim();
+  if (!input) return "";
+
+  // Google Drive share links → direct view URL
+  // https://drive.google.com/file/d/FILE_ID/view?...
+  let match = input.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+  if (match) {
+    return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+  }
+
+  // https://drive.google.com/open?id=FILE_ID
+  match = input.match(/drive\.google\.com\/open\?id=([^&]+)/i);
+  if (match) {
+    return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+  }
+
+  // https://drive.google.com/uc?id=FILE_ID or already uc?export=view&id=
+  match = input.match(/[?&]id=([^&]+)/i);
+  if (/drive\.google\.com/i.test(input) && match) {
+    return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+  }
+
+  return input;
+}
+
 app.post("/api/admin/gallery", requireAdmin, upload.single("photo"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Photo file is required" });
 
@@ -240,6 +266,27 @@ app.post("/api/admin/gallery", requireAdmin, upload.single("photo"), (req, res) 
     src: `/uploads/${req.file.filename}`,
     caption: String(req.body.caption || "").trim() || "Untitled",
     alt: String(req.body.alt || req.body.caption || "Prenup photo").trim(),
+    source: "upload",
+  };
+  gallery.unshift(item);
+  writeJson("gallery.json", gallery);
+  res.status(201).json(item);
+});
+
+app.post("/api/admin/gallery/url", requireAdmin, (req, res) => {
+  const src = normalizeImageUrl(req.body?.url || req.body?.src);
+  if (!src) return res.status(400).json({ error: "Image URL is required" });
+  if (!/^https?:\/\//i.test(src)) {
+    return res.status(400).json({ error: "URL must start with http:// or https://" });
+  }
+
+  const gallery = readJson("gallery.json", []);
+  const item = {
+    id: `g-${Date.now()}`,
+    src,
+    caption: String(req.body.caption || "").trim() || "Untitled",
+    alt: String(req.body.alt || req.body.caption || "Prenup photo").trim(),
+    source: "url",
   };
   gallery.unshift(item);
   writeJson("gallery.json", gallery);
@@ -253,6 +300,12 @@ app.patch("/api/admin/gallery/:id", requireAdmin, (req, res) => {
 
   if (req.body.caption !== undefined) gallery[idx].caption = String(req.body.caption).trim();
   if (req.body.alt !== undefined) gallery[idx].alt = String(req.body.alt).trim();
+  if (req.body.url !== undefined || req.body.src !== undefined) {
+    const next = normalizeImageUrl(req.body.url || req.body.src);
+    if (!next) return res.status(400).json({ error: "Image URL is required" });
+    gallery[idx].src = next;
+    gallery[idx].source = "url";
+  }
   writeJson("gallery.json", gallery);
   res.json(gallery[idx]);
 });
