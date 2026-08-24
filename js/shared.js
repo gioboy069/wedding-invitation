@@ -2,13 +2,19 @@
   "use strict";
 
   var FLORAL_SVG =
-    '<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-    '<path d="M6 94C24 72 44 80 58 62C72 44 88 36 94 18" stroke="#b8d4de" stroke-width="1.1" stroke-linecap="round"/>' +
-    '<path d="M14 86C30 68 46 72 54 60" stroke="#7a8b6f" stroke-width="0.85" stroke-linecap="round"/>' +
-    '<ellipse cx="60" cy="58" rx="5" ry="9" fill="#c5d4ba" opacity="0.5" transform="rotate(-32 60 58)"/>' +
-    '<ellipse cx="42" cy="74" rx="4" ry="7" fill="#b8d4de" opacity="0.45" transform="rotate(18 42 74)"/>' +
-    '<circle cx="66" cy="50" r="2.5" fill="#7a8b6f" opacity="0.55"/>' +
-    '<path d="M78 38C82 32 88 28 94 24" stroke="#b8d4de" stroke-width="0.65" stroke-linecap="round"/>' +
+    '<svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<path d="M8 148C28 118 18 96 42 78C66 60 58 36 88 22C108 12 128 18 148 8" stroke="#7a8b6f" stroke-width="1.15" stroke-linecap="round"/>' +
+    '<path d="M18 140C32 116 28 98 48 84C68 70 64 48 90 36" stroke="#b8d4de" stroke-width="0.9" stroke-linecap="round"/>' +
+    '<ellipse cx="52" cy="92" rx="8" ry="16" fill="#c5d4ba" opacity="0.72" transform="rotate(-38 52 92)"/>' +
+    '<ellipse cx="44" cy="108" rx="6.5" ry="13" fill="#7a8b6f" opacity="0.38" transform="rotate(-18 44 108)"/>' +
+    '<ellipse cx="68" cy="70" rx="7" ry="14" fill="#b8d4de" opacity="0.55" transform="rotate(24 68 70)"/>' +
+    '<ellipse cx="86" cy="48" rx="6" ry="12" fill="#c5d4ba" opacity="0.7" transform="rotate(-42 86 48)"/>' +
+    '<ellipse cx="108" cy="32" rx="5.5" ry="11" fill="#b8d4de" opacity="0.5" transform="rotate(18 108 32)"/>' +
+    '<circle cx="62" cy="78" r="5.5" fill="#5fa8b8" opacity="0.45"/>' +
+    '<circle cx="62" cy="78" r="2.4" fill="#1b4965" opacity="0.28"/>' +
+    '<circle cx="96" cy="42" r="4.2" fill="#7a8b6f" opacity="0.4"/>' +
+    '<path d="M36 124C42 112 54 110 62 100" stroke="#7a8b6f" stroke-width="0.7" stroke-linecap="round"/>' +
+    '<path d="M120 22C128 16 138 14 148 10" stroke="#b8d4de" stroke-width="0.7" stroke-linecap="round"/>' +
     "</svg>";
 
   var DIVIDER_SVG =
@@ -29,6 +35,11 @@
       corner.className = "floral-corner floral-corner--" + pos;
       corner.innerHTML = FLORAL_SVG;
       frame.appendChild(corner);
+    });
+    ["top", "bottom", "left", "right"].forEach(function (pos) {
+      var edge = document.createElement("div");
+      edge.className = "floral-edge floral-edge--" + pos;
+      frame.appendChild(edge);
     });
     document.body.appendChild(frame);
 
