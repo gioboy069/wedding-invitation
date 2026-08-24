@@ -52,44 +52,92 @@
   ],
   "attireSummary": "Black tie optional with a touch of garden romance — see our full guide for what we'll be wearing and how to dress for the celebration.",
   "footerQuote": "\"And now these three remain: faith, hope, and love. But the greatest of these is love.\"",
-  "weddingDayTitle": "The Wedding Day",
-  "weddingDaySubtitle": "An elegant afternoon and evening among the vines — here is how our celebration unfolds.",
+  "weddingDayTitle": "Wedding Day Timeline",
+  "weddingDaySubtitle": "",
   "weddingDayTimeline": [
     {
-      "time": "2:00 PM",
-      "title": "Guest Arrival",
-      "text": "Welcome refreshments in the garden terrace",
-      "icon": "arrival"
+      "time": "12:00 pm",
+      "title": "Ceremony doors open",
+      "text": "",
+      "icon": "doors"
     },
     {
-      "time": "3:30 PM",
-      "title": "Ceremony",
-      "text": "Exchange of vows overlooking the valley",
-      "icon": "ceremony"
+      "time": "12:30 pm",
+      "title": "Wedding Ceremony",
+      "text": "",
+      "icon": "rings"
     },
     {
-      "time": "4:30 PM",
-      "title": "Cocktail Hour",
-      "text": "Champagne and canapés on the lawn",
-      "icon": "cocktail"
+      "time": "2:15 pm",
+      "title": "Refreshments & mingling",
+      "text": "",
+      "icon": "refreshments"
     },
     {
-      "time": "5:30 PM",
-      "title": "Reception",
-      "text": "Dinner, toasts, and celebration",
-      "icon": "reception"
+      "time": "4:00 pm",
+      "title": "Reception doors open",
+      "text": "",
+      "icon": "doors"
     },
     {
-      "time": "7:30 PM",
+      "time": "4:30 pm",
+      "title": "Welcome guests!",
+      "text": "",
+      "icon": "microphone"
+    },
+    {
+      "time": "4:45 pm",
+      "title": "Welcome Family!",
+      "text": "",
+      "icon": "microphone"
+    },
+    {
+      "time": "5:00 pm",
+      "title": "Mr. & Mrs. arrive",
+      "text": "",
+      "icon": "couple"
+    },
+    {
+      "time": "5:30 pm",
+      "title": "Dinner begins",
+      "text": "",
+      "icon": "dinner"
+    },
+    {
+      "time": "7:00 pm",
+      "title": "Toasts & speeches",
+      "text": "",
+      "icon": "toasts"
+    },
+    {
+      "time": "7:45 pm",
+      "title": "Cake cutting",
+      "text": "",
+      "icon": "cake"
+    },
+    {
+      "time": "8:00 pm",
       "title": "First Dance",
-      "text": "Music and dancing under the stars",
+      "text": "",
       "icon": "dance"
     },
     {
-      "time": "10:00 PM",
-      "title": "Send-Off",
-      "text": "Sparkler farewell to close the evening",
-      "icon": "sendoff"
+      "time": "8:15 pm",
+      "title": "Dancing Music",
+      "text": "",
+      "icon": "music"
+    },
+    {
+      "time": "10:00 pm",
+      "title": "Farewell Mr. & Mrs.",
+      "text": "",
+      "icon": "car"
+    },
+    {
+      "time": "11:30 pm",
+      "title": "Good Night!",
+      "text": "",
+      "icon": "moon"
     }
   ]
 }

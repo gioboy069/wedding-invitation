@@ -36,7 +36,7 @@
     curtain.className = "page-curtain";
     curtain.id = "pageCurtain";
     curtain.setAttribute("aria-hidden", "true");
-    curtain.innerHTML = '<div class="page-curtain__monogram">A <span>&</span> G</div>';
+    curtain.innerHTML = '<div class="page-curtain__monogram">G <span>&</span> A</div>';
     document.body.appendChild(curtain);
 
     /* Safety: never leave a dark curtain stuck on screen */
