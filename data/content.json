@@ -51,5 +51,45 @@
     }
   ],
   "attireSummary": "Black tie optional with a touch of garden romance — see our full guide for what we'll be wearing and how to dress for the celebration.",
-  "footerQuote": "\"And now these three remain: faith, hope, and love. But the greatest of these is love.\""
+  "footerQuote": "\"And now these three remain: faith, hope, and love. But the greatest of these is love.\"",
+  "weddingDayTitle": "The Wedding Day",
+  "weddingDaySubtitle": "An elegant afternoon and evening among the vines — here is how our celebration unfolds.",
+  "weddingDayTimeline": [
+    {
+      "time": "2:00 PM",
+      "title": "Guest Arrival",
+      "text": "Welcome refreshments in the garden terrace",
+      "icon": "arrival"
+    },
+    {
+      "time": "3:30 PM",
+      "title": "Ceremony",
+      "text": "Exchange of vows overlooking the valley",
+      "icon": "ceremony"
+    },
+    {
+      "time": "4:30 PM",
+      "title": "Cocktail Hour",
+      "text": "Champagne and canapés on the lawn",
+      "icon": "cocktail"
+    },
+    {
+      "time": "5:30 PM",
+      "title": "Reception",
+      "text": "Dinner, toasts, and celebration",
+      "icon": "reception"
+    },
+    {
+      "time": "7:30 PM",
+      "title": "First Dance",
+      "text": "Music and dancing under the stars",
+      "icon": "dance"
+    },
+    {
+      "time": "10:00 PM",
+      "title": "Send-Off",
+      "text": "Sparkler farewell to close the evening",
+      "icon": "sendoff"
+    }
+  ]
 }

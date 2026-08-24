@@ -485,12 +485,12 @@
             <h3>Couple &amp; Date</h3>
             <div class="row-2">
               <div>
-                <label for="bride">Bride</label>
-                <input id="bride" name="bride" required />
-              </div>
-              <div>
                 <label for="groom">Groom</label>
                 <input id="groom" name="groom" required />
+              </div>
+              <div>
+                <label for="bride">Bride</label>
+                <input id="bride" name="bride" required />
               </div>
             </div>
             <div class="row-2">
@@ -534,6 +534,16 @@
             <h3>Venues</h3>
             <div id="venueFields"></div>
             <button type="button" class="btn btn-ghost" id="addVenue">Add venue</button>
+          </div>
+
+          <div class="card">
+            <h3>Wedding Day Schedule</h3>
+            <label for="weddingDayTitle">Section title</label>
+            <input id="weddingDayTitle" name="weddingDayTitle" />
+            <label for="weddingDaySubtitle">Section subtitle</label>
+            <textarea id="weddingDaySubtitle" name="weddingDaySubtitle"></textarea>
+            <div id="weddingDayFields"></div>
+            <button type="button" class="btn btn-ghost" id="addWeddingDay">Add schedule item</button>
           </div>
 
           <div class="card">
@@ -703,6 +713,39 @@
       });
 
       // Content editors
+      const WEDDING_DAY_ICONS = [
+        ["arrival", "Guest arrival"],
+        ["ceremony", "Ceremony"],
+        ["cocktail", "Cocktail hour"],
+        ["photos", "Photos"],
+        ["reception", "Reception"],
+        ["dinner", "Dinner"],
+        ["dance", "Dancing"],
+        ["cake", "Cake cutting"],
+        ["sendoff", "Send-off"],
+      ];
+
+      function renderWeddingDayTimeline() {
+        const wrap = document.getElementById("weddingDayFields");
+        wrap.innerHTML = (content.weddingDayTimeline || []).map((t, i) => `
+          <div class="timeline-editor wedding-day-editor" data-i="${i}">
+            <div class="row-2">
+              <div><label>Time</label><input data-field="time" value="${escapeAttr(t.time || "")}" placeholder="2:00 PM" /></div>
+              <div><label>Title</label><input data-field="title" value="${escapeAttr(t.title || "")}" placeholder="Ceremony" /></div>
+            </div>
+            <label>Description</label>
+            <textarea data-field="text">${escapeHtml(t.text || "")}</textarea>
+            <label>Icon</label>
+            <select data-field="icon">
+              ${WEDDING_DAY_ICONS.map(([value, label]) =>
+                `<option value="${value}"${t.icon === value ? " selected" : ""}>${label}</option>`
+              ).join("")}
+            </select>
+            <button type="button" class="btn btn-danger" data-remove-wedding-day="${i}">Remove</button>
+          </div>
+        `).join("");
+      }
+
       function renderTimeline() {
         const wrap = document.getElementById("timelineFields");
         wrap.innerHTML = (content.timeline || []).map((t, i) => `
@@ -773,7 +816,7 @@
       }
 
       function fillContentForm() {
-        ["bride","groom","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote"]
+        ["groom","bride","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote","weddingDayTitle","weddingDaySubtitle"]
           .forEach((k) => {
             const el = document.getElementById(k);
             if (el) el.value = content[k] || "";
@@ -784,6 +827,7 @@
         syncWeddingFieldsFromPicker();
         renderTimeline();
         renderVenues();
+        renderWeddingDayTimeline();
       }
 
       document.getElementById("weddingDateTime").addEventListener("change", syncWeddingFieldsFromPicker);
@@ -792,7 +836,7 @@
       function collectContent() {
         syncWeddingFieldsFromPicker();
         const data = { ...content };
-        ["bride","groom","weddingDate","weddingDateDisplay","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote"]
+        ["groom","bride","weddingDate","weddingDateDisplay","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote","weddingDayTitle","weddingDaySubtitle"]
           .forEach((k) => { data[k] = document.getElementById(k).value; });
 
         data.timeline = [...document.querySelectorAll("#timelineFields .timeline-editor")].map((row) => ({
@@ -806,6 +850,13 @@
           time: row.querySelector('[data-field="time"]').value,
           address: row.querySelector('[data-field="address"]').value,
           mapUrl: row.querySelector('[data-field="mapUrl"]').value,
+        }));
+
+        data.weddingDayTimeline = [...document.querySelectorAll("#weddingDayFields .wedding-day-editor")].map((row) => ({
+          time: row.querySelector('[data-field="time"]').value,
+          title: row.querySelector('[data-field="title"]').value,
+          text: row.querySelector('[data-field="text"]').value,
+          icon: row.querySelector('[data-field="icon"]').value,
         }));
 
         return data;
@@ -825,6 +876,13 @@
         renderVenues();
       });
 
+      document.getElementById("addWeddingDay").addEventListener("click", () => {
+        content = collectContent();
+        content.weddingDayTimeline = content.weddingDayTimeline || [];
+        content.weddingDayTimeline.push({ time: "", title: "", text: "", icon: "ceremony" });
+        renderWeddingDayTimeline();
+      });
+
       document.getElementById("timelineFields").addEventListener("click", (e) => {
         const btn = e.target.closest("[data-remove-timeline]");
         if (!btn) return;
@@ -839,6 +897,14 @@
         content = collectContent();
         content.venues.splice(Number(btn.dataset.removeVenue), 1);
         renderVenues();
+      });
+
+      document.getElementById("weddingDayFields").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-remove-wedding-day]");
+        if (!btn) return;
+        content = collectContent();
+        content.weddingDayTimeline.splice(Number(btn.dataset.removeWeddingDay), 1);
+        renderWeddingDayTimeline();
       });
 
       document.getElementById("contentForm").addEventListener("submit", async (e) => {

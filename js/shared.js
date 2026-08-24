@@ -162,7 +162,7 @@
       var doc = document.documentElement;
       var scrollable = Math.max(doc.scrollHeight - window.innerHeight, 1);
       var progress = window.scrollY / scrollable;
-      btn.classList.toggle("is-visible", progress >= 0.15);
+      btn.classList.toggle("is-visible", progress >= 0.08);
     }
 
     btn.addEventListener("click", function () {
