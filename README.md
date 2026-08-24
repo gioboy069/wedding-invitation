@@ -24,6 +24,17 @@ Override with an environment variable:
 ADMIN_PASSWORD='your-secure-password' npm run dev
 ```
 
+## Gallery photos (Google Drive)
+
+On Render Free, uploaded files can disappear. Prefer Google Drive links in **Admin → Gallery**:
+
+1. Upload photo to Google Drive
+2. Share → **Anyone with the link**
+3. Copy link
+4. Paste into Admin → **Add Drive Photo**
+
+Drive files stay permanent. If Render redeploys and clears `data/gallery.json`, just re-add the same Drive links (or commit an updated `data/gallery.json` to GitHub).
+
 ## RSVP emails
 
 Guest RSVPs are emailed to **gomez.wed2027@gmail.com** via [FormSubmit](https://formsubmit.co).

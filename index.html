@@ -82,20 +82,24 @@
       top: 0;
       left: 0;
       right: 0;
-      z-index: 100;
+      z-index: 200;
       padding: 1.25rem 2rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: background 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out), padding 0.4s var(--ease-out);
+      background: rgba(242, 245, 239, 0.72);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: background 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out), padding 0.4s var(--ease-out);
     }
 
     .nav.scrolled {
-      background: rgba(242, 245, 239, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      box-shadow: 0 1px 0 rgba(122, 139, 111, 0.25);
+      background: rgba(242, 245, 239, 0.96);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 8px 28px rgba(15, 46, 61, 0.1);
       padding: 0.85rem 2rem;
+      border-bottom: 1px solid rgba(184, 212, 222, 0.45);
     }
 
     .nav-logo {

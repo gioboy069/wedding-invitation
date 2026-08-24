@@ -50,14 +50,21 @@
       top: 0;
       left: 0;
       right: 0;
-      z-index: 100;
+      z-index: 200;
       padding: 1.25rem 2rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(242, 245, 239, 0.92);
+      background: rgba(242, 245, 239, 0.94);
       backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(122, 139, 111, 0.2);
+      transition: box-shadow 0.35s ease, padding 0.35s ease;
+    }
+
+    .nav.scrolled {
+      box-shadow: 0 8px 24px rgba(15, 46, 61, 0.1);
+      padding: 0.9rem 2rem;
     }
 
     .nav-logo {

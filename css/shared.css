@@ -169,6 +169,51 @@
 .section-animate.delay-2 { transition-delay: 0.2s; }
 .section-animate.delay-3 { transition-delay: 0.3s; }
 
+/* Sticky nav helper (raise above floral frame) */
+.nav {
+  z-index: 200 !important;
+}
+
+/* Back to top */
+.back-to-top {
+  position: fixed;
+  right: max(1.25rem, env(safe-area-inset-right));
+  bottom: max(1.5rem, env(safe-area-inset-bottom));
+  z-index: 210;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(184, 212, 222, 0.55);
+  border-radius: 50%;
+  background: rgba(242, 245, 239, 0.95);
+  color: #1b4965;
+  box-shadow: 0 10px 28px rgba(15, 46, 61, 0.16);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s, background 0.25s, color 0.25s;
+}
+
+.back-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.back-to-top:hover {
+  background: #1b4965;
+  color: #f2f5ef;
+  border-color: #1b4965;
+}
+
+.back-to-top svg {
+  width: 18px;
+  height: 18px;
+}
+
 @media (max-width: 640px) {
   .floral-frame {
     inset: 6px;
@@ -179,6 +224,13 @@
     height: 52px;
     opacity: 0.55;
   }
+
+  .back-to-top {
+    width: 42px;
+    height: 42px;
+    right: 1rem;
+    bottom: 1.15rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -186,6 +238,9 @@
   .section-animate {
     opacity: 1;
     transform: none;
+    transition: none;
+  }
+  .back-to-top {
     transition: none;
   }
 }

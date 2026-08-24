@@ -133,10 +133,53 @@
     init();
   }
 
+  function bindStickyNav() {
+    var nav = document.querySelector(".nav");
+    if (!nav) return;
+
+    function updateNav() {
+      nav.classList.toggle("scrolled", window.scrollY > 24);
+    }
+
+    updateNav();
+    window.addEventListener("scroll", updateNav, { passive: true });
+  }
+
+  function bindBackToTop() {
+    if (document.getElementById("backToTop")) return;
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = "backToTop";
+    btn.className = "back-to-top";
+    btn.setAttribute("aria-label", "Scroll to top");
+    btn.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">' +
+      '<path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    document.body.appendChild(btn);
+
+    function updateButton() {
+      var doc = document.documentElement;
+      var scrollable = Math.max(doc.scrollHeight - window.innerHeight, 1);
+      var progress = window.scrollY / scrollable;
+      btn.classList.toggle("is-visible", progress >= 0.15);
+    }
+
+    btn.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    updateButton();
+    window.addEventListener("scroll", updateButton, { passive: true });
+    window.addEventListener("resize", updateButton);
+  }
+
   function init() {
     injectDecorations();
     bindPageTransitions();
     injectSectionDividers();
     bindSectionAnimations();
+    bindStickyNav();
+    bindBackToTop();
   }
 })();
