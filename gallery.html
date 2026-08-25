@@ -77,11 +77,12 @@
     }
 
     .nav.nav-docked {
-      top: max(1rem, env(safe-area-inset-top)) !important;
+      position: fixed !important;
+      top: calc(var(--frame-inset, 1rem) + 0.35rem) !important;
+      right: calc(var(--frame-inset, 1rem) + 0.35rem) !important;
       left: auto !important;
-      right: max(0.85rem, env(safe-area-inset-right)) !important;
-      margin-left: 0 !important;
-      margin-right: 0 !important;
+      bottom: auto !important;
+      margin: 0 !important;
       width: auto !important;
       max-width: none !important;
       padding: 0.5rem 0.65rem !important;
@@ -90,6 +91,7 @@
       transform: none !important;
       opacity: 1 !important;
       pointer-events: auto !important;
+      visibility: visible !important;
     }
 
     .nav.nav-docked .nav-toggle {

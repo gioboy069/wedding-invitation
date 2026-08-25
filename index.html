@@ -115,19 +115,22 @@
 
     /* Collapsed + docked to the right while scrolling */
     .nav.nav-docked {
-      top: max(1rem, env(safe-area-inset-top)) !important;
+      position: fixed !important;
+      top: calc(var(--frame-inset, 1rem) + 0.35rem) !important;
+      right: calc(var(--frame-inset, 1rem) + 0.35rem) !important;
       left: auto !important;
-      right: max(0.85rem, env(safe-area-inset-right)) !important;
-      margin-left: 0 !important;
-      margin-right: 0 !important;
+      bottom: auto !important;
+      inset: calc(var(--frame-inset, 1rem) + 0.35rem) calc(var(--frame-inset, 1rem) + 0.35rem) auto auto !important;
+      margin: 0 !important;
       width: auto !important;
       max-width: none !important;
       padding: 0.5rem 0.65rem !important;
       gap: 0.5rem !important;
-      justify-content: center !important;
+      justify-content: flex-end !important;
       box-shadow: 0 10px 26px rgba(13, 43, 69, 0.16) !important;
       transform: none !important;
       opacity: 1 !important;
+      visibility: visible !important;
       pointer-events: auto !important;
     }
 
@@ -2355,10 +2358,11 @@
 
     .site-reveal {
       opacity: 1;
-      transform: none;
     }
 
-    body.intro-locked:not(.intro-open) .site-reveal {
+    body.intro-locked:not(.intro-open) .site-reveal,
+    body.intro-locked:not(.intro-open) .nav,
+    body.intro-locked:not(.intro-open) .nav-overlay {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
@@ -2367,8 +2371,12 @@
     body.intro-open .site-reveal {
       opacity: 1;
       visibility: visible;
-      transform: scale(1);
-      transition: opacity 2s var(--intro-ease) var(--intro-site-delay), transform 2.4s var(--intro-ease) var(--intro-site-delay);
+      transition: opacity 2s var(--intro-ease) var(--intro-site-delay);
+    }
+
+    body.intro-open .nav {
+      opacity: 1;
+      visibility: visible;
     }
   </style>
 </head>
@@ -2411,9 +2419,7 @@
     </div>
   </div>
 
-  <div class="site-reveal" id="siteReveal">
-
-  <!-- Navigation -->
+  <!-- Navigation stays on body so position:fixed tracks the viewport -->
   <nav class="nav" id="nav" aria-label="Main navigation">
     <a href="#" class="nav-logo" id="navLogo">G <span>&</span> A</a>
     <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
@@ -2430,6 +2436,8 @@
     </ul>
   </nav>
   <div class="nav-overlay" id="navOverlay"></div>
+
+  <div class="site-reveal" id="siteReveal">
 
   <!-- Hero -->
   <header class="hero" id="hero">

@@ -392,11 +392,12 @@ html:has(body.page-dark)::before {
 }
 
 .nav.nav-docked {
-  top: max(1rem, env(safe-area-inset-top)) !important;
+  position: fixed !important;
+  top: calc(var(--frame-inset, 1rem) + 0.35rem) !important;
+  right: calc(var(--frame-inset, 1rem) + 0.35rem) !important;
   left: auto !important;
-  right: max(0.85rem, env(safe-area-inset-right)) !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+  bottom: auto !important;
+  margin: 0 !important;
   width: auto !important;
   max-width: none !important;
   padding: 0.5rem 0.65rem !important;
@@ -489,8 +490,9 @@ html.is-dark-page .nav.nav-docked .nav-links a:active {
   }
 
   .nav.nav-docked {
-    top: max(0.75rem, env(safe-area-inset-top)) !important;
-    right: max(0.65rem, env(safe-area-inset-right)) !important;
+    top: calc(var(--frame-inset, 12px) + 0.2rem) !important;
+    right: calc(var(--frame-inset, 12px) + 0.2rem) !important;
+    left: auto !important;
     padding: 0.4rem 0.5rem !important;
   }
 
