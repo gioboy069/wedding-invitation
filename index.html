@@ -424,25 +424,35 @@
     }
 
     .hero-scroll {
-      position: absolute;
-      bottom: 2.5rem;
-      left: 50%;
-      transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.5rem;
-      color: var(--sage-muted);
-      font-size: 0.6rem;
-      letter-spacing: 0.2em;
+      justify-content: center;
+      gap: 0.65rem;
+      width: 100%;
+      margin: 2.35rem auto 0;
+      color: var(--teal);
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.28em;
       text-transform: uppercase;
+      text-decoration: none;
+      text-align: center;
       opacity: 0;
       animation: fade-up 1s var(--ease-out) 1.2s forwards;
     }
 
+    .hero-scroll > span:first-child {
+      display: block;
+      line-height: 1;
+      padding-left: 0.28em;
+    }
+
     .hero-scroll-line {
+      display: block;
       width: 1px;
-      height: 40px;
+      height: 36px;
+      flex-shrink: 0;
       background: linear-gradient(to bottom, var(--sea), transparent);
       animation: scroll-line 2s ease-in-out infinite;
     }
@@ -1224,45 +1234,8 @@
       overflow: visible;
     }
 
-    .attire-details-inner {
-      text-align: left;
-    }
-
-    .attire-dress-banner {
-      background: linear-gradient(135deg, #0d2b45 0%, #1e5a6e 55%, #6ba7a0 100%);
-      color: var(--bg);
-      text-align: center;
-      padding: 2.5rem 1.5rem;
-      border: 1px solid rgba(107, 167, 160, 0.2);
-    }
-
-    .attire-dress-banner h3 {
-      font-family: var(--font-serif);
-      font-size: clamp(1.75rem, 4vw, 2.5rem);
-      font-weight: 400;
-      margin-bottom: 0.5rem;
-    }
-
-    .attire-dress-banner p {
-      font-size: 0.9rem;
-      color: rgba(247, 245, 241, 0.78);
-      max-width: 520px;
-      margin: 0 auto 1.5rem;
-      line-height: 1.75;
-    }
-
-    .attire-palette {
-      display: flex;
-      justify-content: center;
-      gap: 0.45rem;
-      flex-wrap: wrap;
-    }
-
-    .attire-palette span {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 1px solid rgba(247, 245, 241, 0.3);
+    .attire-details-inner > .attire-look-block:first-child {
+      padding-top: 0.75rem;
     }
 
     .attire-look-block {
@@ -2641,11 +2614,11 @@
           <span class="countdown-label">Seconds</span>
         </div>
       </div>
+      <a href="#story" class="hero-scroll" aria-label="Scroll to our story">
+        <span>Discover</span>
+        <span class="hero-scroll-line" aria-hidden="true"></span>
+      </a>
     </div>
-    <a href="#story" class="hero-scroll" aria-label="Scroll to our story">
-      <span>Discover</span>
-      <div class="hero-scroll-line"></div>
-    </a>
   </header>
 
   <!-- Our Story -->
@@ -2885,7 +2858,7 @@
     <div class="container">
       <p class="section-label reveal">Attire</p>
       <h2 class="section-title reveal reveal-delay-1">Dress the Occasion</h2>
-      <p class="section-subtitle reveal reveal-delay-2">Black tie optional with a coastal calm — see our full guide for guest dress code inspiration.</p>
+      <p class="section-subtitle reveal reveal-delay-2">Coastal calm for the celebration — see our full guide for principal sponsor looks and guest dress code inspiration.</p>
 
       <div class="attire-teaser-card reveal reveal-delay-3">
         <div class="attire-teaser-image">
@@ -2904,18 +2877,6 @@
 
       <div class="attire-details" id="attireDetails" aria-hidden="true">
         <div class="attire-details-inner">
-          <div class="attire-dress-banner">
-            <h3>Black Tie Optional</h3>
-            <p>Coastal calm meets evening elegance. Think refined formality with soft ocean tones — deep navy, seafoam, sand, and light sky.</p>
-            <div class="attire-palette" aria-hidden="true">
-              <span style="background:#0D2B45" title="Deep ocean"></span>
-              <span style="background:#1E5A6E" title="Ocean teal"></span>
-              <span style="background:#6BA7A0" title="Seafoam"></span>
-              <span style="background:#DCC8AA" title="Sandy beige"></span>
-              <span style="background:#B7D4E6" title="Light sky"></span>
-            </div>
-          </div>
-
           <div class="attire-look-block">
             <div class="attire-section-heading">
               <p class="attire-look-label">Principal Sponsors</p>
