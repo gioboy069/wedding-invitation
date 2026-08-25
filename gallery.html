@@ -78,8 +78,8 @@
 
     .nav.nav-docked {
       position: fixed !important;
-      top: calc(var(--frame-inset, 1rem) + 0.35rem) !important;
-      right: calc(var(--frame-inset, 1rem) + 0.35rem) !important;
+      top: 16px !important;
+      right: 16px !important;
       left: auto !important;
       bottom: auto !important;
       margin: 0 !important;
@@ -572,12 +572,40 @@
         navToggle.setAttribute("aria-expanded", "false");
         if (nav) nav.classList.remove("menu-open");
       }
+      function pinDockedNav(docked, y) {
+        if (!nav) return;
+        if (!docked) {
+          ["position", "top", "right", "left", "bottom", "margin", "width", "transform", "opacity", "visibility"].forEach(function (prop) {
+            nav.style.removeProperty(prop);
+          });
+          nav.removeAttribute("data-dock-compensate");
+          return;
+        }
+        y = Number(y) || 0;
+        nav.style.setProperty("position", "fixed", "important");
+        nav.style.setProperty("right", "16px", "important");
+        nav.style.setProperty("left", "auto", "important");
+        nav.style.setProperty("bottom", "auto", "important");
+        nav.style.setProperty("margin", "0", "important");
+        nav.style.setProperty("width", "auto", "important");
+        nav.style.setProperty("transform", "none", "important");
+        nav.style.setProperty("opacity", "1", "important");
+        nav.style.setProperty("visibility", "visible", "important");
+        var compensate = nav.getAttribute("data-dock-compensate") === "1";
+        nav.style.setProperty("top", (compensate ? 16 + y : 16) + "px", "important");
+        var rect = nav.getBoundingClientRect();
+        if (rect.top < 4) {
+          nav.setAttribute("data-dock-compensate", "1");
+          nav.style.setProperty("top", (16 + y) + "px", "important");
+        }
+      }
       function syncNavDock() {
         if (!nav) return;
         var y = window.scrollY || document.documentElement.scrollTop || 0;
         var shouldDock = y > 80;
         nav.classList.toggle("scrolled", y > 24);
         nav.classList.toggle("nav-docked", shouldDock);
+        pinDockedNav(shouldDock, y);
         if (!shouldDock) closeMenu();
       }
       syncNavDock();

@@ -35,8 +35,6 @@ body {
     radial-gradient(ellipse 65% 40% at 95% 75%, rgba(30, 90, 110, 0.12), transparent 50%),
     linear-gradient(180deg, #b7d4e6 0%, #dceef5 18%, #eef6f8 48%, #f0e8d8 82%, #dcc8aa 100%);
   background-attachment: fixed;
-  position: relative;
-  isolation: isolate;
 }
 
 /* Sand grain + shoreline wash (all pages using shared.css) */
@@ -393,8 +391,8 @@ html:has(body.page-dark)::before {
 
 .nav.nav-docked {
   position: fixed !important;
-  top: calc(var(--frame-inset, 1rem) + 0.35rem) !important;
-  right: calc(var(--frame-inset, 1rem) + 0.35rem) !important;
+  top: 16px !important;
+  right: 16px !important;
   left: auto !important;
   bottom: auto !important;
   margin: 0 !important;
@@ -490,8 +488,8 @@ html.is-dark-page .nav.nav-docked .nav-links a:active {
   }
 
   .nav.nav-docked {
-    top: calc(var(--frame-inset, 12px) + 0.2rem) !important;
-    right: calc(var(--frame-inset, 12px) + 0.2rem) !important;
+    top: 12px !important;
+    right: 12px !important;
     left: auto !important;
     padding: 0.4rem 0.5rem !important;
   }

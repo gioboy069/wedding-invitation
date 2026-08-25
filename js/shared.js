@@ -264,11 +264,41 @@
     });
   }
 
+  function pinDockedNav(nav, docked, y) {
+    if (!nav) return;
+    if (!docked) {
+      ["position", "top", "right", "left", "bottom", "margin", "width", "transform", "opacity", "visibility"].forEach(function (prop) {
+        nav.style.removeProperty(prop);
+      });
+      nav.removeAttribute("data-dock-compensate");
+      return;
+    }
+
+    y = Number(y) || 0;
+    nav.style.setProperty("position", "fixed", "important");
+    nav.style.setProperty("right", "16px", "important");
+    nav.style.setProperty("left", "auto", "important");
+    nav.style.setProperty("bottom", "auto", "important");
+    nav.style.setProperty("margin", "0", "important");
+    nav.style.setProperty("width", "auto", "important");
+    nav.style.setProperty("transform", "none", "important");
+    nav.style.setProperty("opacity", "1", "important");
+    nav.style.setProperty("visibility", "visible", "important");
+
+    var compensate = nav.getAttribute("data-dock-compensate") === "1";
+    nav.style.setProperty("top", (compensate ? 16 + y : 16) + "px", "important");
+
+    var rect = nav.getBoundingClientRect();
+    if (rect.top < 4) {
+      nav.setAttribute("data-dock-compensate", "1");
+      nav.style.setProperty("top", (16 + y) + "px", "important");
+    }
+  }
+
   function bindStickyNav() {
     var nav = document.querySelector(".nav");
     if (!nav) return;
 
-    var lastY = window.scrollY;
     var ticking = false;
     var DOCK_AT = 80;
 
@@ -286,33 +316,20 @@
     }
 
     function updateNav() {
-      var y = window.scrollY;
+      var y = window.scrollY || document.documentElement.scrollTop || 0;
       var links = document.getElementById("navLinks");
       var menuOpen = links && links.classList.contains("open");
-
-      nav.classList.toggle("scrolled", y > 24);
-
-      /* Collapse + dock to the right while scrolling down the page */
       var shouldDock = y > DOCK_AT;
       var wasDocked = nav.classList.contains("nav-docked");
 
-      if (menuOpen) {
-        nav.classList.add("menu-open");
-        if (shouldDock) nav.classList.add("nav-docked");
-        lastY = y;
-        ticking = false;
-        return;
-      }
-
-      nav.classList.remove("menu-open");
+      nav.classList.toggle("scrolled", y > 24);
       nav.classList.toggle("nav-docked", shouldDock);
+      if (menuOpen) nav.classList.add("menu-open");
+      else nav.classList.remove("menu-open");
 
-      /* Closing the expanded panel when returning to the top keeps the full bar clean */
-      if (wasDocked && !shouldDock) {
-        closeMenuIfNeeded();
-      }
+      pinDockedNav(nav, shouldDock, y);
 
-      lastY = y;
+      if (wasDocked && !shouldDock) closeMenuIfNeeded();
       ticking = false;
     }
 
@@ -325,6 +342,7 @@
 
     updateNav();
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", updateNav);
   }
 
   function bindBackToTop() {
