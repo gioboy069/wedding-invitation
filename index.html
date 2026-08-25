@@ -1868,6 +1868,10 @@
       display: block;
     }
 
+    .form-group.guest-not-found .form-input {
+      border-color: #b85450;
+    }
+
     .form-group.invalid .form-input,
     .form-group.invalid .form-select,
     .form-group.invalid .attendance-label {
@@ -3648,9 +3652,8 @@
         guestMatchStatus.textContent = text || "";
         guestMatchStatus.classList.toggle("is-matched", state === "matched");
         guestMatchStatus.classList.toggle("is-unmatched", state === "unmatched");
-        if (state === "unmatched") {
-          nameGroup.classList.add("invalid");
-        } else if (guestNameInput.value.trim()) {
+        nameGroup.classList.toggle("guest-not-found", state === "unmatched");
+        if (state === "matched" && guestNameInput.value.trim()) {
           nameGroup.classList.remove("invalid");
         }
       }
@@ -3707,7 +3710,6 @@
           nameGroup.classList.add("invalid");
           valid = false;
         } else if (!matchedGuest) {
-          nameGroup.classList.add("invalid");
           setMatchStatus("unmatched", GUEST_LIST_ERROR);
           valid = false;
         } else {
@@ -3781,7 +3783,6 @@
             updateSubmitState();
             if (err.payload && err.payload.code && String(err.payload.code).indexOf("guest") === 0) {
               setMatchStatus("unmatched", GUEST_LIST_ERROR);
-              nameGroup.classList.add("invalid");
             }
             alert(err.message || "Unable to send RSVP right now. Please try again in a moment.");
           });
