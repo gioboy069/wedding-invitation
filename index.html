@@ -113,6 +113,77 @@
       border-color: rgba(30, 90, 110, 0.14);
     }
 
+    /* Collapsed + docked to the right while scrolling */
+    .nav.nav-docked {
+      top: max(1rem, env(safe-area-inset-top)) !important;
+      left: auto !important;
+      right: max(0.85rem, env(safe-area-inset-right)) !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      width: auto !important;
+      max-width: none !important;
+      padding: 0.5rem 0.65rem !important;
+      gap: 0.5rem !important;
+      justify-content: center !important;
+      box-shadow: 0 10px 26px rgba(13, 43, 69, 0.16) !important;
+      transform: none !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    .nav.nav-docked .nav-logo {
+      font-size: 0.95rem;
+    }
+
+    .nav.nav-docked .nav-toggle {
+      display: block !important;
+      width: 20px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    .nav.nav-docked .nav-links {
+      position: absolute !important;
+      top: calc(100% + 0.45rem) !important;
+      right: 0 !important;
+      left: auto !important;
+      width: min(200px, 72vw) !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 0.1rem !important;
+      padding: 0.45rem !important;
+      margin: 0 !important;
+      background: rgba(247, 245, 241, 0.98);
+      border: 1px solid rgba(183, 212, 230, 0.45);
+      border-radius: 14px;
+      box-shadow: 0 12px 28px rgba(13, 43, 69, 0.16);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-6px) !important;
+      transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+      z-index: 2;
+    }
+
+    .nav.nav-docked .nav-links.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0) !important;
+    }
+
+    .nav.nav-docked .nav-links a {
+      display: block;
+      padding: 0.6rem 0.75rem;
+      border-radius: 10px;
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+    }
+
+    .nav.nav-docked .nav-links a::after {
+      display: none;
+    }
+
     .nav-logo {
       font-family: var(--font-serif);
       font-size: 1.05rem;
@@ -2928,12 +2999,21 @@
         if (nav) nav.classList.remove("menu-open");
       }
 
-      /* Scroll hide/show is handled in shared.js — keep menu close only */
-      window.addEventListener("scroll", function () {
+      /* Dock collapsed nav to the right while scrolling */
+      function syncNavDock() {
         if (!nav) return;
-        if (window.scrollY > 40) nav.classList.add("scrolled");
-        else nav.classList.remove("scrolled");
-      }, { passive: true });
+        var y = window.scrollY || document.documentElement.scrollTop || 0;
+        var shouldDock = y > 80;
+        nav.classList.toggle("scrolled", y > 24);
+        nav.classList.toggle("nav-docked", shouldDock);
+        if (!shouldDock) {
+          closeMenu();
+        }
+      }
+
+      syncNavDock();
+      window.addEventListener("scroll", syncNavDock, { passive: true });
+      window.addEventListener("resize", syncNavDock);
 
       if (navToggle && navLinks) {
         navToggle.addEventListener("click", function (e) {

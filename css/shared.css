@@ -394,14 +394,18 @@ html:has(body.page-dark)::before {
 .nav.nav-docked {
   top: max(1rem, env(safe-area-inset-top)) !important;
   left: auto !important;
-  right: max(0.75rem, env(safe-area-inset-right)) !important;
+  right: max(0.85rem, env(safe-area-inset-right)) !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
   width: auto !important;
   max-width: none !important;
-  padding: 0.45rem 0.55rem !important;
-  gap: 0.45rem !important;
-  box-shadow: 0 8px 22px rgba(13, 43, 69, 0.14) !important;
+  padding: 0.5rem 0.65rem !important;
+  gap: 0.5rem !important;
+  box-shadow: 0 10px 26px rgba(13, 43, 69, 0.16) !important;
+  transform: none !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
 }
 
 .nav.nav-docked .nav-logo {

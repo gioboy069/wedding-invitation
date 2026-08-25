@@ -270,7 +270,7 @@
 
     var lastY = window.scrollY;
     var ticking = false;
-    var DOCK_AT = 90;
+    var DOCK_AT = 80;
 
     function closeMenuIfNeeded() {
       var toggle = document.getElementById("navToggle");
