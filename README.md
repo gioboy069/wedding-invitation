@@ -1,6 +1,8 @@
 # Wedding Invitation — Augiela & Gio Anthony
 
-Elegant digital wedding invitation with a prenup gallery, attire guide, interactive RSVP, and an admin dashboard for content, photos, and guest tracking.
+Minimal coastal wedding invitation with a prenup gallery, attire guide, interactive RSVP, and an admin dashboard.
+
+**Palette:** deep ocean `#0D2B45` · ocean teal `#1E5A6E` · seafoam `#6BA7A0` · sandy beige `#DCC8AA` · light sky `#B7D4E6`
 
 ## Quick Start
 
@@ -11,7 +13,7 @@ npm run dev
 
 - Invitation: [http://127.0.0.1:4317](http://127.0.0.1:4317)
 - Gallery: [http://127.0.0.1:4317/gallery.html](http://127.0.0.1:4317/gallery.html)
-- Attire: [http://127.0.0.1:4317/attire.html](http://127.0.0.1:4317/attire.html)
+- Attire guide (expandable on home): [http://127.0.0.1:4317/#attire](http://127.0.0.1:4317/#attire)
 - Admin: [http://127.0.0.1:4317/admin/](http://127.0.0.1:4317/admin/)
 
 ### Admin login
@@ -35,6 +37,26 @@ On Render Free, uploaded files can disappear. Prefer Google Drive links in **Adm
 
 Drive files stay permanent. If Render redeploys and clears `data/gallery.json`, just re-add the same Drive links (or commit an updated `data/gallery.json` to GitHub).
 
+## Our Story photos (Google Drive)
+
+Same Drive method works for **Admin → Details → timeline years**:
+
+1. Upload each year’s photo to Google Drive and share **Anyone with the link**
+2. Open Admin → **Details**
+3. For each year (2018, 2020, …), paste the Drive link into **Photo (Google Drive link or image URL)**
+4. Click **Save Details**
+
+The server converts Drive share links to viewable image URLs automatically.
+
+## Attire photos (Google Drive)
+
+Same Drive method for **Admin → Details → Attire photos**:
+
+1. Upload bride, groom, party, and guest inspiration photos to Google Drive
+2. Share each as **Anyone with the link**
+3. Paste each link into the matching attire photo field
+4. Click **Save Details**
+
 ## RSVP emails
 
 Guest RSVPs are emailed to **gomez.wed2027@gmail.com** via [FormSubmit](https://formsubmit.co).
@@ -50,16 +72,17 @@ RSVP_EMAIL='your@email.com' npm run dev
 ## Admin features
 
 - **Edit details** — names, date, story timeline, venues, and copy
+- **Guest list** — invited names with seat allocation (1–10); RSVP form matches names and collects companion guests
 - **Gallery** — upload, caption, and delete prenup photos
-- **RSVPs** — track attending/declined, filter, delete, export CSV
+- **RSVPs** — track attending/declined, party size, companions, filter, delete, export CSV
 
 ## Pages
 
 | Page | Purpose |
 |------|---------|
-| `index.html` | Invitation with countdown, story, gallery teaser, venues, RSVP |
+| `index.html` | Invitation with countdown, story, gallery teaser, venues, expandable attire guide, RSVP |
 | `gallery.html` | Full prenup photo gallery |
-| `attire.html` | Detailed dress code and outfit looks |
+| `attire.html` | Redirects to `index.html#attire` |
 | `admin/` | Password-protected dashboard |
 
 ## Data

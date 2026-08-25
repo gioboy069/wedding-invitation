@@ -12,22 +12,30 @@
     {
       "year": "2018",
       "heading": "First Glance",
-      "text": "A rainy afternoon at a bookstore in San Francisco. Gio asked for directions; Augiela handed him the map. They talked for hours."
+      "text": "A rainy afternoon at a bookstore in San Francisco. Gio asked for directions; Augiela handed him the map. They talked for hours.",
+      "photo": "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=500&q=80",
+      "photoAlt": "2018 — First Glance"
     },
     {
       "year": "2020",
       "heading": "Building a Life",
-      "text": "Through quiet mornings and long adventures, they discovered that home wasn't a place — it was each other."
+      "text": "Through quiet mornings and long adventures, they discovered that home wasn't a place — it was each other.",
+      "photo": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500&q=80",
+      "photoAlt": "2020 — Building a Life"
     },
     {
       "year": "2024",
       "heading": "The Proposal",
-      "text": "At sunset on the cliffs of Big Sur, Gio got down on one knee. Augiela said yes before he could finish the question."
+      "text": "At sunset on the cliffs of Big Sur, Gio got down on one knee. Augiela said yes before he could finish the question.",
+      "photo": "https://images.unsplash.com/photo-1529636798458-92182e662485?w=500&q=80",
+      "photoAlt": "2024 — The Proposal"
     },
     {
       "year": "2027",
       "heading": "Forever Begins",
-      "text": "Surrounded by the people we love most, we begin the next chapter of our story — and we want you there."
+      "text": "Surrounded by the people we love most, we begin the next chapter of our story — and we want you there.",
+      "photo": "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&q=80",
+      "photoAlt": "2027 — Forever Begins"
     }
   ],
   "venues": [
@@ -50,7 +58,37 @@
       "mapUrl": "https://maps.google.com/?q=Vineyard+Terrace+Napa+Valley"
     }
   ],
-  "attireSummary": "Black tie optional with a touch of garden romance — see our full guide for what we'll be wearing and how to dress for the celebration.",
+  "attireSummary": "Black tie optional with a coastal calm — see our full guide for what we'll be wearing and how to dress for the celebration.",
+  "attirePhotos": {
+    "teaser": {
+      "photo": "https://images.unsplash.com/photo-1591604466377-1a63d07d9268?w=900&q=80",
+      "photoAlt": "Elegant wedding attire inspiration"
+    },
+    "bride": {
+      "photo": "https://images.unsplash.com/photo-1594552072238-8d25853ce691?w=900&q=80",
+      "photoAlt": "Augiela's wedding gown — ivory silk with soft coastal detail"
+    },
+    "groom": {
+      "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&q=80",
+      "photoAlt": "Gio Anthony's wedding attire — deep ocean tuxedo with seafoam pocket square"
+    },
+    "party": {
+      "photo": "https://images.unsplash.com/photo-1465495976277-8127aab6260b?w=900&q=80",
+      "photoAlt": "Wedding party in seafoam and deep ocean attire"
+    },
+    "guestHer": {
+      "photo": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&q=80",
+      "photoAlt": "Floor-length gown guest inspiration"
+    },
+    "guestHim": {
+      "photo": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80",
+      "photoAlt": "Dark tailored suit guest inspiration"
+    },
+    "guestEvening": {
+      "photo": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80",
+      "photoAlt": "Coastal evening guest attire inspiration"
+    }
+  },
   "footerQuote": "\"And now these three remain: faith, hope, and love. But the greatest of these is love.\"",
   "weddingDayTitle": "Wedding Day Timeline",
   "weddingDaySubtitle": "",

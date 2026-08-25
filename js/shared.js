@@ -1,30 +1,96 @@
 (function () {
   "use strict";
 
+  /* Corner trim — ocean waves & seafoam (frame unchanged) */
   var FLORAL_SVG =
     '<svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-    '<path d="M8 148C28 118 18 96 42 78C66 60 58 36 88 22C108 12 128 18 148 8" stroke="#7a8b6f" stroke-width="1.15" stroke-linecap="round"/>' +
-    '<path d="M18 140C32 116 28 98 48 84C68 70 64 48 90 36" stroke="#b8d4de" stroke-width="0.9" stroke-linecap="round"/>' +
-    '<ellipse cx="52" cy="92" rx="8" ry="16" fill="#c5d4ba" opacity="0.72" transform="rotate(-38 52 92)"/>' +
-    '<ellipse cx="44" cy="108" rx="6.5" ry="13" fill="#7a8b6f" opacity="0.38" transform="rotate(-18 44 108)"/>' +
-    '<ellipse cx="68" cy="70" rx="7" ry="14" fill="#b8d4de" opacity="0.55" transform="rotate(24 68 70)"/>' +
-    '<ellipse cx="86" cy="48" rx="6" ry="12" fill="#c5d4ba" opacity="0.7" transform="rotate(-42 86 48)"/>' +
-    '<ellipse cx="108" cy="32" rx="5.5" ry="11" fill="#b8d4de" opacity="0.5" transform="rotate(18 108 32)"/>' +
-    '<circle cx="62" cy="78" r="5.5" fill="#5fa8b8" opacity="0.45"/>' +
-    '<circle cx="62" cy="78" r="2.4" fill="#1b4965" opacity="0.28"/>' +
-    '<circle cx="96" cy="42" r="4.2" fill="#7a8b6f" opacity="0.4"/>' +
-    '<path d="M36 124C42 112 54 110 62 100" stroke="#7a8b6f" stroke-width="0.7" stroke-linecap="round"/>' +
-    '<path d="M120 22C128 16 138 14 148 10" stroke="#b8d4de" stroke-width="0.7" stroke-linecap="round"/>' +
+    '<path d="M8 148 C28 118 48 128 62 98 C76 68 98 52 132 28" stroke="#6ba7a0" stroke-width="1.15" stroke-linecap="round"/>' +
+    '<path d="M18 140 C34 112 52 108 72 82 C92 56 108 44 148 12" stroke="#b7d4e6" stroke-width="0.85" stroke-linecap="round"/>' +
+    '<path d="M28 128 C44 108 58 104 78 88" stroke="#1e5a6e" stroke-width="0.65" stroke-linecap="round" opacity="0.55"/>' +
+    '<path d="M12 120 C30 98 46 92 64 76" stroke="#dcc8aa" stroke-width="0.55" stroke-linecap="round" opacity="0.6"/>' +
+    '<circle cx="62" cy="78" r="6" fill="#b7d4e6" opacity="0.45"/>' +
+    '<circle cx="62" cy="78" r="2.8" fill="#1e5a6e" opacity="0.35"/>' +
+    '<circle cx="96" cy="42" r="4.5" fill="#6ba7a0" opacity="0.4"/>' +
+    '<circle cx="118" cy="28" r="3" fill="#dcc8aa" opacity="0.55"/>' +
+    '<path d="M40 108 C48 96 58 94 68 86" stroke="#6ba7a0" stroke-width="0.7" stroke-linecap="round"/>' +
     "</svg>";
 
   var DIVIDER_SVG =
     '<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-    '<circle cx="18" cy="18" r="16" stroke="#b8d4de" stroke-width="0.8" opacity="0.6"/>' +
-    '<path d="M18 6C18 6 12 14 12 18C12 22 15 26 18 28C21 26 24 22 24 18C24 14 18 6 18 6Z" fill="#7a8b6f" opacity="0.35"/>' +
-    '<path d="M18 10C18 10 14 16 14 18C14 20 16 23 18 24C20 23 22 20 22 18C22 16 18 10 18 10Z" fill="#b8d4de" opacity="0.4"/>' +
+    '<circle cx="18" cy="18" r="16" stroke="#b7d4e6" stroke-width="0.8" opacity="0.65"/>' +
+    '<path d="M6 20 C10 16 14 16 18 18 C22 20 26 20 30 16" stroke="#6ba7a0" stroke-width="1" stroke-linecap="round"/>' +
+    '<path d="M8 22 C12 19 15 19 18 21 C21 23 24 23 28 20" stroke="#1e5a6e" stroke-width="0.7" stroke-linecap="round" opacity="0.6"/>' +
+    '<circle cx="18" cy="14" r="2.2" fill="#dcc8aa" opacity="0.65"/>' +
     "</svg>";
 
-  function injectDecorations() {
+  var PEBBLE_SVGS = [
+    '<svg viewBox="0 0 56 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="28" cy="19" rx="24" ry="13" fill="#b8a992"/><ellipse cx="25" cy="16" rx="16" ry="8" fill="#dcc8aa" opacity="0.55"/><path d="M10 21 Q28 28 46 17" stroke="#8a7d6e" stroke-width="0.7" fill="none" opacity="0.35"/></svg>',
+    '<svg viewBox="0 0 44 30" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="22" cy="17" rx="19" ry="11" fill="#9aab9f"/><ellipse cx="20" cy="14" rx="12" ry="7" fill="#c8d4cf" opacity="0.45"/><circle cx="14" cy="18" r="1.2" fill="#6ba7a0" opacity="0.35"/></svg>',
+    '<svg viewBox="0 0 62 38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="31" cy="21" rx="27" ry="14" fill="#a89888"/><ellipse cx="28" cy="17" rx="18" ry="9" fill="#dcc8aa" opacity="0.5"/><path d="M14 23 Q31 31 48 19" stroke="#7a6f62" stroke-width="0.65" fill="none" opacity="0.3"/></svg>',
+    '<svg viewBox="0 0 38 26" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="19" cy="14" rx="16" ry="10" fill="#8f9e98"/><ellipse cx="17" cy="12" rx="10" ry="6" fill="#b7d4e6" opacity="0.35"/><ellipse cx="24" cy="15" rx="4" ry="2.5" fill="#6ba7a0" opacity="0.25"/></svg>',
+    '<svg viewBox="0 0 32 22" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="16" cy="12" rx="13" ry="8" fill="#c4b8a8"/><ellipse cx="14" cy="10" rx="8" ry="5" fill="#e8dfd0" opacity="0.5"/></svg>',
+    '<svg viewBox="0 0 48 28" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="24" cy="15" rx="20" ry="11" fill="#7a8f8a"/><ellipse cx="22" cy="13" rx="13" ry="7" fill="#9bc4bf" opacity="0.4"/></svg>'
+  ];
+
+  var INSET = "var(--frame-inset)";
+
+  var STONE_LAYOUT = [
+    { bottom: "calc(" + INSET + " + 2px)", left: "calc(" + INSET + " + 2px)", width: 54, svg: 0, rotate: -12 },
+    { bottom: "calc(" + INSET + " + 16px)", left: "calc(" + INSET + " + 34px)", width: 40, svg: 4, rotate: 8 },
+    { bottom: "calc(" + INSET + " + 6px)", left: "calc(" + INSET + " + 62px)", width: 48, svg: 2, rotate: -5 },
+    { bottom: "calc(" + INSET + " + 28px)", left: "calc(" + INSET + " + 8px)", width: 32, svg: 3, rotate: 14 },
+    { bottom: "calc(" + INSET + " + 2px)", right: "calc(" + INSET + " + 2px)", width: 52, svg: 1, rotate: 10 },
+    { bottom: "calc(" + INSET + " + 18px)", right: "calc(" + INSET + " + 30px)", width: 38, svg: 5, rotate: -7 },
+    { bottom: "calc(" + INSET + " + 8px)", right: "calc(" + INSET + " + 58px)", width: 44, svg: 0, rotate: 4 },
+    { bottom: "calc(" + INSET + " + 30px)", right: "calc(" + INSET + " + 6px)", width: 30, svg: 4, rotate: -16 },
+    { top: "calc(" + INSET + " + 4px)", left: "calc(" + INSET + " + 4px)", width: 28, svg: 3, rotate: -20 },
+    { top: "calc(" + INSET + " + 18px)", left: "calc(" + INSET + " + 24px)", width: 22, svg: 4, rotate: 12 },
+    { top: "calc(" + INSET + " + 6px)", right: "calc(" + INSET + " + 4px)", width: 26, svg: 1, rotate: 18 },
+    { top: "calc(" + INSET + " + 20px)", right: "calc(" + INSET + " + 22px)", width: 20, svg: 5, rotate: -10 }
+  ];
+
+  function injectShoreSandBand() {
+    if (document.querySelector(".shore-sand-band")) return;
+    var band = document.createElement("div");
+    band.className = "shore-sand-band";
+    band.setAttribute("aria-hidden", "true");
+    document.body.insertBefore(band, document.body.firstChild);
+  }
+
+  function injectShoreStones() {
+    if (document.querySelector(".shore-stones")) return;
+
+    var wrap = document.createElement("div");
+    wrap.className = "shore-stones";
+    wrap.setAttribute("aria-hidden", "true");
+
+    STONE_LAYOUT.forEach(function (stone, i) {
+      var el = document.createElement("div");
+      el.className = "shore-stone shore-stone--" + (i + 1);
+      el.style.width = stone.width + "px";
+      if (stone.bottom) el.style.bottom = stone.bottom;
+      if (stone.top) el.style.top = stone.top;
+      if (stone.left) el.style.left = stone.left;
+      if (stone.right) el.style.right = stone.right;
+      el.style.transform = "rotate(" + stone.rotate + "deg)";
+      el.innerHTML = PEBBLE_SVGS[stone.svg % PEBBLE_SVGS.length];
+      wrap.appendChild(el);
+    });
+
+    document.body.insertBefore(wrap, document.body.firstChild);
+  }
+
+  function injectShoreDecor() {
+    injectShoreSandBand();
+    injectShoreStones();
+  }
+
+  function isGuestPage() {
+    var path = window.location.pathname;
+    return !/\/admin(\/|$)/.test(path) && !/\/download\.html$/i.test(path);
+  }
+
+  function injectFrameDecor() {
     if (document.querySelector(".floral-frame")) return;
 
     var frame = document.createElement("div");
@@ -50,11 +116,25 @@
     curtain.innerHTML = '<div class="page-curtain__monogram">G <span>&</span> A</div>';
     document.body.appendChild(curtain);
 
-    /* Safety: never leave a dark curtain stuck on screen */
     setTimeout(function () {
       curtain.classList.remove("is-entering", "is-leaving");
       curtain.classList.add("is-revealed");
-    }, 1200);
+    }, 1000);
+  }
+
+  function samePageHashLink(anchor) {
+    try {
+      var url = new URL(anchor.href, window.location.href);
+      if (url.origin !== window.location.origin) return false;
+      if (!url.hash) return false;
+      var here = window.location.pathname.replace(/\/$/, "") || "/";
+      var there = url.pathname.replace(/\/$/, "") || "/";
+      var hereIndex = here === "/" || /\/index\.html$/i.test(here);
+      var thereIndex = there === "/" || /\/index\.html$/i.test(there);
+      return here === there || (hereIndex && thereIndex);
+    } catch (e) {
+      return false;
+    }
   }
 
   function isPageLink(anchor) {
@@ -63,6 +143,8 @@
     if (/^(https?:|mailto:|tel:|javascript:)/i.test(href)) return false;
     if (anchor.target === "_blank") return false;
     if (href.indexOf("/admin") !== -1) return false;
+    /* Same-page hash (e.g. index.html#rsvp while already on home) → let scroll handler work */
+    if (samePageHashLink(anchor)) return false;
     try {
       var url = new URL(anchor.href, window.location.href);
       if (url.origin !== window.location.origin) return false;
@@ -70,6 +152,20 @@
     } catch (e) {
       return href.endsWith(".html") || href === "/" || href === "index.html";
     }
+  }
+
+  function scrollToHash(hash, behavior) {
+    if (!hash || hash === "#") return false;
+    var id = decodeURIComponent(hash.replace(/^#/, ""));
+    if (id === "attire" && window.WeddingUI && window.WeddingUI.setAttireExpanded) {
+      window.WeddingUI.setAttireExpanded(true, false);
+    }
+    var el = document.getElementById(id);
+    if (!el) return false;
+    requestAnimationFrame(function () {
+      el.scrollIntoView({ behavior: behavior || "smooth", block: "start" });
+    });
+    return true;
   }
 
   function navigateWithTransition(url) {
@@ -82,13 +178,40 @@
     curtain.classList.add("is-leaving");
     setTimeout(function () {
       window.location.href = url;
-    }, 850);
+    }, 700);
   }
 
   function bindPageTransitions() {
     document.addEventListener("click", function (e) {
       var anchor = e.target.closest("a[href]");
-      if (!anchor || !isPageLink(anchor)) return;
+      if (!anchor) return;
+
+      var href = anchor.getAttribute("href") || "";
+
+      /* In-page anchors */
+      if (href.charAt(0) === "#" && href.length > 1) {
+        e.preventDefault();
+        if (history.pushState) {
+          history.pushState(null, "", href);
+        } else {
+          window.location.hash = href;
+        }
+        scrollToHash(href, "smooth");
+        return;
+      }
+
+      /* Same document with hash (index.html#rsvp while on home) */
+      if (samePageHashLink(anchor)) {
+        e.preventDefault();
+        var url = new URL(anchor.href, window.location.href);
+        if (history.pushState) {
+          history.pushState(null, "", url.hash);
+        }
+        scrollToHash(url.hash, "smooth");
+        return;
+      }
+
+      if (!isPageLink(anchor)) return;
       e.preventDefault();
       navigateWithTransition(anchor.href);
     });
@@ -127,6 +250,9 @@
     var sections = document.querySelectorAll("section");
     sections.forEach(function (section, i) {
       if (i === 0) return;
+      if (section.previousElementSibling && section.previousElementSibling.classList.contains("section-floral")) {
+        return;
+      }
       var divider = document.createElement("div");
       divider.className = "section-floral";
       divider.setAttribute("aria-hidden", "true");
@@ -138,22 +264,49 @@
     });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-
   function bindStickyNav() {
     var nav = document.querySelector(".nav");
     if (!nav) return;
 
+    var lastY = window.scrollY;
+    var ticking = false;
+
     function updateNav() {
-      nav.classList.toggle("scrolled", window.scrollY > 24);
+      var y = window.scrollY;
+      nav.classList.toggle("scrolled", y > 24);
+
+      /* Hide when scrolling down; show when scrolling up or near top */
+      if (y < 48) {
+        nav.classList.remove("is-hidden");
+      } else if (y > lastY + 4) {
+        nav.classList.add("is-hidden");
+        /* Also close mobile menu if open */
+        var toggle = document.getElementById("navToggle");
+        var links = document.getElementById("navLinks");
+        var overlay = document.getElementById("navOverlay");
+        if (toggle && toggle.classList.contains("open")) {
+          toggle.classList.remove("open");
+          if (links) links.classList.remove("open");
+          if (overlay) overlay.classList.remove("open");
+          toggle.setAttribute("aria-expanded", "false");
+        }
+      } else if (y < lastY - 4) {
+        nav.classList.remove("is-hidden");
+      }
+
+      lastY = y;
+      ticking = false;
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        window.requestAnimationFrame(updateNav);
+        ticking = true;
+      }
     }
 
     updateNav();
-    window.addEventListener("scroll", updateNav, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
   }
 
   function bindBackToTop() {
@@ -186,11 +339,25 @@
   }
 
   function init() {
-    injectDecorations();
+    injectShoreDecor();
+
+    if (!isGuestPage()) return;
+
+    injectFrameDecor();
     bindPageTransitions();
     injectSectionDividers();
     bindSectionAnimations();
     bindStickyNav();
     bindBackToTop();
   }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+
+  /* Expose for index.html envelope + hash scroll */
+  window.WeddingUI = window.WeddingUI || {};
+  window.WeddingUI.scrollToHash = scrollToHash;
 })();

@@ -1,0 +1,17 @@
+{
+  "name": "Wedding Invitation",
+  "install": "npm install",
+  "ports": [
+    {
+      "name": "web",
+      "port": 4317
+    }
+  ],
+  "terminals": [
+    {
+      "name": "dev-server",
+      "command": "npm run dev",
+      "description": "Wedding invitation Express server on port 4317"
+    }
+  ]
+}

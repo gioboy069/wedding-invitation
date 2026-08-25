@@ -7,14 +7,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/shared.css" />
+  <script src="/js/shared.js" defer></script>
   <style>
     :root {
-      --bg: #f8f4ec;
-      --bg-alt: #e4ebdf;
-      --sage: #7a8b6f;
-      --sea: #1b4965;
-      --sea-deep: #0f2e3d;
-      --sea-soft: #b8d4de;
+      --bg: #f7f5f1;
+      --bg-alt: #eef3f6;
+      --sage: #6ba7a0;
+      --sea: #1e5a6e;
+      --sea-deep: #0d2b45;
+      --sea-soft: #b7d4e6;
       --text: #1a3340;
       --text-soft: #3d5a6c;
       --white: #fff;
@@ -33,6 +35,8 @@
       color: var(--text);
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
+      position: relative;
+      z-index: 1;
     }
 
     .hidden { display: none !important; }
@@ -448,6 +452,7 @@
       <button type="button" class="nav-btn active" data-panel="overview">Overview</button>
       <button type="button" class="nav-btn" data-panel="content">Edit Details</button>
       <button type="button" class="nav-btn" data-panel="gallery">Gallery</button>
+      <button type="button" class="nav-btn" data-panel="guests">Guest List</button>
       <button type="button" class="nav-btn" data-panel="rsvps">RSVPs</button>
       <div class="sidebar-footer">
         <a href="/" target="_blank">View Site</a>
@@ -465,12 +470,14 @@
           <div class="stat"><strong id="statYes">0</strong><span>Attending</span></div>
           <div class="stat"><strong id="statNo">0</strong><span>Declined</span></div>
           <div class="stat"><strong id="statPhotos">0</strong><span>Gallery Photos</span></div>
+          <div class="stat"><strong id="statGuests">0</strong><span>Guest List</span></div>
         </div>
         <div class="card">
           <h3>Quick links</h3>
           <div class="toolbar">
             <button type="button" class="btn btn-primary" data-goto="content">Edit invitation details</button>
             <button type="button" class="btn btn-ghost" data-goto="gallery">Upload photos</button>
+            <button type="button" class="btn btn-ghost" data-goto="guests">Manage guest list</button>
             <button type="button" class="btn btn-ghost" data-goto="rsvps">Manage RSVPs</button>
           </div>
         </div>
@@ -526,6 +533,7 @@
             <input id="storyTitle" name="storyTitle" />
             <label for="storySubtitle">Subtitle</label>
             <textarea id="storySubtitle" name="storySubtitle"></textarea>
+            <p class="lead" style="font-size:0.8rem;margin-bottom:0.75rem;">For each year below, paste a <strong>Google Drive</strong> share link (Anyone with the link) or any image URL — same method as Gallery photos.</p>
             <div id="timelineFields"></div>
             <button type="button" class="btn btn-ghost" id="addTimeline">Add timeline entry</button>
           </div>
@@ -547,9 +555,15 @@
           </div>
 
           <div class="card">
-            <h3>Other copy</h3>
+            <h3>Attire photos</h3>
+            <p class="lead" style="font-size:0.8rem;margin-bottom:0.85rem;">Paste a <strong>Google Drive</strong> share link (Anyone with the link) or image URL for each attire photo — same method as Gallery.</p>
             <label for="attireSummary">Attire teaser text</label>
             <textarea id="attireSummary" name="attireSummary"></textarea>
+            <div id="attirePhotoFields"></div>
+          </div>
+
+          <div class="card">
+            <h3>Other copy</h3>
             <label for="footerQuote">Footer quote</label>
             <textarea id="footerQuote" name="footerQuote"></textarea>
           </div>
@@ -593,6 +607,60 @@
         <div class="gallery-admin" id="galleryAdmin"></div>
       </section>
 
+      <!-- Guest List -->
+      <section class="panel" id="panel-guests">
+        <h2>Guest List</h2>
+        <p class="lead">Add invited guests and set how many seats each invitation includes (1–10). When someone RSVPs with a matching full name, they can enter companion names up to that allocation.</p>
+
+        <div class="card" style="margin-bottom:1.25rem">
+          <h3>Add guest</h3>
+          <form id="guestForm">
+            <div class="row-2">
+              <div>
+                <label for="guestListName">Full name (as on invitation)</label>
+                <input id="guestListName" name="name" required placeholder="Jordan Lee" autocomplete="off" />
+              </div>
+              <div>
+                <label for="guestAllocation">Allocation (party size)</label>
+                <div class="toolbar" style="gap:0.5rem;align-items:stretch;margin:0">
+                  <select id="guestAllocation" style="flex:1">
+                    <option value="1">1</option>
+                    <option value="2" selected>2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                  </select>
+                  <input type="number" id="guestAllocationManual" min="1" max="10" step="1" placeholder="Or type 1–10" style="width:7.5rem" />
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Add to Guest List</button>
+          </form>
+        </div>
+
+        <div class="toolbar">
+          <input type="search" id="guestSearch" placeholder="Search guests…" style="max-width:240px" />
+          <button type="button" class="btn btn-ghost" id="refreshGuests">Refresh</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Allocation</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="guestTable"></tbody>
+          </table>
+        </div>
+      </section>
+
       <!-- RSVPs -->
       <section class="panel" id="panel-rsvps">
         <h2>RSVPs</h2>
@@ -612,6 +680,8 @@
               <tr>
                 <th>Name</th>
                 <th>Status</th>
+                <th>Party</th>
+                <th>Companions</th>
                 <th>Message</th>
                 <th>Submitted</th>
                 <th></th>
@@ -634,6 +704,7 @@
       let content = null;
       let gallery = [];
       let rsvps = [];
+      let guests = [];
 
       function toast(msg, isError) {
         toastEl.textContent = msg;
@@ -755,6 +826,34 @@
         `).join("");
       }
 
+      const ATTIRE_PHOTO_FIELDS = [
+        { key: "teaser", label: "Teaser card (collapsed section)" },
+        { key: "bride", label: "Bride look" },
+        { key: "groom", label: "Groom look" },
+        { key: "party", label: "Wedding party" },
+        { key: "guestHer", label: "Guest inspiration — For Her" },
+        { key: "guestHim", label: "Guest inspiration — For Him" },
+        { key: "guestEvening", label: "Guest inspiration — Coastal Evening" },
+      ];
+
+      function renderAttirePhotos() {
+        const wrap = document.getElementById("attirePhotoFields");
+        if (!wrap) return;
+        const photos = content.attirePhotos || {};
+        wrap.innerHTML = ATTIRE_PHOTO_FIELDS.map(({ key, label }) => {
+          const entry = photos[key] || {};
+          return `
+            <div class="timeline-editor" data-attire-key="${key}">
+              <h4 style="font-family:var(--font-serif);font-size:1.05rem;margin-bottom:0.65rem;color:var(--sea)">${label}</h4>
+              <label>Photo (Google Drive link or image URL)</label>
+              <input data-field="photo" type="url" value="${escapeAttr(entry.photo || "")}" placeholder="https://drive.google.com/file/d/xxxxx/view?usp=sharing" />
+              <label>Photo alt text</label>
+              <input data-field="photoAlt" value="${escapeAttr(entry.photoAlt || "")}" placeholder="${escapeAttr(label)}" />
+            </div>
+          `;
+        }).join("");
+      }
+
       function renderTimeline() {
         const wrap = document.getElementById("timelineFields");
         wrap.innerHTML = (content.timeline || []).map((t, i) => `
@@ -765,6 +864,10 @@
             </div>
             <label>Text</label>
             <textarea data-field="text">${escapeHtml(t.text || "")}</textarea>
+            <label>Photo (Google Drive link or image URL)</label>
+            <input data-field="photo" type="url" value="${escapeAttr(t.photo || "")}" placeholder="https://drive.google.com/file/d/xxxxx/view?usp=sharing" />
+            <label>Photo alt text</label>
+            <input data-field="photoAlt" value="${escapeAttr(t.photoAlt || "")}" placeholder="2018 — First Glance" />
             <button type="button" class="btn btn-danger" data-remove-timeline="${i}">Remove</button>
           </div>
         `).join("");
@@ -835,6 +938,7 @@
         document.getElementById("weddingDateTime").value = toDatetimeLocalValue(content.weddingDate);
         syncWeddingFieldsFromPicker();
         renderTimeline();
+        renderAttirePhotos();
         renderVenues();
         renderWeddingDayTimeline();
       }
@@ -852,7 +956,18 @@
           year: row.querySelector('[data-field="year"]').value,
           heading: row.querySelector('[data-field="heading"]').value,
           text: row.querySelector('[data-field="text"]').value,
+          photo: row.querySelector('[data-field="photo"]').value,
+          photoAlt: row.querySelector('[data-field="photoAlt"]').value,
         }));
+
+        data.attirePhotos = {};
+        document.querySelectorAll("#attirePhotoFields [data-attire-key]").forEach((row) => {
+          const key = row.dataset.attireKey;
+          data.attirePhotos[key] = {
+            photo: row.querySelector('[data-field="photo"]').value,
+            photoAlt: row.querySelector('[data-field="photoAlt"]').value,
+          };
+        });
 
         data.venues = [...document.querySelectorAll("#venueFields .venue-editor")].map((row) => ({
           name: row.querySelector('[data-field="name"]').value,
@@ -874,7 +989,7 @@
       document.getElementById("addTimeline").addEventListener("click", () => {
         content = collectContent();
         content.timeline = content.timeline || [];
-        content.timeline.push({ year: "", heading: "", text: "" });
+        content.timeline.push({ year: "", heading: "", text: "", photo: "", photoAlt: "" });
         renderTimeline();
       });
 
@@ -1021,6 +1136,114 @@
         }
       });
 
+      // Guest list
+      function clampAllocation(value) {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return 1;
+        return Math.min(10, Math.max(1, Math.round(n)));
+      }
+
+      function renderGuests() {
+        const search = (document.getElementById("guestSearch").value || "").trim().toLowerCase();
+        const list = guests.filter((g) => !search || String(g.name || "").toLowerCase().includes(search));
+        document.getElementById("statGuests").textContent = guests.length;
+        const tbody = document.getElementById("guestTable");
+        if (!list.length) {
+          tbody.innerHTML = '<tr><td colspan="3">No guests yet. Add invited names above.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = list.map((g) => `
+          <tr data-guest-id="${escapeAttr(g.id)}">
+            <td>
+              <input data-edit-name value="${escapeAttr(g.name)}" style="width:100%;min-width:160px" />
+            </td>
+            <td>
+              <div class="toolbar" style="gap:0.4rem;margin:0;flex-wrap:nowrap">
+                <select data-edit-allocation>
+                  ${[1,2,3,4,5,6,7,8,9,10].map((n) => `<option value="${n}" ${Number(g.allocation) === n ? "selected" : ""}>${n}</option>`).join("")}
+                </select>
+              </div>
+            </td>
+            <td style="white-space:nowrap">
+              <button type="button" class="btn btn-ghost" data-guest-save="${escapeAttr(g.id)}">Save</button>
+              <button type="button" class="btn btn-danger" data-guest-del="${escapeAttr(g.id)}">Delete</button>
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      document.getElementById("guestAllocationManual").addEventListener("input", (e) => {
+        const val = e.target.value;
+        if (val === "") return;
+        const clamped = clampAllocation(val);
+        document.getElementById("guestAllocation").value = String(clamped);
+      });
+
+      document.getElementById("guestAllocation").addEventListener("change", (e) => {
+        document.getElementById("guestAllocationManual").value = e.target.value;
+      });
+
+      document.getElementById("guestForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("guestListName").value.trim();
+        const manual = document.getElementById("guestAllocationManual").value;
+        const allocation = clampAllocation(manual !== "" ? manual : document.getElementById("guestAllocation").value);
+        try {
+          await api("/api/admin/guests", {
+            method: "POST",
+            body: JSON.stringify({ name, allocation }),
+          });
+          document.getElementById("guestListName").value = "";
+          document.getElementById("guestAllocation").value = "2";
+          document.getElementById("guestAllocationManual").value = "";
+          guests = await api("/api/admin/guests");
+          renderGuests();
+          toast("Guest added");
+        } catch (ex) {
+          toast(ex.message, true);
+        }
+      });
+
+      document.getElementById("guestSearch").addEventListener("input", renderGuests);
+      document.getElementById("refreshGuests").addEventListener("click", async () => {
+        guests = await api("/api/admin/guests");
+        renderGuests();
+        toast("Guest list refreshed");
+      });
+
+      document.getElementById("guestTable").addEventListener("click", async (e) => {
+        const saveBtn = e.target.closest("[data-guest-save]");
+        const delBtn = e.target.closest("[data-guest-del]");
+        if (saveBtn) {
+          const row = saveBtn.closest("tr");
+          const name = row.querySelector("[data-edit-name]").value.trim();
+          const allocation = clampAllocation(row.querySelector("[data-edit-allocation]").value);
+          try {
+            await api("/api/admin/guests/" + saveBtn.dataset.guestSave, {
+              method: "PUT",
+              body: JSON.stringify({ name, allocation }),
+            });
+            guests = await api("/api/admin/guests");
+            renderGuests();
+            toast("Guest updated");
+          } catch (ex) {
+            toast(ex.message, true);
+          }
+          return;
+        }
+        if (delBtn) {
+          if (!confirm("Remove this guest from the list?")) return;
+          try {
+            await api("/api/admin/guests/" + delBtn.dataset.guestDel, { method: "DELETE" });
+            guests = await api("/api/admin/guests");
+            renderGuests();
+            toast("Guest removed");
+          } catch (ex) {
+            toast(ex.message, true);
+          }
+        }
+      });
+
       // RSVPs
       function renderRsvps() {
         const filter = document.getElementById("rsvpFilter").value;
@@ -1033,18 +1256,23 @@
 
         const tbody = document.getElementById("rsvpTable");
         if (!list.length) {
-          tbody.innerHTML = '<tr><td colspan="5">No RSVPs yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7">No RSVPs yet.</td></tr>';
           return;
         }
-        tbody.innerHTML = list.map((r) => `
+        tbody.innerHTML = list.map((r) => {
+          const companions = Array.isArray(r.companions) ? r.companions.filter(Boolean) : [];
+          const party = r.partySize || (1 + companions.length);
+          return `
           <tr>
-            <td>${escapeHtml(r.name)}</td>
+            <td>${escapeHtml(r.name)}${r.guestMatched === false ? ' <span class="badge no">Unmatched</span>' : ""}</td>
             <td><span class="badge ${r.attendance === "attending" ? "yes" : "no"}">${r.attendance === "attending" ? "Attending" : "Declined"}</span></td>
+            <td>${party}${r.allocation ? " / " + r.allocation : ""}</td>
+            <td>${companions.length ? escapeHtml(companions.join(", ")) : "—"}</td>
             <td>${escapeHtml(r.message || "—")}</td>
             <td>${new Date(r.submittedAt).toLocaleString()}</td>
             <td><button type="button" class="btn btn-danger" data-rsvp-del="${r.id}">Delete</button></td>
-          </tr>
-        `).join("");
+          </tr>`;
+        }).join("");
       }
 
       document.getElementById("rsvpFilter").addEventListener("change", renderRsvps);
@@ -1069,11 +1297,16 @@
       });
 
       document.getElementById("exportCsv").addEventListener("click", () => {
-        const rows = [["Name", "Attendance", "Message", "Submitted"]];
+        const rows = [["Name", "Attendance", "Party Size", "Allocation", "Companions", "Matched Guest List", "Message", "Submitted"]];
         rsvps.forEach((r) => {
+          const companions = Array.isArray(r.companions) ? r.companions.filter(Boolean) : [];
           rows.push([
             r.name,
             r.attendance,
+            String(r.partySize || 1 + companions.length),
+            String(r.allocation || ""),
+            companions.join("; "),
+            r.guestMatched ? "Yes" : "No",
             (r.message || "").replace(/"/g, '""'),
             r.submittedAt,
           ]);
@@ -1090,8 +1323,10 @@
         content = await api("/api/content");
         gallery = await api("/api/gallery");
         rsvps = await api("/api/admin/rsvps");
+        guests = await api("/api/admin/guests");
         fillContentForm();
         renderGalleryAdmin();
+        renderGuests();
         renderRsvps();
       }
 

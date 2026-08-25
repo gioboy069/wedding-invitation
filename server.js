@@ -12,7 +12,7 @@ const DATA_DIR = join(ROOT, "data");
 const UPLOAD_DIR = join(ROOT, "uploads");
 const PORT = Number(process.env.PORT || 4317);
 const HOST = process.env.HOST || "0.0.0.0";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "gomeZ120822@";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "augiela-gio-2027";
 const RSVP_EMAIL = process.env.RSVP_EMAIL || "gomez.wed2027@gmail.com";
 
 if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -118,7 +118,7 @@ app.get("/api/gallery", (_req, res) => {
 });
 
 app.post("/api/rsvp", async (req, res) => {
-  const { name, attendance, message } = req.body || {};
+  const { name, attendance, message, companions, guestId } = req.body || {};
   if (!name || !String(name).trim()) {
     return res.status(400).json({ error: "Name is required" });
   }
@@ -126,11 +126,34 @@ app.post("/api/rsvp", async (req, res) => {
     return res.status(400).json({ error: "Attendance must be attending or declined" });
   }
 
+  const guests = readJson("guests.json", []);
+  const normalizedName = normalizeGuestName(name);
+  let matchedGuest = null;
+  if (guestId) {
+    matchedGuest = guests.find((g) => g.id === guestId) || null;
+  }
+  if (!matchedGuest) {
+    matchedGuest = guests.find((g) => normalizeGuestName(g.name) === normalizedName) || null;
+  }
+
+  const allocation = matchedGuest
+    ? Math.min(10, Math.max(1, Number(matchedGuest.allocation) || 1))
+    : 1;
+  const maxCompanions = Math.max(0, allocation - 1);
+  const companionList = Array.isArray(companions)
+    ? companions.map((c) => String(c || "").trim()).filter(Boolean).slice(0, maxCompanions)
+    : [];
+
   const entry = {
     id: `rsvp-${Date.now()}-${randomBytes(3).toString("hex")}`,
     name: String(name).trim(),
     attendance,
     message: String(message || "").trim(),
+    companions: companionList,
+    partySize: 1 + companionList.length,
+    allocation,
+    guestId: matchedGuest ? matchedGuest.id : null,
+    guestMatched: !!matchedGuest,
     submittedAt: new Date().toISOString(),
   };
 
@@ -153,7 +176,10 @@ app.post("/api/rsvp", async (req, res) => {
       body: JSON.stringify({
         name: entry.name,
         attendance: entry.attendance === "attending" ? "Joyfully Accepts" : "Regretfully Declines",
+        partySize: entry.partySize,
+        companions: companionList.length ? companionList.join(", ") : "(none)",
         message: entry.message || "(no message)",
+        guestMatched: entry.guestMatched ? "Yes" : "No",
         submittedAt: entry.submittedAt,
         _subject: `Wedding RSVP: ${entry.name} — ${entry.attendance}`,
         _template: "table",
@@ -170,6 +196,96 @@ app.post("/api/rsvp", async (req, res) => {
   }
 
   res.status(201).json({ ok: true, id: entry.id, emailed });
+});
+
+function normalizeGuestName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Public guest lookup for RSVP form (does not expose full list)
+app.get("/api/guests/lookup", (req, res) => {
+  const name = String(req.query.name || "").trim();
+  if (!name || name.length < 2) {
+    return res.json({ matched: false });
+  }
+  const guests = readJson("guests.json", []);
+  const needle = normalizeGuestName(name);
+  const guest = guests.find((g) => normalizeGuestName(g.name) === needle);
+  if (!guest) return res.json({ matched: false });
+  const allocation = Math.min(10, Math.max(1, Number(guest.allocation) || 1));
+  res.json({
+    matched: true,
+    guest: {
+      id: guest.id,
+      name: guest.name,
+      allocation,
+      maxCompanions: Math.max(0, allocation - 1),
+    },
+  });
+});
+
+// ── Admin guest list ──
+
+app.get("/api/admin/guests", requireAdmin, (_req, res) => {
+  res.json(readJson("guests.json", []));
+});
+
+app.post("/api/admin/guests", requireAdmin, (req, res) => {
+  const name = String(req.body?.name || "").trim();
+  let allocation = Number(req.body?.allocation);
+  if (!name) return res.status(400).json({ error: "Guest name is required" });
+  if (!Number.isFinite(allocation)) allocation = 1;
+  allocation = Math.min(10, Math.max(1, Math.round(allocation)));
+
+  const guests = readJson("guests.json", []);
+  const exists = guests.some((g) => normalizeGuestName(g.name) === normalizeGuestName(name));
+  if (exists) return res.status(400).json({ error: "That guest is already on the list" });
+
+  const item = {
+    id: `guest-${Date.now()}-${randomBytes(3).toString("hex")}`,
+    name,
+    allocation,
+  };
+  guests.push(item);
+  guests.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+  writeJson("guests.json", guests);
+  res.status(201).json(item);
+});
+
+app.put("/api/admin/guests/:id", requireAdmin, (req, res) => {
+  const guests = readJson("guests.json", []);
+  const idx = guests.findIndex((g) => g.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: "Guest not found" });
+
+  const name = String(req.body?.name ?? guests[idx].name).trim();
+  let allocation = Number(req.body?.allocation ?? guests[idx].allocation);
+  if (!name) return res.status(400).json({ error: "Guest name is required" });
+  if (!Number.isFinite(allocation)) allocation = guests[idx].allocation || 1;
+  allocation = Math.min(10, Math.max(1, Math.round(allocation)));
+
+  const duplicate = guests.some(
+    (g, i) => i !== idx && normalizeGuestName(g.name) === normalizeGuestName(name)
+  );
+  if (duplicate) return res.status(400).json({ error: "That guest is already on the list" });
+
+  guests[idx] = { ...guests[idx], name, allocation };
+  guests.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+  writeJson("guests.json", guests);
+  res.json(guests.find((g) => g.id === req.params.id));
+});
+
+app.delete("/api/admin/guests/:id", requireAdmin, (req, res) => {
+  const guests = readJson("guests.json", []);
+  const next = guests.filter((g) => g.id !== req.params.id);
+  if (next.length === guests.length) return res.status(404).json({ error: "Guest not found" });
+  writeJson("guests.json", next);
+  res.json({ ok: true });
 });
 
 // ── Admin auth ──
@@ -223,6 +339,33 @@ app.put("/api/admin/content", requireAdmin, (req, res) => {
       month: "long",
       day: "numeric",
     });
+  }
+
+  // Normalize Google Drive share links on story timeline photos
+  if (Array.isArray(content.timeline)) {
+    content.timeline = content.timeline.map((item) => {
+      if (!item || typeof item !== "object") return item;
+      return {
+        ...item,
+        photo: normalizeImageUrl(item.photo || ""),
+      };
+    });
+  }
+
+  // Normalize Google Drive share links on attire photos
+  if (content.attirePhotos && typeof content.attirePhotos === "object") {
+    const next = {};
+    for (const [key, entry] of Object.entries(content.attirePhotos)) {
+      if (!entry || typeof entry !== "object") {
+        next[key] = entry;
+        continue;
+      }
+      next[key] = {
+        ...entry,
+        photo: normalizeImageUrl(entry.photo || ""),
+      };
+    }
+    content.attirePhotos = next;
   }
 
   writeJson("content.json", content);
