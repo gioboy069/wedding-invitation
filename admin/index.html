@@ -465,7 +465,7 @@
         <p class="lead">Track RSVPs and jump into editing your invitation.</p>
         <div class="stats">
           <div class="stat"><strong id="statTotal">0</strong><span>Total RSVPs</span></div>
-          <div class="stat"><strong id="statYes">0</strong><span>Attending</span></div>
+          <div class="stat"><strong id="statYes">0</strong><span>Guests attending</span></div>
           <div class="stat"><strong id="statNo">0</strong><span>Declined</span></div>
           <div class="stat"><strong id="statPhotos">0</strong><span>Gallery Photos</span></div>
           <div class="stat"><strong id="statGuests">0</strong><span>Guest List</span></div>
@@ -832,8 +832,6 @@
 
       const ATTIRE_PHOTO_FIELDS = [
         { key: "teaser", label: "Teaser card (collapsed section)" },
-        { key: "bride", label: "Bride look" },
-        { key: "groom", label: "Groom look" },
         { key: "party", label: "Wedding party" },
         { key: "guestHer", label: "Guest inspiration — For Her" },
         { key: "guestHim", label: "Guest inspiration — For Him" },
@@ -851,7 +849,7 @@
               <h4 style="font-family:var(--font-serif);font-size:1.05rem;margin-bottom:0.65rem;color:var(--sea)">${label}</h4>
               <label>Photo (Google Drive link or image URL)</label>
               <input data-field="photo" type="text" value="${escapeAttr(entry.photo || "")}" placeholder="https://drive.google.com/file/d/xxxxx/view?usp=sharing" />
-              ${entry.photo ? `<div style="margin:0.5rem 0 0.75rem"><img src="${escapeAttr(entry.photo)}" alt="" style="max-width:120px;max-height:120px;object-fit:cover;border:1px solid rgba(30,90,110,0.15)" onerror="this.style.display='none'" /></div>` : ""}
+              ${entry.photo ? `<div style="margin:0.5rem 0 0.75rem;background:linear-gradient(145deg,rgba(183,212,230,0.28),rgba(220,200,170,0.22));padding:0.35rem;display:inline-block"><img src="${escapeAttr(entry.photo)}" alt="" style="max-width:120px;max-height:120px;object-fit:contain;display:block;border:1px solid rgba(30,90,110,0.15)" onerror="this.style.display='none'" /></div>` : ""}
               <label>Photo alt text</label>
               <input data-field="photoAlt" type="text" value="${escapeAttr(entry.photoAlt || "")}" placeholder="${escapeAttr(label)}" />
             </div>
@@ -1250,10 +1248,20 @@
       });
 
       // RSVPs
+      function partySizeOf(r) {
+        const companions = Array.isArray(r.companions) ? r.companions.filter(Boolean) : [];
+        const stored = Number(r.partySize);
+        const fromCompanions = 1 + companions.length;
+        if (Number.isFinite(stored) && stored > 0) return Math.max(stored, fromCompanions);
+        return fromCompanions;
+      }
+
       function renderRsvps() {
         const filter = document.getElementById("rsvpFilter").value;
         const list = rsvps.filter((r) => filter === "all" || r.attendance === filter);
-        const yes = rsvps.filter((r) => r.attendance === "attending").length;
+        const yes = rsvps
+          .filter((r) => r.attendance === "attending")
+          .reduce((sum, r) => sum + partySizeOf(r), 0);
         const no = rsvps.filter((r) => r.attendance === "declined").length;
         document.getElementById("statTotal").textContent = rsvps.length;
         document.getElementById("statYes").textContent = yes;
@@ -1266,7 +1274,7 @@
         }
         tbody.innerHTML = list.map((r) => {
           const companions = Array.isArray(r.companions) ? r.companions.filter(Boolean) : [];
-          const party = r.partySize || (1 + companions.length);
+          const party = partySizeOf(r);
           return `
           <tr>
             <td>${escapeHtml(r.name)}${r.guestMatched === false ? ' <span class="badge no">Unmatched</span>' : ""}</td>
@@ -1308,7 +1316,7 @@
           rows.push([
             r.name,
             r.attendance,
-            String(r.partySize || 1 + companions.length),
+            String(partySizeOf(r)),
             String(r.allocation || ""),
             companions.join("; "),
             r.guestMatched ? "Yes" : "No",

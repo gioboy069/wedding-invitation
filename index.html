@@ -1035,12 +1035,14 @@
     .attire-teaser-image {
       position: relative;
       min-height: 320px;
+      background: linear-gradient(145deg, rgba(183, 212, 230, 0.28), rgba(220, 200, 170, 0.22));
     }
 
     .attire-teaser-image img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      object-position: center;
       position: absolute;
       inset: 0;
     }
@@ -1222,12 +1224,15 @@
       overflow: hidden;
       aspect-ratio: 3 / 4;
       border: 1px solid rgba(107, 167, 160, 0.2);
+      background: linear-gradient(145deg, rgba(183, 212, 230, 0.28), rgba(220, 200, 170, 0.22));
     }
 
     .attire-look-image img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      object-position: center;
+      display: block;
     }
 
     .attire-look-tag {
@@ -1339,7 +1344,10 @@
     .attire-guest-card img {
       width: 100%;
       aspect-ratio: 3 / 4;
-      object-fit: cover;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+      background: linear-gradient(145deg, rgba(183, 212, 230, 0.28), rgba(220, 200, 170, 0.22));
     }
 
     .attire-guest-card h4 {
@@ -2576,7 +2584,7 @@
         </div>
         <div class="attire-teaser-content">
           <h3>What to Wear</h3>
-          <p id="attireSummary">We've curated a detailed attire guide with photos of our wedding day looks, wedding party styles, and guest dress code inspiration — all in our coastal ocean palette.</p>
+          <p id="attireSummary">We've curated a detailed attire guide with wedding party styles and guest dress code inspiration — all in our coastal ocean palette.</p>
         </div>
       </div>
 
@@ -2602,49 +2610,7 @@
           <div class="attire-look-block">
             <div class="attire-look-grid">
               <div class="attire-look-image">
-                <img id="attirePhotoBride" src="https://images.unsplash.com/photo-1594552072238-8d25853ce691?w=900&q=80" alt="Augiela's wedding gown — ivory silk with soft coastal detail" loading="lazy" />
-                <span class="attire-look-tag">The Bride</span>
-              </div>
-              <div class="attire-look-text">
-                <p class="attire-look-label">Augiela Shane</p>
-                <h3>Ivory Silk &amp; Ocean Light</h3>
-                <p>A custom ivory silk organza gown with a soft A-line silhouette, delicate seafoam embroidery along the bodice, and a cathedral-length veil trimmed in ocean-teal silk ribbon.</p>
-                <p>Hair styled in a low, romantic chignon with soft white blooms and a whisper of sand-toned accents.</p>
-                <ul class="attire-look-details">
-                  <li><strong>Gown</strong> Ivory silk organza, open back, chapel train</li>
-                  <li><strong>Embroidery</strong> Hand-stitched seafoam &amp; sky accents</li>
-                  <li><strong>Accessories</strong> Pearl drop earrings, teal silk ribbon veil</li>
-                  <li><strong>Shoes</strong> Nude satin block heels</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="attire-look-block alt">
-            <div class="attire-look-grid reverse">
-              <div class="attire-look-image">
-                <img id="attirePhotoGroom" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&q=80" alt="Gio Anthony's wedding attire — deep ocean tuxedo with seafoam pocket square" loading="lazy" />
-                <span class="attire-look-tag">The Groom</span>
-              </div>
-              <div class="attire-look-text">
-                <p class="attire-look-label">Gio Anthony</p>
-                <h3>Deep Ocean Tuxedo</h3>
-                <p>A tailored deep-ocean tuxedo with satin peak lapels, crisp white dress shirt, and a hand-folded seafoam pocket square — quiet coastal formality for golden hour.</p>
-                <p>Finished with black patent oxfords and a silk bow tie in deep ocean.</p>
-                <ul class="attire-look-details">
-                  <li><strong>Suit</strong> Deep-ocean wool tuxedo, slim fit</li>
-                  <li><strong>Shirt</strong> White pleated bib front, French cuffs</li>
-                  <li><strong>Accents</strong> Seafoam pocket square, deep-ocean bow tie</li>
-                  <li><strong>Shoes</strong> Black patent leather oxfords</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="attire-look-block">
-            <div class="attire-look-grid">
-              <div class="attire-look-image">
-                <img id="attirePhotoParty" src="https://images.unsplash.com/photo-1465495976277-8127aab6260b?w=900&q=80" alt="Wedding party in seafoam and deep ocean attire" loading="lazy" />
+                <img id="attirePhotoParty" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1465495976277-8127aab6260b?w=900&q=80" alt="Wedding party in seafoam and deep ocean attire" loading="lazy" />
                 <span class="attire-look-tag">Wedding Party</span>
               </div>
               <div class="attire-look-text">
@@ -2669,17 +2635,17 @@
 
             <div class="attire-guest-grid">
               <article class="attire-guest-card">
-                <img id="attirePhotoGuestHer" src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&q=80" alt="Floor-length emerald gown guest inspiration" loading="lazy" />
+                <img id="attirePhotoGuestHer" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&q=80" alt="Floor-length emerald gown guest inspiration" loading="lazy" />
                 <h4>For Her</h4>
                 <p>Floor-length gowns or elegant cocktail dresses in deep ocean, seafoam, sand, or soft sky tones.</p>
               </article>
               <article class="attire-guest-card">
-                <img id="attirePhotoGuestHim" src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80" alt="Dark tailored suit guest inspiration" loading="lazy" />
+                <img id="attirePhotoGuestHim" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80" alt="Dark tailored suit guest inspiration" loading="lazy" />
                 <h4>For Him</h4>
                 <p>Dark tailored suits or tuxedos. Bow ties, pocket squares, and polished dress shoes warmly welcomed.</p>
               </article>
               <article class="attire-guest-card">
-                <img id="attirePhotoGuestEvening" src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80" alt="Coastal evening guest attire inspiration" loading="lazy" />
+                <img id="attirePhotoGuestEvening" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80" alt="Coastal evening guest attire inspiration" loading="lazy" />
                 <h4>Coastal Evening</h4>
                 <p>Think refined evening wear with a calm coastal mood — layers for cool Napa nights.</p>
               </article>
@@ -3053,8 +3019,6 @@
 
         const attirePhotoMap = {
           teaser: "attirePhotoTeaser",
-          bride: "attirePhotoBride",
-          groom: "attirePhotoGroom",
           party: "attirePhotoParty",
           guestHer: "attirePhotoGuestHer",
           guestHim: "attirePhotoGuestHim",
