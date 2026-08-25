@@ -1341,6 +1341,118 @@
       display: inline-block;
     }
 
+    /* ── Entourage ── */
+    .entourage {
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .entourage-sponsors {
+      max-width: 960px;
+      margin: clamp(2rem, 5vw, 3rem) auto 0;
+    }
+
+    .entourage-sponsors-heading {
+      text-align: center;
+      margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
+    }
+
+    .entourage-sponsors-heading .attire-look-label {
+      margin-bottom: 0.5rem;
+    }
+
+    .sponsor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 3vw, 2rem);
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .sponsor-person {
+      text-align: center;
+    }
+
+    .sponsor-photo {
+      position: relative;
+      width: min(100%, 200px);
+      aspect-ratio: 3 / 4;
+      margin: 0 auto 1rem;
+      overflow: hidden;
+      border: 1px solid rgba(107, 167, 160, 0.22);
+      background: linear-gradient(145deg, rgba(183, 212, 230, 0.28), rgba(220, 200, 170, 0.22));
+    }
+
+    .sponsor-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+    }
+
+    .sponsor-photo.is-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sponsor-photo.is-empty img {
+      display: none;
+    }
+
+    .sponsor-tag {
+      display: block;
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 0.4rem;
+    }
+
+    .sponsor-name {
+      font-family: var(--font-serif);
+      font-size: clamp(1.15rem, 2.5vw, 1.35rem);
+      font-weight: 500;
+      color: var(--deep);
+      margin-bottom: 0.55rem;
+      line-height: 1.25;
+    }
+
+    .sponsor-desc {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      line-height: 1.65;
+      max-width: 28ch;
+      margin: 0 auto;
+    }
+
+    .entourage-groups {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.75rem 1.5rem;
+      max-width: 900px;
+      margin: clamp(3rem, 6vw, 4rem) auto 0;
+      text-align: center;
+    }
+
+    .entourage-group-role {
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 0.55rem;
+    }
+
+    .entourage-group-names {
+      font-family: var(--font-serif);
+      font-size: clamp(1rem, 2.2vw, 1.15rem);
+      font-weight: 400;
+      color: var(--deep);
+      line-height: 1.45;
+    }
+
     .attire-notes-box {
       background: var(--sea-deep);
       color: var(--bg);
@@ -1867,6 +1979,16 @@
         max-width: 320px;
       }
 
+      .sponsor-grid {
+        grid-template-columns: 1fr;
+        max-width: 260px;
+      }
+
+      .entourage-groups {
+        grid-template-columns: 1fr;
+        max-width: 320px;
+      }
+
       .attire-look-block.alt {
         margin-left: 0;
         margin-right: 0;
@@ -2279,6 +2401,7 @@
       <li><a href="gallery.html">Gallery</a></li>
       <li><a href="#venue">Venue</a></li>
       <li><a href="#wedding-day">Schedule</a></li>
+      <li><a href="#entourage">Entourage</a></li>
       <li><a href="#attire">Attire</a></li>
       <li><a href="#rsvp">RSVP</a></li>
     </ul>
@@ -2530,12 +2653,30 @@
     </div>
   </section>
 
+  <!-- Entourage -->
+  <section class="entourage" id="entourage">
+    <div class="container">
+      <p class="section-label reveal">Wedding Party</p>
+      <h2 class="section-title reveal reveal-delay-1" id="entourageTitle">Our Entourage</h2>
+      <p class="section-subtitle reveal reveal-delay-2" id="entourageSubtitle">With grateful hearts, we honor the family and friends who walk beside us.</p>
+
+      <div class="entourage-sponsors reveal reveal-delay-3">
+        <div class="entourage-sponsors-heading">
+          <p class="attire-look-label" id="principalSponsorsTitle">Principal Sponsors</p>
+        </div>
+        <div class="sponsor-grid" id="principalSponsorsGrid" aria-label="Ninong and Ninang"></div>
+      </div>
+
+      <div class="entourage-groups reveal reveal-delay-3" id="entourageGroups" aria-label="Wedding entourage"></div>
+    </div>
+  </section>
+
   <!-- Attire -->
   <section class="attire-teaser" id="attire">
     <div class="container">
       <p class="section-label reveal">Attire</p>
       <h2 class="section-title reveal reveal-delay-1">Dress the Occasion</h2>
-      <p class="section-subtitle reveal reveal-delay-2">Black tie optional with a coastal calm — see our full guide for what we'll be wearing and how to dress for the celebration.</p>
+      <p class="section-subtitle reveal reveal-delay-2">Black tie optional with a coastal calm — see our full guide for guest dress code inspiration.</p>
 
       <div class="attire-teaser-card reveal reveal-delay-3">
         <div class="attire-teaser-image">
@@ -2543,7 +2684,7 @@
         </div>
         <div class="attire-teaser-content">
           <h3>What to Wear</h3>
-          <p id="attireSummary">We've curated a detailed attire guide with wedding party styles and guest dress code inspiration — all in our coastal ocean palette.</p>
+          <p id="attireSummary">We've curated a detailed attire guide with guest dress code inspiration — all in our coastal ocean palette.</p>
         </div>
       </div>
 
@@ -2566,33 +2707,7 @@
             </div>
           </div>
 
-          <div class="attire-look-block">
-            <div class="attire-section-heading">
-              <p class="attire-look-label">Bridesmaids &amp; Groomsmen</p>
-              <h3>Seafoam &amp; Ocean Harmony</h3>
-              <p>Our wedding party will wear complementary coastal tones.</p>
-            </div>
-            <div class="attire-party-pair">
-              <div class="attire-look-image">
-                <img id="attirePhotoBridesmaids" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1465495976277-8127aab6260b?w=900&q=80" alt="Bridesmaids in seafoam chiffon gowns" loading="lazy" />
-                <span class="attire-look-tag">Bridesmaids</span>
-              </div>
-              <div class="attire-look-image">
-                <img id="attirePhotoGroomsmen" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=900&q=80" alt="Groomsmen in deep-ocean suits" loading="lazy" />
-                <span class="attire-look-tag">Groomsmen</span>
-              </div>
-            </div>
-            <div class="attire-look-text centered">
-              <p>Bridesmaids in floor-length seafoam chiffon gowns and groomsmen in deep-ocean suits with sand or teal ties.</p>
-              <ul class="attire-look-details">
-                <li><strong>Bridesmaids</strong> Seafoam chiffon gowns, varied necklines, nude heels</li>
-                <li><strong>Groomsmen</strong> Deep-ocean suits, white shirts, seafoam silk ties</li>
-                <li><strong>Florals</strong> White blooms with soft sandy accents</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="attire-look-block alt">
+          <div class="attire-look-block alt" style="border-bottom:0;padding-top:clamp(2.5rem,5vw,3.5rem)">
             <div class="attire-look-grid">
               <div class="attire-look-image">
                 <img id="attirePhotoGuest" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=80" alt="Guest dress code inspiration" loading="lazy" />
@@ -2985,10 +3100,56 @@
         const attire = document.getElementById("attireSummary");
         if (attire && c.attireSummary) attire.textContent = c.attireSummary;
 
+        const entourageTitle = document.getElementById("entourageTitle");
+        if (entourageTitle && c.entourageTitle) entourageTitle.textContent = c.entourageTitle;
+        const entourageSubtitle = document.getElementById("entourageSubtitle");
+        if (entourageSubtitle && c.entourageSubtitle) entourageSubtitle.textContent = c.entourageSubtitle;
+        const principalSponsorsTitle = document.getElementById("principalSponsorsTitle");
+        if (principalSponsorsTitle && c.principalSponsorsTitle) {
+          principalSponsorsTitle.textContent = c.principalSponsorsTitle;
+        }
+
+        function renderSponsorCard(person, roleLabel) {
+          const name = escapeHtml(person.name || "");
+          const desc = escapeHtml(person.description || "");
+          const photo = (person.photo || "").trim();
+          const alt = escapeHtml(person.photoAlt || name || roleLabel);
+          const photoHtml = photo
+            ? '<div class="sponsor-photo"><img src="' + escapeHtml(photo) + '" alt="' + alt + '" loading="lazy" referrerpolicy="no-referrer" /></div>'
+            : '<div class="sponsor-photo is-empty"><span class="timeline-photo-placeholder">Add photo<br />Admin → Details</span></div>';
+          return '<article class="sponsor-person">' +
+            photoHtml +
+            '<span class="sponsor-tag">' + escapeHtml(roleLabel) + '</span>' +
+            '<h3 class="sponsor-name">' + name + '</h3>' +
+            (desc ? '<p class="sponsor-desc">' + desc + '</p>' : '') +
+            '</article>';
+        }
+
+        const sponsorsGrid = document.getElementById("principalSponsorsGrid");
+        if (sponsorsGrid) {
+          const ninongs = Array.isArray(c.ninongs) ? c.ninongs : [];
+          const ninangs = Array.isArray(c.ninangs) ? c.ninangs : [];
+          const cards = []
+            .concat(ninongs.map(function (p) { return renderSponsorCard(p, "Ninong"); }))
+            .concat(ninangs.map(function (p) { return renderSponsorCard(p, "Ninang"); }));
+          sponsorsGrid.innerHTML = cards.length
+            ? cards.join("")
+            : '<p class="section-subtitle" style="margin:0">Add ninong and ninang in Admin → Edit Details.</p>';
+        }
+
+        const groupsWrap = document.getElementById("entourageGroups");
+        if (groupsWrap) {
+          const groups = Array.isArray(c.entourageGroups) ? c.entourageGroups : [];
+          groupsWrap.innerHTML = groups.map(function (g) {
+            return '<div class="entourage-group">' +
+              '<p class="entourage-group-role">' + escapeHtml(g.role || "") + '</p>' +
+              '<p class="entourage-group-names">' + escapeHtml(g.names || "") + '</p>' +
+              '</div>';
+          }).join("");
+        }
+
         const attirePhotoMap = {
           teaser: "attirePhotoTeaser",
-          bridesmaids: "attirePhotoBridesmaids",
-          groomsmen: "attirePhotoGroomsmen",
           guest: "attirePhotoGuest"
         };
         if (c.attirePhotos && typeof c.attirePhotos === "object") {

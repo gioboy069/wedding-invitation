@@ -553,6 +553,26 @@
           </div>
 
           <div class="card">
+            <h3>Entourage</h3>
+            <label for="entourageTitle">Section title</label>
+            <input id="entourageTitle" name="entourageTitle" />
+            <label for="entourageSubtitle">Section subtitle</label>
+            <textarea id="entourageSubtitle" name="entourageSubtitle"></textarea>
+            <label for="principalSponsorsTitle">Principal sponsors heading</label>
+            <input id="principalSponsorsTitle" name="principalSponsorsTitle" />
+            <p class="lead" style="font-size:0.8rem;margin:1rem 0 0.75rem;">Ninong &amp; Ninang — photo (Drive link or URL), name, and a short description.</p>
+            <h4 style="font-family:var(--font-serif);font-size:1.05rem;margin:0.5rem 0 0.65rem;color:var(--sea)">Ninongs</h4>
+            <div id="ninongFields"></div>
+            <button type="button" class="btn btn-ghost" id="addNinong">Add ninong</button>
+            <h4 style="font-family:var(--font-serif);font-size:1.05rem;margin:1.25rem 0 0.65rem;color:var(--sea)">Ninangs</h4>
+            <div id="ninangFields"></div>
+            <button type="button" class="btn btn-ghost" id="addNinang">Add ninang</button>
+            <h4 style="font-family:var(--font-serif);font-size:1.05rem;margin:1.25rem 0 0.65rem;color:var(--sea)">Other entourage roles</h4>
+            <div id="entourageGroupFields"></div>
+            <button type="button" class="btn btn-ghost" id="addEntourageGroup">Add role group</button>
+          </div>
+
+          <div class="card">
             <h3>Attire photos</h3>
             <p class="lead" style="font-size:0.8rem;margin-bottom:0.85rem;">Paste a <strong>Google Drive</strong> share link (Anyone with the link) or image URL for each attire photo. Drive links are converted automatically so they display on the invitation — click <strong>Save Details</strong> after pasting.</p>
             <label for="attireSummary">Attire teaser text</label>
@@ -832,8 +852,6 @@
 
       const ATTIRE_PHOTO_FIELDS = [
         { key: "teaser", label: "Teaser card (collapsed section)" },
-        { key: "bridesmaids", label: "Bridesmaids" },
-        { key: "groomsmen", label: "Groomsmen" },
         { key: "guest", label: "Guest dress code" },
       ];
 
@@ -854,6 +872,47 @@
             </div>
           `;
         }).join("");
+      }
+
+      function renderSponsorFields(wrapId, list, removeAttr) {
+        const wrap = document.getElementById(wrapId);
+        if (!wrap) return;
+        wrap.innerHTML = (list || []).map((p, i) => `
+          <div class="timeline-editor" data-i="${i}">
+            <div class="row-2">
+              <div><label>Name</label><input data-field="name" value="${escapeAttr(p.name || "")}" /></div>
+              <div><label>Photo alt text</label><input data-field="photoAlt" value="${escapeAttr(p.photoAlt || "")}" /></div>
+            </div>
+            <label>Photo (Google Drive link or image URL)</label>
+            <input data-field="photo" type="text" value="${escapeAttr(p.photo || "")}" placeholder="https://drive.google.com/file/d/xxxxx/view?usp=sharing" />
+            ${p.photo ? `<div style="margin:0.5rem 0 0.75rem;background:linear-gradient(145deg,rgba(183,212,230,0.28),rgba(220,200,170,0.22));padding:0.35rem;display:inline-block"><img src="${escapeAttr(p.photo)}" alt="" style="max-width:120px;max-height:120px;object-fit:contain;display:block;border:1px solid rgba(30,90,110,0.15)" onerror="this.style.display='none'" /></div>` : ""}
+            <label>Short description</label>
+            <textarea data-field="description">${escapeHtml(p.description || "")}</textarea>
+            <button type="button" class="btn btn-danger" ${removeAttr}="${i}">Remove</button>
+          </div>
+        `).join("");
+      }
+
+      function renderNinongs() {
+        renderSponsorFields("ninongFields", content.ninongs || [], "data-remove-ninong");
+      }
+
+      function renderNinangs() {
+        renderSponsorFields("ninangFields", content.ninangs || [], "data-remove-ninang");
+      }
+
+      function renderEntourageGroups() {
+        const wrap = document.getElementById("entourageGroupFields");
+        if (!wrap) return;
+        wrap.innerHTML = (content.entourageGroups || []).map((g, i) => `
+          <div class="timeline-editor" data-i="${i}">
+            <div class="row-2">
+              <div><label>Role</label><input data-field="role" value="${escapeAttr(g.role || "")}" placeholder="Best Man" /></div>
+              <div><label>Names</label><input data-field="names" value="${escapeAttr(g.names || "")}" placeholder="Full name(s)" /></div>
+            </div>
+            <button type="button" class="btn btn-danger" data-remove-entourage-group="${i}">Remove</button>
+          </div>
+        `).join("");
       }
 
       function renderTimeline() {
@@ -930,7 +989,7 @@
       }
 
       function fillContentForm() {
-        ["groom","bride","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote","weddingDayTitle","weddingDaySubtitle"]
+        ["groom","bride","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote","weddingDayTitle","weddingDaySubtitle","entourageTitle","entourageSubtitle","principalSponsorsTitle"]
           .forEach((k) => {
             const el = document.getElementById(k);
             if (el) el.value = content[k] || "";
@@ -941,6 +1000,9 @@
         syncWeddingFieldsFromPicker();
         renderTimeline();
         renderAttirePhotos();
+        renderNinongs();
+        renderNinangs();
+        renderEntourageGroups();
         renderVenues();
         renderWeddingDayTimeline();
       }
@@ -951,7 +1013,7 @@
       function collectContent() {
         syncWeddingFieldsFromPicker();
         const data = { ...content };
-        ["groom","bride","weddingDate","weddingDateDisplay","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote","weddingDayTitle","weddingDaySubtitle"]
+        ["groom","bride","weddingDate","weddingDateDisplay","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote","weddingDayTitle","weddingDaySubtitle","entourageTitle","entourageSubtitle","principalSponsorsTitle"]
           .forEach((k) => { data[k] = document.getElementById(k).value; });
 
         data.timeline = [...document.querySelectorAll("#timelineFields .timeline-editor")].map((row) => ({
@@ -970,6 +1032,25 @@
             photoAlt: row.querySelector('[data-field="photoAlt"]').value,
           };
         });
+
+        data.ninongs = [...document.querySelectorAll("#ninongFields .timeline-editor")].map((row) => ({
+          name: row.querySelector('[data-field="name"]').value,
+          description: row.querySelector('[data-field="description"]').value,
+          photo: row.querySelector('[data-field="photo"]').value,
+          photoAlt: row.querySelector('[data-field="photoAlt"]').value,
+        }));
+
+        data.ninangs = [...document.querySelectorAll("#ninangFields .timeline-editor")].map((row) => ({
+          name: row.querySelector('[data-field="name"]').value,
+          description: row.querySelector('[data-field="description"]').value,
+          photo: row.querySelector('[data-field="photo"]').value,
+          photoAlt: row.querySelector('[data-field="photoAlt"]').value,
+        }));
+
+        data.entourageGroups = [...document.querySelectorAll("#entourageGroupFields .timeline-editor")].map((row) => ({
+          role: row.querySelector('[data-field="role"]').value,
+          names: row.querySelector('[data-field="names"]').value,
+        }));
 
         data.venues = [...document.querySelectorAll("#venueFields .venue-editor")].map((row) => ({
           name: row.querySelector('[data-field="name"]').value,
@@ -1007,6 +1088,51 @@
         content.weddingDayTimeline = content.weddingDayTimeline || [];
         content.weddingDayTimeline.push({ time: "", title: "", text: "", icon: "ceremony" });
         renderWeddingDayTimeline();
+      });
+
+      document.getElementById("addNinong").addEventListener("click", () => {
+        content = collectContent();
+        content.ninongs = content.ninongs || [];
+        content.ninongs.push({ name: "", description: "", photo: "", photoAlt: "" });
+        renderNinongs();
+      });
+
+      document.getElementById("addNinang").addEventListener("click", () => {
+        content = collectContent();
+        content.ninangs = content.ninangs || [];
+        content.ninangs.push({ name: "", description: "", photo: "", photoAlt: "" });
+        renderNinangs();
+      });
+
+      document.getElementById("addEntourageGroup").addEventListener("click", () => {
+        content = collectContent();
+        content.entourageGroups = content.entourageGroups || [];
+        content.entourageGroups.push({ role: "", names: "" });
+        renderEntourageGroups();
+      });
+
+      document.getElementById("ninongFields").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-remove-ninong]");
+        if (!btn) return;
+        content = collectContent();
+        content.ninongs.splice(Number(btn.dataset.removeNinong), 1);
+        renderNinongs();
+      });
+
+      document.getElementById("ninangFields").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-remove-ninang]");
+        if (!btn) return;
+        content = collectContent();
+        content.ninangs.splice(Number(btn.dataset.removeNinang), 1);
+        renderNinangs();
+      });
+
+      document.getElementById("entourageGroupFields").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-remove-entourage-group]");
+        if (!btn) return;
+        content = collectContent();
+        content.entourageGroups.splice(Number(btn.dataset.removeEntourageGroup), 1);
+        renderEntourageGroups();
       });
 
       document.getElementById("timelineFields").addEventListener("click", (e) => {

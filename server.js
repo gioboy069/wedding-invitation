@@ -406,6 +406,19 @@ app.put("/api/admin/content", requireAdmin, (req, res) => {
     content.attirePhotos = next;
   }
 
+  function normalizeSponsors(list) {
+    if (!Array.isArray(list)) return [];
+    return list.map((person) => {
+      if (!person || typeof person !== "object") return person;
+      return {
+        ...person,
+        photo: normalizeImageUrl(person.photo || ""),
+      };
+    });
+  }
+  content.ninongs = normalizeSponsors(content.ninongs);
+  content.ninangs = normalizeSponsors(content.ninangs);
+
   writeJson("content.json", content);
   res.json({ ok: true, content });
 });
@@ -475,6 +488,16 @@ function rewriteDriveUrlsInContent(content) {
     }
     next.attirePhotos = photos;
   }
+
+  const mapSponsors = (list) => {
+    if (!Array.isArray(list)) return list;
+    return list.map((person) => {
+      if (!person || typeof person !== "object") return person;
+      return { ...person, photo: normalizeImageUrl(person.photo || "") };
+    });
+  };
+  next.ninongs = mapSponsors(next.ninongs);
+  next.ninangs = mapSponsors(next.ninangs);
 
   return next;
 }
