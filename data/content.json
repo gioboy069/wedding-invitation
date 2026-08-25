@@ -64,21 +64,17 @@
       "photo": "https://images.unsplash.com/photo-1591604466377-1a63d07d9268?w=900&q=80",
       "photoAlt": "Elegant wedding attire inspiration"
     },
-    "party": {
+    "bridesmaids": {
       "photo": "https://images.unsplash.com/photo-1465495976277-8127aab6260b?w=900&q=80",
-      "photoAlt": "Wedding party in seafoam and deep ocean attire"
+      "photoAlt": "Bridesmaids in seafoam chiffon gowns"
     },
-    "guestHer": {
-      "photo": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&q=80",
-      "photoAlt": "Floor-length gown guest inspiration"
+    "groomsmen": {
+      "photo": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=900&q=80",
+      "photoAlt": "Groomsmen in deep-ocean suits"
     },
-    "guestHim": {
-      "photo": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80",
-      "photoAlt": "Dark tailored suit guest inspiration"
-    },
-    "guestEvening": {
-      "photo": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80",
-      "photoAlt": "Coastal evening guest attire inspiration"
+    "guest": {
+      "photo": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=80",
+      "photoAlt": "Guest dress code inspiration"
     }
   },
   "footerQuote": "\"And now these three remain: faith, hope, and love. But the greatest of these is love.\"",

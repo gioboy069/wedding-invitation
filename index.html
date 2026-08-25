@@ -1320,49 +1320,23 @@
       font-size: 1rem;
     }
 
-    .attire-guest-grid {
+    .attire-party-pair {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1fr 1fr;
       gap: 1.5rem;
-      max-width: 960px;
+      max-width: 720px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .attire-look-text.centered {
+      max-width: 640px;
       margin: 0 auto;
-    }
-
-    .attire-guest-card {
       text-align: center;
-      background: var(--white);
-      border: 1px solid rgba(107, 167, 160, 0.15);
-      overflow: hidden;
-      transition: transform 0.4s var(--ease-out), box-shadow 0.4s;
     }
 
-    .attire-guest-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 32px rgba(30, 90, 110, 0.1);
-    }
-
-    .attire-guest-card img {
-      width: 100%;
-      aspect-ratio: 3 / 4;
-      object-fit: contain;
-      object-position: center;
-      display: block;
-      background: linear-gradient(145deg, rgba(183, 212, 230, 0.28), rgba(220, 200, 170, 0.22));
-    }
-
-    .attire-guest-card h4 {
-      font-family: var(--font-serif);
-      font-size: 1.2rem;
-      font-weight: 500;
-      padding: 1rem 1rem 0.35rem;
-      color: var(--text);
-    }
-
-    .attire-guest-card p {
-      font-size: 0.8rem;
-      color: var(--text-soft);
-      padding: 0 1rem 1.25rem;
-      line-height: 1.6;
+    .attire-look-text.centered .attire-look-details {
+      text-align: left;
+      display: inline-block;
     }
 
     .attire-notes-box {
@@ -1903,7 +1877,7 @@
         order: unset;
       }
 
-      .attire-guest-grid {
+      .attire-party-pair {
         grid-template-columns: 1fr;
         max-width: 320px;
       }
@@ -2608,47 +2582,47 @@
           </div>
 
           <div class="attire-look-block">
-            <div class="attire-look-grid">
+            <div class="attire-section-heading">
+              <p class="attire-look-label">Bridesmaids &amp; Groomsmen</p>
+              <h3>Seafoam &amp; Ocean Harmony</h3>
+              <p>Our wedding party will wear complementary coastal tones.</p>
+            </div>
+            <div class="attire-party-pair">
               <div class="attire-look-image">
-                <img id="attirePhotoParty" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1465495976277-8127aab6260b?w=900&q=80" alt="Wedding party in seafoam and deep ocean attire" loading="lazy" />
-                <span class="attire-look-tag">Wedding Party</span>
+                <img id="attirePhotoBridesmaids" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1465495976277-8127aab6260b?w=900&q=80" alt="Bridesmaids in seafoam chiffon gowns" loading="lazy" />
+                <span class="attire-look-tag">Bridesmaids</span>
               </div>
-              <div class="attire-look-text">
-                <p class="attire-look-label">Bridesmaids &amp; Groomsmen</p>
-                <h3>Seafoam &amp; Ocean Harmony</h3>
-                <p>Our wedding party will wear complementary coastal tones — bridesmaids in floor-length seafoam chiffon gowns and groomsmen in deep-ocean suits with sand or teal ties.</p>
-                <ul class="attire-look-details">
-                  <li><strong>Bridesmaids</strong> Seafoam chiffon gowns, varied necklines, nude heels</li>
-                  <li><strong>Groomsmen</strong> Deep-ocean suits, white shirts, seafoam silk ties</li>
-                  <li><strong>Florals</strong> White blooms with soft sandy accents</li>
-                </ul>
+              <div class="attire-look-image">
+                <img id="attirePhotoGroomsmen" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=900&q=80" alt="Groomsmen in deep-ocean suits" loading="lazy" />
+                <span class="attire-look-tag">Groomsmen</span>
               </div>
+            </div>
+            <div class="attire-look-text centered">
+              <p>Bridesmaids in floor-length seafoam chiffon gowns and groomsmen in deep-ocean suits with sand or teal ties.</p>
+              <ul class="attire-look-details">
+                <li><strong>Bridesmaids</strong> Seafoam chiffon gowns, varied necklines, nude heels</li>
+                <li><strong>Groomsmen</strong> Deep-ocean suits, white shirts, seafoam silk ties</li>
+                <li><strong>Florals</strong> White blooms with soft sandy accents</li>
+              </ul>
             </div>
           </div>
 
           <div class="attire-look-block alt">
-            <div class="attire-section-heading">
-              <p class="attire-look-label">For Our Guests</p>
-              <h3>Dress Code Inspiration</h3>
-              <p>We invite you to dress in your finest. Here are a few looks that capture the spirit of our celebration.</p>
-            </div>
-
-            <div class="attire-guest-grid">
-              <article class="attire-guest-card">
-                <img id="attirePhotoGuestHer" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&q=80" alt="Floor-length emerald gown guest inspiration" loading="lazy" />
-                <h4>For Her</h4>
-                <p>Floor-length gowns or elegant cocktail dresses in deep ocean, seafoam, sand, or soft sky tones.</p>
-              </article>
-              <article class="attire-guest-card">
-                <img id="attirePhotoGuestHim" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80" alt="Dark tailored suit guest inspiration" loading="lazy" />
-                <h4>For Him</h4>
-                <p>Dark tailored suits or tuxedos. Bow ties, pocket squares, and polished dress shoes warmly welcomed.</p>
-              </article>
-              <article class="attire-guest-card">
-                <img id="attirePhotoGuestEvening" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80" alt="Coastal evening guest attire inspiration" loading="lazy" />
-                <h4>Coastal Evening</h4>
-                <p>Think refined evening wear with a calm coastal mood — layers for cool Napa nights.</p>
-              </article>
+            <div class="attire-look-grid">
+              <div class="attire-look-image">
+                <img id="attirePhotoGuest" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=80" alt="Guest dress code inspiration" loading="lazy" />
+                <span class="attire-look-tag">Guests</span>
+              </div>
+              <div class="attire-look-text">
+                <p class="attire-look-label">For Our Guests</p>
+                <h3>Dress Code Inspiration</h3>
+                <p>We invite you to dress in your finest — floor-length gowns or elegant cocktail dresses, dark tailored suits or tuxedos, with a calm coastal mood for the evening.</p>
+                <ul class="attire-look-details">
+                  <li><strong>For Her</strong> Gowns or cocktail dresses in deep ocean, seafoam, sand, or soft sky</li>
+                  <li><strong>For Him</strong> Dark suits or tuxedos; bow ties and pocket squares welcome</li>
+                  <li><strong>Evening</strong> Refined layers for cool Napa nights</li>
+                </ul>
+              </div>
             </div>
 
             <div class="attire-notes-box">
@@ -3019,10 +2993,9 @@
 
         const attirePhotoMap = {
           teaser: "attirePhotoTeaser",
-          party: "attirePhotoParty",
-          guestHer: "attirePhotoGuestHer",
-          guestHim: "attirePhotoGuestHim",
-          guestEvening: "attirePhotoGuestEvening"
+          bridesmaids: "attirePhotoBridesmaids",
+          groomsmen: "attirePhotoGroomsmen",
+          guest: "attirePhotoGuest"
         };
         if (c.attirePhotos && typeof c.attirePhotos === "object") {
           Object.keys(attirePhotoMap).forEach(function (key) {
