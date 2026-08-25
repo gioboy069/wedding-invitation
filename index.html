@@ -2999,8 +2999,8 @@
         </div>
 
         <div class="companion-fields" id="companionFields" hidden>
-          <span class="form-label">Guests attending with you</span>
-          <p class="companion-hint" id="companionHint">Enter the full names of your additional guests.</p>
+          <span class="form-label">Companion names</span>
+          <p class="companion-hint" id="companionHint">Your invitation includes reserved spots for companions. Enter each name in the fields below.</p>
           <div class="companion-list" id="companionList"></div>
         </div>
 
@@ -3595,12 +3595,20 @@
       const declinedRadio = document.getElementById("declined");
       const submitBtn = document.getElementById("submitBtn");
       const guestNameInput = document.getElementById("guestName");
+      const nameGroup = document.getElementById("nameGroup");
       const guestMatchStatus = document.getElementById("guestMatchStatus");
       const companionFields = document.getElementById("companionFields");
       const companionList = document.getElementById("companionList");
       const companionHint = document.getElementById("companionHint");
       let matchedGuest = null;
       let lookupTimer = null;
+      const GUEST_LIST_ERROR = "Name not found on the guest list. Please contact the couple.";
+
+      function updateSubmitState() {
+        const canSubmit = !!matchedGuest && !!guestNameInput.value.trim();
+        submitBtn.disabled = !canSubmit;
+        submitBtn.title = canSubmit ? "" : "Enter your invitation name exactly as it appears on the guest list.";
+      }
 
       function updateCompanionVisibility() {
         const attending = attendingRadio.checked;
@@ -3613,9 +3621,9 @@
         }
 
         companionHint.textContent =
-          "Your invitation includes up to " + matchedGuest.allocation +
-          " guest" + (matchedGuest.allocation === 1 ? "" : "s") +
-          " (including you). Please enter the full names of anyone attending with you.";
+          "Your invitation includes " + maxCompanions +
+          " companion spot" + (maxCompanions === 1 ? "" : "s") +
+          ". Enter each companion's full name in the fields below (leave blank if attending alone).";
 
         const existing = Array.from(companionList.querySelectorAll("input")).map(function (input) {
           return input.value;
@@ -3626,8 +3634,9 @@
           input.type = "text";
           input.className = "form-input";
           input.name = "companion" + (i + 1);
-          input.placeholder = "Guest " + (i + 2) + " full name";
+          input.placeholder = "Companion " + (i + 1) + " full name";
           input.autocomplete = "off";
+          input.setAttribute("aria-label", "Companion " + (i + 1) + " full name");
           if (existing[i]) input.value = existing[i];
           companionList.appendChild(input);
         }
@@ -3639,6 +3648,11 @@
         guestMatchStatus.textContent = text || "";
         guestMatchStatus.classList.toggle("is-matched", state === "matched");
         guestMatchStatus.classList.toggle("is-unmatched", state === "unmatched");
+        if (state === "unmatched") {
+          nameGroup.classList.add("invalid");
+        } else if (guestNameInput.value.trim()) {
+          nameGroup.classList.remove("invalid");
+        }
       }
 
       function lookupGuestName() {
@@ -3647,6 +3661,7 @@
           matchedGuest = null;
           setMatchStatus("", "");
           updateCompanionVisibility();
+          updateSubmitState();
           return;
         }
 
@@ -3658,34 +3673,42 @@
               setMatchStatus(
                 "matched",
                 "Found on our guest list · allocation " + data.guest.allocation +
-                  (data.guest.maxCompanions > 0 ? " (you + up to " + data.guest.maxCompanions + " guest" + (data.guest.maxCompanions === 1 ? "" : "s") + ")" : "")
+                  (data.guest.maxCompanions > 0 ? " (you + up to " + data.guest.maxCompanions + " companion" + (data.guest.maxCompanions === 1 ? "" : "s") + ")" : "")
               );
             } else {
               matchedGuest = null;
-              setMatchStatus("unmatched", "Name not found on the guest list yet. Please use the full name as it appears on your invitation.");
+              setMatchStatus("unmatched", GUEST_LIST_ERROR);
             }
             updateCompanionVisibility();
+            updateSubmitState();
           })
           .catch(function () {
             matchedGuest = null;
             setMatchStatus("", "");
             updateCompanionVisibility();
+            updateSubmitState();
           });
       }
 
       guestNameInput.addEventListener("input", function () {
         clearTimeout(lookupTimer);
         lookupTimer = setTimeout(lookupGuestName, 350);
+        updateSubmitState();
       });
       guestNameInput.addEventListener("blur", lookupGuestName);
       attendingRadio.addEventListener("change", updateCompanionVisibility);
       declinedRadio.addEventListener("change", updateCompanionVisibility);
+      updateSubmitState();
 
       function validateForm() {
         let valid = true;
         const nameGroup = document.getElementById("nameGroup");
         if (!guestNameInput.value.trim()) {
           nameGroup.classList.add("invalid");
+          valid = false;
+        } else if (!matchedGuest) {
+          nameGroup.classList.add("invalid");
+          setMatchStatus("unmatched", GUEST_LIST_ERROR);
           valid = false;
         } else {
           nameGroup.classList.remove("invalid");
@@ -3716,12 +3739,10 @@
           attendance: attendingRadio.checked ? "attending" : "declined",
           message: document.getElementById("guestMessage").value.trim(),
           companions: attendingRadio.checked ? companions : [],
-          guestId: matchedGuest ? matchedGuest.id : null
+          guestId: matchedGuest.id
         };
 
-        const RSVP_EMAIL = "gomez.wed2027@gmail.com";
-
-        function showSuccess() {
+        function showSuccess(isUpdate) {
           form.style.display = "none";
           successEl.classList.add("show");
           if (data.attendance === "declined") {
@@ -3730,64 +3751,39 @@
             var partyNote = data.companions.length
               ? " We've noted your party of " + (1 + data.companions.length) + "."
               : "";
-            successMessage.textContent = "Thank you, " + data.name.split(" ")[0] + "! We're thrilled you'll be joining us." + partyNote + " Your RSVP has been received — see you in Napa Valley.";
+            var updateNote = isUpdate ? " Your RSVP has been updated." : " Your RSVP has been received";
+            successMessage.textContent = "Thank you, " + data.name.split(" ")[0] + "! We're thrilled you'll be joining us." + partyNote + updateNote + " — see you in Napa Valley.";
           }
           successEl.scrollIntoView({ behavior: "smooth", block: "center" });
         }
 
-        function emailCouple() {
-          return fetch("https://formsubmit.co/ajax/" + encodeURIComponent(RSVP_EMAIL), {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json"
-            },
-            body: JSON.stringify({
-              name: data.name,
-              attendance: data.attendance === "attending" ? "Joyfully Accepts" : "Regretfully Declines",
-              companions: data.companions.length ? data.companions.join(", ") : "(none)",
-              partySize: 1 + data.companions.length,
-              message: data.message || "(no message)",
-              submittedAt: new Date().toISOString(),
-              _subject: "Wedding RSVP: " + data.name + " — " + data.attendance,
-              _template: "table",
-              _captcha: "false"
-            })
-          }).then(function (res) {
-            if (!res.ok) throw new Error("Email delivery failed");
-            return res.json();
-          });
-        }
-
-        // Prefer API (saves + emails). Fall back to direct email if API is unavailable.
         fetch("/api/rsvp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
         })
           .then(function (res) {
-            if (!res.ok) throw new Error("API failed");
-            return res.json();
+            return res.json().then(function (payload) {
+              if (!res.ok) {
+                var err = new Error(payload.error || "Unable to send RSVP right now.");
+                err.payload = payload;
+                throw err;
+              }
+              return payload;
+            });
           })
           .then(function (result) {
-            if (result && result.emailed === false) {
-              return emailCouple().then(function () { return result; });
+            showSuccess(result && result.updated);
+          })
+          .catch(function (err) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Send RSVP";
+            updateSubmitState();
+            if (err.payload && err.payload.code && String(err.payload.code).indexOf("guest") === 0) {
+              setMatchStatus("unmatched", GUEST_LIST_ERROR);
+              nameGroup.classList.add("invalid");
             }
-            return result;
-          })
-          .then(function () {
-            showSuccess();
-          })
-          .catch(function () {
-            emailCouple()
-              .then(function () {
-                showSuccess();
-              })
-              .catch(function () {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Send RSVP";
-                alert("Unable to send RSVP right now. Please try again in a moment.");
-              });
+            alert(err.message || "Unable to send RSVP right now. Please try again in a moment.");
           });
       });
 
