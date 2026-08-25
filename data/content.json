@@ -64,17 +64,13 @@
       "photo": "https://images.unsplash.com/photo-1591604466377-1a63d07d9268?w=900&q=80",
       "photoAlt": "Elegant wedding attire inspiration"
     },
-    "ninong": {
-      "photo": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=900&q=80",
-      "photoAlt": "Principal sponsor ninong attire illustration"
-    },
-    "ninang": {
-      "photo": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=900&q=80",
-      "photoAlt": "Principal sponsor ninang attire illustration"
+    "sponsors": {
+      "photo": "img/attire/principal-sponsors-attire.jpg",
+      "photoAlt": "Principal sponsors attire: Ninang in Filipiniana with butterfly sleeves and Ninong in beige barong with black trousers"
     },
     "guest": {
-      "photo": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=80",
-      "photoAlt": "Guest dress code inspiration"
+      "photo": "img/attire/guest-wedding-attire.jpg",
+      "photoAlt": "Guest wedding attire: cocktail and smart-formal looks in peach, sage, taupe, dusty blue, olive, and slate"
     }
   },
   "entourageTitle": "Our Entourage",

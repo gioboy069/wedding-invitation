@@ -1395,12 +1395,20 @@
       font-size: 1rem;
     }
 
-    .attire-party-pair {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      max-width: 720px;
-      margin: 0 auto 2.5rem;
+    .attire-sponsors-illustration {
+      max-width: 860px;
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid rgba(107, 167, 160, 0.2);
+      background: linear-gradient(145deg, rgba(247, 245, 241, 0.9), rgba(220, 200, 170, 0.22));
+    }
+
+    .attire-sponsors-illustration img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+      object-position: center;
     }
 
     .attire-look-text.centered {
@@ -1996,11 +2004,6 @@
       .attire-look-grid.reverse .attire-look-image,
       .attire-look-grid.reverse .attire-look-text {
         order: unset;
-      }
-
-      .attire-party-pair {
-        grid-template-columns: 1fr;
-        max-width: 320px;
       }
 
       .entourage-sponsors-columns {
@@ -2748,45 +2751,30 @@
             <div class="attire-section-heading">
               <p class="attire-look-label">Principal Sponsors</p>
               <h3>Ninong &amp; Ninang Attire</h3>
-              <p>Formal coastal elegance for our principal sponsors — one look for Ninong, one for Ninang.</p>
+              <p>Filipiniana and Barong Tagalog — champagne gold to taupe. One look for Ninang, one for Ninong.</p>
             </div>
-            <div class="attire-party-pair">
-              <div class="attire-look-image">
-                <img id="attirePhotoNinong" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=900&q=80" alt="Principal sponsor ninong attire illustration" loading="lazy" />
-                <span class="attire-look-tag">Ninong</span>
-              </div>
-              <div class="attire-look-image">
-                <img id="attirePhotoNinang" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=900&q=80" alt="Principal sponsor ninang attire illustration" loading="lazy" />
-                <span class="attire-look-tag">Ninang</span>
-              </div>
+            <div class="attire-sponsors-illustration">
+              <img id="attirePhotoSponsors" referrerpolicy="no-referrer" src="img/attire/principal-sponsors-attire.jpg" alt="Principal sponsors attire: Ninang in Filipiniana with butterfly sleeves and Ninong in beige barong with black trousers" loading="lazy" />
             </div>
           </div>
 
           <div class="attire-look-block alt" style="border-bottom:0;padding-top:clamp(2.5rem,5vw,3.5rem)">
-            <div class="attire-look-grid">
-              <div class="attire-look-image">
-                <img id="attirePhotoGuest" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=80" alt="Guest dress code inspiration" loading="lazy" />
-                <span class="attire-look-tag">Guests</span>
-              </div>
-              <div class="attire-look-text">
-                <p class="attire-look-label">For Our Guests</p>
-                <h3>Dress Code Inspiration</h3>
-                <p>We invite you to dress in your finest — floor-length gowns or elegant cocktail dresses, dark tailored suits or tuxedos, with a calm coastal mood for the evening.</p>
-                <ul class="attire-look-details">
-                  <li><strong>For Her</strong> Gowns or cocktail dresses in deep ocean, seafoam, sand, or soft sky</li>
-                  <li><strong>For Him</strong> Dark suits or tuxedos; bow ties and pocket squares welcome</li>
-                  <li><strong>Evening</strong> Refined layers for cool Napa nights</li>
-                </ul>
-              </div>
+            <div class="attire-section-heading">
+              <p class="attire-look-label">For Our Guests</p>
+              <h3>Cocktail &amp; Smart-Formal</h3>
+              <p>A muted earth-and-sky palette — peach, sage, taupe, dusty blue, olive, and slate. Midi dresses for ladies; tucked polo or long sleeves for gentlemen.</p>
+            </div>
+            <div class="attire-sponsors-illustration">
+              <img id="attirePhotoGuest" referrerpolicy="no-referrer" src="img/attire/guest-wedding-attire.jpg" alt="Guest wedding attire: cocktail and smart-formal looks in peach, sage, taupe, dusty blue, olive, and slate" loading="lazy" />
             </div>
 
             <div class="attire-notes-box">
               <h4>Please Keep in Mind</h4>
               <ul>
-                <li>White, ivory, and pale cream are reserved for the bride</li>
-                <li>The ceremony and reception are outdoors on grass and stone — choose footwear accordingly</li>
-                <li>Napa evenings can be cool in June — a wrap or jacket is a lovely idea</li>
-                <li>When in doubt, lean formal — we'd rather you feel overdressed than underdressed</li>
+                <li>Wear only the six guest colors: peach, sage, taupe, dusty blue, olive, and slate</li>
+                <li>Please skip white, full ivory, and Team Bride ocean or deep-sea blues</li>
+                <li>Ladies: midi length. Gentlemen: tucked polo or long sleeves. No Barong or Filipiniana — those are for sponsors</li>
+                <li>Keep accessories simple — brown leather, gold or champagne jewelry, nude heels</li>
               </ul>
             </div>
           </div>
@@ -3226,8 +3214,7 @@
 
         const attirePhotoMap = {
           teaser: "attirePhotoTeaser",
-          ninong: "attirePhotoNinong",
-          ninang: "attirePhotoNinang",
+          sponsors: "attirePhotoSponsors",
           guest: "attirePhotoGuest"
         };
         if (c.attirePhotos && typeof c.attirePhotos === "object") {
