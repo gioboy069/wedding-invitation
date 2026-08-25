@@ -273,23 +273,26 @@
 
     function updateNav() {
       var y = window.scrollY;
+      var links = document.getElementById("navLinks");
+      var menuOpen = links && links.classList.contains("open");
+
       nav.classList.toggle("scrolled", y > 24);
+
+      /* Keep menu usable — do not hide while open */
+      if (menuOpen) {
+        nav.classList.remove("is-hidden");
+        nav.classList.add("menu-open");
+        lastY = y;
+        ticking = false;
+        return;
+      }
+      nav.classList.remove("menu-open");
 
       /* Hide when scrolling down; show when scrolling up or near top */
       if (y < 48) {
         nav.classList.remove("is-hidden");
       } else if (y > lastY + 4) {
         nav.classList.add("is-hidden");
-        /* Also close mobile menu if open */
-        var toggle = document.getElementById("navToggle");
-        var links = document.getElementById("navLinks");
-        var overlay = document.getElementById("navOverlay");
-        if (toggle && toggle.classList.contains("open")) {
-          toggle.classList.remove("open");
-          if (links) links.classList.remove("open");
-          if (overlay) overlay.classList.remove("open");
-          toggle.setAttribute("aria-expanded", "false");
-        }
       } else if (y < lastY - 4) {
         nav.classList.remove("is-hidden");
       }
