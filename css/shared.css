@@ -365,7 +365,7 @@ html:has(body.page-dark)::before {
 .section-animate.delay-2 { transition-delay: 0.16s; }
 .section-animate.delay-3 { transition-delay: 0.24s; }
 
-/* Nav — floating below floral frame; hides on scroll down */
+/* Nav — floating below floral frame; collapses to the right on scroll */
 .nav {
   z-index: 230 !important;
   top: clamp(4.25rem, 7.5vw, 5.5rem) !important;
@@ -380,17 +380,97 @@ html:has(body.page-dark)::before {
   padding: 0.4rem 0.95rem;
   border-radius: 999px;
   box-shadow: 0 4px 14px rgba(13, 43, 69, 0.06) !important;
-  transition: transform 0.35s var(--page-ease), opacity 0.35s var(--page-ease), box-shadow 0.35s ease, padding 0.35s ease !important;
+  transition:
+    top 0.45s var(--page-ease),
+    left 0.45s var(--page-ease),
+    right 0.45s var(--page-ease),
+    transform 0.45s var(--page-ease),
+    opacity 0.35s var(--page-ease),
+    box-shadow 0.35s ease,
+    padding 0.35s ease,
+    gap 0.35s ease !important;
 }
 
-.nav.is-hidden {
-  transform: translateY(calc(-100% - 2.5rem));
+.nav.nav-docked {
+  top: max(1rem, env(safe-area-inset-top)) !important;
+  left: auto !important;
+  right: max(0.75rem, env(safe-area-inset-right)) !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  padding: 0.45rem 0.55rem !important;
+  gap: 0.45rem !important;
+  box-shadow: 0 8px 22px rgba(13, 43, 69, 0.14) !important;
+}
+
+.nav.nav-docked .nav-logo {
+  font-size: 0.95rem !important;
+}
+
+.nav.nav-docked .nav-toggle {
+  display: block !important;
+  width: 20px !important;
+  height: 14px !important;
+}
+
+.nav.nav-docked .nav-links {
+  position: absolute !important;
+  top: calc(100% + 0.45rem) !important;
+  right: 0 !important;
+  left: auto !important;
+  width: min(200px, 70vw) !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 0.1rem !important;
+  padding: 0.45rem !important;
+  margin: 0 !important;
+  background: rgba(247, 245, 241, 0.98);
+  border: 1px solid rgba(183, 212, 230, 0.45);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(13, 43, 69, 0.16);
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
+  transform: translateY(-6px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  z-index: 2;
+}
+
+.nav.nav-docked .nav-links.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.nav.nav-docked .nav-links a {
+  display: block;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+}
+
+.nav.nav-docked .nav-links a::after {
+  display: none;
+}
+
+body.page-dark .nav.nav-docked .nav-links,
+html.is-dark-page .nav.nav-docked .nav-links {
+  background: rgba(13, 43, 69, 0.98);
+  border-color: rgba(183, 212, 230, 0.28);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+body.page-dark .nav.nav-docked .nav-links a:hover,
+body.page-dark .nav.nav-docked .nav-links a:active,
+html.is-dark-page .nav.nav-docked .nav-links a:hover,
+html.is-dark-page .nav.nav-docked .nav-links a:active {
+  background: rgba(183, 212, 230, 0.16);
 }
 
 .nav.menu-open {
-  transform: none !important;
   opacity: 1 !important;
   pointer-events: auto !important;
 }
@@ -402,6 +482,12 @@ html:has(body.page-dark)::before {
     gap: 0.55rem !important;
     max-width: calc(100vw - 1.75rem) !important;
     width: auto !important;
+  }
+
+  .nav.nav-docked {
+    top: max(0.75rem, env(safe-area-inset-top)) !important;
+    right: max(0.65rem, env(safe-area-inset-right)) !important;
+    padding: 0.4rem 0.5rem !important;
   }
 
   .nav-logo {
