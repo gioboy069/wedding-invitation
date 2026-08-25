@@ -2572,7 +2572,7 @@
 
       <div class="attire-teaser-card reveal reveal-delay-3">
         <div class="attire-teaser-image">
-          <img id="attirePhotoTeaser" src="https://images.unsplash.com/photo-1591604466377-1a63d07d9268?w=900&q=80" alt="Elegant wedding attire inspiration" loading="lazy" />
+          <img id="attirePhotoTeaser" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1591604466377-1a63d07d9268?w=900&q=80" alt="Elegant wedding attire inspiration" loading="lazy" />
         </div>
         <div class="attire-teaser-content">
           <h3>What to Wear</h3>
@@ -3065,7 +3065,10 @@
             const entry = c.attirePhotos[key];
             const img = document.getElementById(attirePhotoMap[key]);
             if (!img || !entry) return;
-            if (entry.photo) img.src = entry.photo;
+            if (entry.photo) {
+              img.src = entry.photo;
+              img.setAttribute("referrerpolicy", "no-referrer");
+            }
             if (entry.photoAlt) img.alt = entry.photoAlt;
           });
         }

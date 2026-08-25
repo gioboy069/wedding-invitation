@@ -7,8 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/shared.css" />
-  <script src="/js/shared.js" defer></script>
   <style>
     :root {
       --bg: #f7f5f1;
@@ -556,7 +554,7 @@
 
           <div class="card">
             <h3>Attire photos</h3>
-            <p class="lead" style="font-size:0.8rem;margin-bottom:0.85rem;">Paste a <strong>Google Drive</strong> share link (Anyone with the link) or image URL for each attire photo — same method as Gallery.</p>
+            <p class="lead" style="font-size:0.8rem;margin-bottom:0.85rem;">Paste a <strong>Google Drive</strong> share link (Anyone with the link) or image URL for each attire photo. Drive links are converted automatically so they display on the invitation — click <strong>Save Details</strong> after pasting.</p>
             <label for="attireSummary">Attire teaser text</label>
             <textarea id="attireSummary" name="attireSummary"></textarea>
             <div id="attirePhotoFields"></div>
@@ -722,6 +720,12 @@
             : { "Content-Type": "application/json", ...(options.headers || {}) },
         });
         const data = await res.json().catch(() => ({}));
+        if (res.status === 401 && path !== "/api/admin/login" && path !== "/api/admin/me") {
+          loginScreen.classList.remove("hidden");
+          dashboard.classList.add("hidden");
+          document.getElementById("menuToggle").classList.add("hidden");
+          throw new Error("Session expired — please sign in again");
+        }
         if (!res.ok) throw new Error(data.error || "Request failed");
         return data;
       }
@@ -846,9 +850,10 @@
             <div class="timeline-editor" data-attire-key="${key}">
               <h4 style="font-family:var(--font-serif);font-size:1.05rem;margin-bottom:0.65rem;color:var(--sea)">${label}</h4>
               <label>Photo (Google Drive link or image URL)</label>
-              <input data-field="photo" type="url" value="${escapeAttr(entry.photo || "")}" placeholder="https://drive.google.com/file/d/xxxxx/view?usp=sharing" />
+              <input data-field="photo" type="text" value="${escapeAttr(entry.photo || "")}" placeholder="https://drive.google.com/file/d/xxxxx/view?usp=sharing" />
+              ${entry.photo ? `<div style="margin:0.5rem 0 0.75rem"><img src="${escapeAttr(entry.photo)}" alt="" style="max-width:120px;max-height:120px;object-fit:cover;border:1px solid rgba(30,90,110,0.15)" onerror="this.style.display='none'" /></div>` : ""}
               <label>Photo alt text</label>
-              <input data-field="photoAlt" value="${escapeAttr(entry.photoAlt || "")}" placeholder="${escapeAttr(label)}" />
+              <input data-field="photoAlt" type="text" value="${escapeAttr(entry.photoAlt || "")}" placeholder="${escapeAttr(label)}" />
             </div>
           `;
         }).join("");
@@ -865,9 +870,9 @@
             <label>Text</label>
             <textarea data-field="text">${escapeHtml(t.text || "")}</textarea>
             <label>Photo (Google Drive link or image URL)</label>
-            <input data-field="photo" type="url" value="${escapeAttr(t.photo || "")}" placeholder="https://drive.google.com/file/d/xxxxx/view?usp=sharing" />
+            <input data-field="photo" type="text" value="${escapeAttr(t.photo || "")}" placeholder="https://drive.google.com/file/d/xxxxx/view?usp=sharing" />
             <label>Photo alt text</label>
-            <input data-field="photoAlt" value="${escapeAttr(t.photoAlt || "")}" placeholder="2018 — First Glance" />
+            <input data-field="photoAlt" type="text" value="${escapeAttr(t.photoAlt || "")}" placeholder="2018 — First Glance" />
             <button type="button" class="btn btn-danger" data-remove-timeline="${i}">Remove</button>
           </div>
         `).join("");

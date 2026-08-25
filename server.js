@@ -12,13 +12,41 @@ const DATA_DIR = join(ROOT, "data");
 const UPLOAD_DIR = join(ROOT, "uploads");
 const PORT = Number(process.env.PORT || 4317);
 const HOST = process.env.HOST || "0.0.0.0";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "augiela-gio-2027";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "gomeZ12082022@";
 const RSVP_EMAIL = process.env.RSVP_EMAIL || "gomez.wed2027@gmail.com";
 
 if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
 
 const sessions = new Map();
+const SESSIONS_FILE = "sessions.json";
+
+function loadSessions() {
+  try {
+    const saved = readJson(SESSIONS_FILE, {});
+    const now = Date.now();
+    const maxAge = 1000 * 60 * 60 * 12;
+    Object.entries(saved).forEach(([token, ts]) => {
+      if (now - Number(ts) < maxAge) sessions.set(token, Number(ts));
+    });
+  } catch (err) {
+    console.error("Failed to load sessions:", err);
+  }
+}
+
+function persistSessions() {
+  try {
+    const out = {};
+    sessions.forEach((ts, token) => {
+      out[token] = ts;
+    });
+    writeJson(SESSIONS_FILE, out);
+  } catch (err) {
+    console.error("Failed to persist sessions:", err);
+  }
+}
+
+loadSessions();
 
 function readJson(name, fallback) {
   const path = join(DATA_DIR, name);
@@ -50,6 +78,7 @@ function requireAdmin(req, res, next) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   sessions.set(token, Date.now());
+  persistSessions();
   next();
 }
 
@@ -110,11 +139,17 @@ app.use(express.static(ROOT, {
 // ── Public API ──
 
 app.get("/api/content", (_req, res) => {
-  res.json(readJson("content.json", {}));
+  res.json(rewriteDriveUrlsInContent(readJson("content.json", {})));
 });
 
 app.get("/api/gallery", (_req, res) => {
-  res.json(readJson("gallery.json", []));
+  const gallery = readJson("gallery.json", []);
+  res.json(
+    gallery.map((item) => ({
+      ...item,
+      src: normalizeImageUrl(item.src || item.url || ""),
+    }))
+  );
 });
 
 app.post("/api/rsvp", async (req, res) => {
@@ -297,9 +332,11 @@ app.post("/api/admin/login", (req, res) => {
   }
   const token = createToken();
   sessions.set(token, Date.now());
+  persistSessions();
   res.cookie("admin_session", token, {
     httpOnly: true,
     sameSite: "lax",
+    path: "/",
     maxAge: 1000 * 60 * 60 * 12,
   });
   res.json({ ok: true });
@@ -308,7 +345,8 @@ app.post("/api/admin/login", (req, res) => {
 app.post("/api/admin/logout", (req, res) => {
   const token = req.cookies?.admin_session;
   if (token) sessions.delete(token);
-  res.clearCookie("admin_session");
+  persistSessions();
+  res.clearCookie("admin_session", { path: "/" });
   res.json({ ok: true });
 });
 
@@ -374,31 +412,127 @@ app.put("/api/admin/content", requireAdmin, (req, res) => {
 
 // ── Admin gallery ──
 
+function extractDriveFileId(raw) {
+  const input = String(raw || "").trim();
+  if (!input) return "";
+
+  // Already a local Drive proxy path
+  let match = input.match(/^\/api\/media\/drive\/([a-zA-Z0-9_-]+)/i);
+  if (match) return match[1];
+
+  // https://drive.google.com/file/d/FILE_ID/...
+  match = input.match(/drive\.google\.com\/file\/d\/([^/?#]+)/i);
+  if (match) return match[1];
+
+  // https://lh3.googleusercontent.com/d/FILE_ID
+  match = input.match(/googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/i);
+  if (match) return match[1];
+
+  // Any drive.google.com URL with ?id= or &id=
+  if (/drive\.google\.com/i.test(input)) {
+    match = input.match(/[?&]id=([^&/#]+)/i);
+    if (match) return decodeURIComponent(match[1]);
+  }
+
+  return "";
+}
+
 function normalizeImageUrl(raw) {
   const input = String(raw || "").trim();
   if (!input) return "";
 
-  // Google Drive share links → direct view URL
-  // https://drive.google.com/file/d/FILE_ID/view?...
-  let match = input.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
-  if (match) {
-    return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-  }
-
-  // https://drive.google.com/open?id=FILE_ID
-  match = input.match(/drive\.google\.com\/open\?id=([^&]+)/i);
-  if (match) {
-    return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-  }
-
-  // https://drive.google.com/uc?id=FILE_ID or already uc?export=view&id=
-  match = input.match(/[?&]id=([^&]+)/i);
-  if (/drive\.google\.com/i.test(input) && match) {
-    return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+  const driveId = extractDriveFileId(input);
+  if (driveId) {
+    // Serve through our proxy so <img> tags actually render Drive photos
+    return `/api/media/drive/${driveId}`;
   }
 
   return input;
 }
+
+function rewriteDriveUrlsInContent(content) {
+  if (!content || typeof content !== "object") return content;
+  const next = { ...content };
+
+  if (Array.isArray(next.timeline)) {
+    next.timeline = next.timeline.map((item) => {
+      if (!item || typeof item !== "object") return item;
+      return { ...item, photo: normalizeImageUrl(item.photo || "") };
+    });
+  }
+
+  if (next.attirePhotos && typeof next.attirePhotos === "object") {
+    const photos = {};
+    for (const [key, entry] of Object.entries(next.attirePhotos)) {
+      if (!entry || typeof entry !== "object") {
+        photos[key] = entry;
+        continue;
+      }
+      photos[key] = {
+        ...entry,
+        photo: normalizeImageUrl(entry.photo || ""),
+      };
+    }
+    next.attirePhotos = photos;
+  }
+
+  return next;
+}
+
+// Proxy Google Drive images so they display reliably in <img> tags
+app.get("/api/media/drive/:id", async (req, res) => {
+  const id = String(req.params.id || "").trim();
+  if (!/^[a-zA-Z0-9_-]{10,}$/.test(id)) {
+    return res.status(400).type("text").send("Invalid Drive file id");
+  }
+
+  const candidates = [
+    `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w2000`,
+    `https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=w2000`,
+    `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`,
+  ];
+
+  for (const url of candidates) {
+    try {
+      const upstream = await fetch(url, {
+        redirect: "follow",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; WeddingInvitation/1.0)",
+          Accept: "image/*,*/*;q=0.8",
+        },
+      });
+      if (!upstream.ok) continue;
+
+      const contentType = (upstream.headers.get("content-type") || "").toLowerCase();
+      const buffer = Buffer.from(await upstream.arrayBuffer());
+      if (!buffer.length) continue;
+
+      // Skip HTML virus-scan / login interstitial pages
+      const looksHtml =
+        contentType.includes("text/html") ||
+        buffer.slice(0, 32).toString("utf8").trim().toLowerCase().startsWith("<!doctype") ||
+        buffer.slice(0, 32).toString("utf8").trim().toLowerCase().startsWith("<html");
+      if (looksHtml) continue;
+
+      const isImage =
+        contentType.startsWith("image/") ||
+        contentType.includes("octet-stream") ||
+        contentType.includes("application/binary");
+      if (!isImage && contentType) continue;
+
+      res.setHeader(
+        "Content-Type",
+        contentType.startsWith("image/") ? contentType.split(";")[0] : "image/jpeg"
+      );
+      res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
+      return res.send(buffer);
+    } catch (err) {
+      console.error("Drive proxy fetch failed:", url, err.message);
+    }
+  }
+
+  return res.status(404).type("text").send("Drive image unavailable. Check sharing is set to Anyone with the link.");
+});
 
 app.post("/api/admin/gallery", requireAdmin, upload.single("photo"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Photo file is required" });

@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "guest-1787618657187-78e851",
+    "name": "Alex Rivera",
+    "allocation": 2
+  },
+  {
+    "id": "guest-1787618654151-874a78",
+    "name": "Jordan Lee",
+    "allocation": 3
+  }
+]

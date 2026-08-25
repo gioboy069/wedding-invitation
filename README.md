@@ -57,6 +57,8 @@ Same Drive method for **Admin → Details → Attire photos**:
 3. Paste each link into the matching attire photo field
 4. Click **Save Details**
 
+Drive links are proxied by the site so they display reliably (Google’s share URLs often fail as direct image sources).
+
 ## RSVP emails
 
 Guest RSVPs are emailed to **gomez.wed2027@gmail.com** via [FormSubmit](https://formsubmit.co).
