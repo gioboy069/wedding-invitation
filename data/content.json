@@ -58,11 +58,19 @@
       "mapUrl": "https://maps.google.com/?q=Vineyard+Terrace+Napa+Valley"
     }
   ],
-  "attireSummary": "Black tie optional with a coastal calm — see our full guide for principal sponsors and guest dress code inspiration.",
+  "attireSummary": "Black tie optional with a coastal calm — see our full guide for principal sponsor and guest dress code inspiration.",
   "attirePhotos": {
     "teaser": {
       "photo": "https://images.unsplash.com/photo-1591604466377-1a63d07d9268?w=900&q=80",
       "photoAlt": "Elegant wedding attire inspiration"
+    },
+    "ninong": {
+      "photo": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=900&q=80",
+      "photoAlt": "Principal sponsor ninong attire illustration"
+    },
+    "ninang": {
+      "photo": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=900&q=80",
+      "photoAlt": "Principal sponsor ninang attire illustration"
     },
     "guest": {
       "photo": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=80",
@@ -73,32 +81,12 @@
   "entourageSubtitle": "With grateful hearts, we honor the family and friends who walk beside us.",
   "principalSponsorsTitle": "Principal Sponsors",
   "ninongs": [
-    {
-      "name": "Mr. Roberto Santos",
-      "description": "A steadfast mentor whose wisdom and quiet strength have guided Gio since childhood.",
-      "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
-      "photoAlt": "Ninong Roberto Santos"
-    },
-    {
-      "name": "Mr. Miguel Reyes",
-      "description": "Beloved uncle and godfather — always first to celebrate every milestone of our love.",
-      "photo": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&q=80",
-      "photoAlt": "Ninong Miguel Reyes"
-    }
+    { "name": "Mr. Roberto Santos" },
+    { "name": "Mr. Miguel Reyes" }
   ],
   "ninangs": [
-    {
-      "name": "Mrs. Elena Cruz",
-      "description": "Augiela’s godmother — a wellspring of grace, prayer, and endless encouragement.",
-      "photo": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=600&q=80",
-      "photoAlt": "Ninang Elena Cruz"
-    },
-    {
-      "name": "Mrs. Patricia Lim",
-      "description": "Family friend and second mother, whose warmth lights every gathering we share.",
-      "photo": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&q=80",
-      "photoAlt": "Ninang Patricia Lim"
-    }
+    { "name": "Mrs. Elena Cruz" },
+    { "name": "Mrs. Patricia Lim" }
   ],
   "entourageGroups": [
     {

@@ -1346,71 +1346,36 @@
       background: rgba(255, 255, 255, 0.55);
     }
 
-    .sponsor-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 3vw, 2rem);
+    .entourage-sponsors-text {
       max-width: 720px;
-      margin: 0 auto;
-    }
-
-    .sponsor-person {
+      margin: clamp(2rem, 5vw, 3rem) auto 0;
       text-align: center;
     }
 
-    .sponsor-photo {
-      position: relative;
-      width: min(100%, 200px);
-      aspect-ratio: 3 / 4;
-      margin: 0 auto 1rem;
-      overflow: hidden;
-      border: 1px solid rgba(107, 167, 160, 0.22);
-      background: linear-gradient(145deg, rgba(183, 212, 230, 0.28), rgba(220, 200, 170, 0.22));
+    .entourage-sponsors-text .attire-look-label {
+      margin-bottom: 1.5rem;
     }
 
-    .sponsor-photo img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      object-position: center;
-      display: block;
+    .entourage-sponsors-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.75rem 2rem;
     }
 
-    .sponsor-photo.is-empty {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .entourage-sponsor-col {
+      text-align: center;
     }
 
-    .sponsor-photo.is-empty img {
-      display: none;
-    }
-
-    .sponsor-tag {
-      display: block;
-      font-size: 0.6rem;
-      font-weight: 500;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--sage);
-      margin-bottom: 0.4rem;
-    }
-
-    .sponsor-name {
+    .entourage-sponsor-names {
       font-family: var(--font-serif);
-      font-size: clamp(1.15rem, 2.5vw, 1.35rem);
-      font-weight: 500;
+      font-size: clamp(1rem, 2.2vw, 1.15rem);
+      font-weight: 400;
       color: var(--deep);
-      margin-bottom: 0.55rem;
-      line-height: 1.25;
+      line-height: 1.7;
     }
 
-    .sponsor-desc {
-      font-size: 0.82rem;
-      color: var(--text-soft);
-      line-height: 1.65;
-      max-width: 28ch;
-      margin: 0 auto;
+    .entourage-sponsor-names p {
+      margin: 0.15rem 0;
     }
 
     .entourage-groups {
@@ -1418,7 +1383,7 @@
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1.75rem 1.5rem;
       max-width: 900px;
-      margin: clamp(2rem, 5vw, 3rem) auto 0;
+      margin: clamp(2.75rem, 5vw, 3.75rem) auto 0;
       text-align: center;
     }
 
@@ -1965,9 +1930,10 @@
         max-width: 320px;
       }
 
-      .sponsor-grid {
+      .entourage-sponsors-columns {
         grid-template-columns: 1fr;
-        max-width: 260px;
+        max-width: 320px;
+        margin: 0 auto;
       }
 
       .entourage-groups {
@@ -2646,6 +2612,20 @@
       <h2 class="section-title reveal reveal-delay-1" id="entourageTitle">Our Entourage</h2>
       <p class="section-subtitle reveal reveal-delay-2" id="entourageSubtitle">With grateful hearts, we honor the family and friends who walk beside us.</p>
 
+      <div class="entourage-sponsors-text reveal reveal-delay-3">
+        <p class="attire-look-label" id="principalSponsorsTitle">Principal Sponsors</p>
+        <div class="entourage-sponsors-columns">
+          <div class="entourage-sponsor-col">
+            <p class="entourage-group-role">Ninong</p>
+            <div class="entourage-sponsor-names" id="ninongNames"></div>
+          </div>
+          <div class="entourage-sponsor-col">
+            <p class="entourage-group-role">Ninang</p>
+            <div class="entourage-sponsor-names" id="ninangNames"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="entourage-groups reveal reveal-delay-3" id="entourageGroups" aria-label="Wedding entourage"></div>
     </div>
   </section>
@@ -2663,7 +2643,7 @@
         </div>
         <div class="attire-teaser-content">
           <h3>What to Wear</h3>
-          <p id="attireSummary">We've curated a detailed attire guide with guest dress code inspiration — all in our coastal ocean palette.</p>
+          <p id="attireSummary">We've curated a detailed attire guide with principal sponsor looks and guest dress code inspiration — all in our coastal ocean palette.</p>
         </div>
       </div>
 
@@ -2688,11 +2668,20 @@
 
           <div class="attire-look-block">
             <div class="attire-section-heading">
-              <p class="attire-look-label" id="principalSponsorsTitle">Principal Sponsors</p>
-              <h3>Ninong &amp; Ninang</h3>
-              <p>Honoring the godparents who bless and stand with us on our wedding day.</p>
+              <p class="attire-look-label">Principal Sponsors</p>
+              <h3>Ninong &amp; Ninang Attire</h3>
+              <p>Formal coastal elegance for our principal sponsors — one look for Ninong, one for Ninang.</p>
             </div>
-            <div class="sponsor-grid" id="principalSponsorsGrid" aria-label="Ninong and Ninang"></div>
+            <div class="attire-party-pair">
+              <div class="attire-look-image">
+                <img id="attirePhotoNinong" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=900&q=80" alt="Principal sponsor ninong attire illustration" loading="lazy" />
+                <span class="attire-look-tag">Ninong</span>
+              </div>
+              <div class="attire-look-image">
+                <img id="attirePhotoNinang" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=900&q=80" alt="Principal sponsor ninang attire illustration" loading="lazy" />
+                <span class="attire-look-tag">Ninang</span>
+              </div>
+            </div>
           </div>
 
           <div class="attire-look-block alt" style="border-bottom:0;padding-top:clamp(2.5rem,5vw,3.5rem)">
@@ -3097,33 +3086,18 @@
           principalSponsorsTitle.textContent = c.principalSponsorsTitle;
         }
 
-        function renderSponsorCard(person, roleLabel) {
-          const name = escapeHtml(person.name || "");
-          const desc = escapeHtml(person.description || "");
-          const photo = (person.photo || "").trim();
-          const alt = escapeHtml(person.photoAlt || name || roleLabel);
-          const photoHtml = photo
-            ? '<div class="sponsor-photo"><img src="' + escapeHtml(photo) + '" alt="' + alt + '" loading="lazy" referrerpolicy="no-referrer" /></div>'
-            : '<div class="sponsor-photo is-empty"><span class="timeline-photo-placeholder">Add photo<br />Admin → Details</span></div>';
-          return '<article class="sponsor-person">' +
-            photoHtml +
-            '<span class="sponsor-tag">' + escapeHtml(roleLabel) + '</span>' +
-            '<h3 class="sponsor-name">' + name + '</h3>' +
-            (desc ? '<p class="sponsor-desc">' + desc + '</p>' : '') +
-            '</article>';
+        function renderSponsorNames(list, targetId) {
+          const el = document.getElementById(targetId);
+          if (!el) return;
+          const names = (Array.isArray(list) ? list : [])
+            .map(function (p) { return (p && p.name ? String(p.name).trim() : ""); })
+            .filter(Boolean);
+          el.innerHTML = names.length
+            ? names.map(function (n) { return "<p>" + escapeHtml(n) + "</p>"; }).join("")
+            : "<p>—</p>";
         }
-
-        const sponsorsGrid = document.getElementById("principalSponsorsGrid");
-        if (sponsorsGrid) {
-          const ninongs = Array.isArray(c.ninongs) ? c.ninongs : [];
-          const ninangs = Array.isArray(c.ninangs) ? c.ninangs : [];
-          const cards = []
-            .concat(ninongs.map(function (p) { return renderSponsorCard(p, "Ninong"); }))
-            .concat(ninangs.map(function (p) { return renderSponsorCard(p, "Ninang"); }));
-          sponsorsGrid.innerHTML = cards.length
-            ? cards.join("")
-            : '<p class="section-subtitle" style="margin:0">Add ninong and ninang in Admin → Edit Details.</p>';
-        }
+        renderSponsorNames(c.ninongs, "ninongNames");
+        renderSponsorNames(c.ninangs, "ninangNames");
 
         const groupsWrap = document.getElementById("entourageGroups");
         if (groupsWrap) {
@@ -3138,6 +3112,8 @@
 
         const attirePhotoMap = {
           teaser: "attirePhotoTeaser",
+          ninong: "attirePhotoNinong",
+          ninang: "attirePhotoNinang",
           guest: "attirePhotoGuest"
         };
         if (c.attirePhotos && typeof c.attirePhotos === "object") {

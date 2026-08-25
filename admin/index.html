@@ -558,6 +558,14 @@
             <input id="entourageTitle" name="entourageTitle" />
             <label for="entourageSubtitle">Section subtitle</label>
             <textarea id="entourageSubtitle" name="entourageSubtitle"></textarea>
+            <label for="principalSponsorsTitle">Principal sponsors heading</label>
+            <input id="principalSponsorsTitle" name="principalSponsorsTitle" />
+            <h4 style="font-family:var(--font-serif);font-size:1.05rem;margin:1rem 0 0.65rem;color:var(--sea)">Ninongs (names only)</h4>
+            <div id="ninongFields"></div>
+            <button type="button" class="btn btn-ghost" id="addNinong">Add ninong</button>
+            <h4 style="font-family:var(--font-serif);font-size:1.05rem;margin:1.25rem 0 0.65rem;color:var(--sea)">Ninangs (names only)</h4>
+            <div id="ninangFields"></div>
+            <button type="button" class="btn btn-ghost" id="addNinang">Add ninang</button>
             <h4 style="font-family:var(--font-serif);font-size:1.05rem;margin:1.25rem 0 0.65rem;color:var(--sea)">Role groups</h4>
             <div id="entourageGroupFields"></div>
             <button type="button" class="btn btn-ghost" id="addEntourageGroup">Add role group</button>
@@ -565,19 +573,10 @@
 
           <div class="card">
             <h3>Attire</h3>
-            <p class="lead" style="font-size:0.8rem;margin-bottom:0.85rem;">Paste a <strong>Google Drive</strong> share link (Anyone with the link) or image URL. Drive links are converted automatically — click <strong>Save Details</strong> after pasting.</p>
+            <p class="lead" style="font-size:0.8rem;margin-bottom:0.85rem;">Paste a <strong>Google Drive</strong> share link (Anyone with the link) or image URL. Drive links are converted automatically — click <strong>Save Details</strong> after pasting. Principal sponsor photos are attire illustrations only (no names).</p>
             <label for="attireSummary">Attire teaser text</label>
             <textarea id="attireSummary" name="attireSummary"></textarea>
             <div id="attirePhotoFields"></div>
-            <label for="principalSponsorsTitle" style="margin-top:1rem">Principal sponsors heading</label>
-            <input id="principalSponsorsTitle" name="principalSponsorsTitle" />
-            <p class="lead" style="font-size:0.8rem;margin:1rem 0 0.75rem;">Ninong &amp; Ninang — photo, name, and a short description (shown in the Attire guide).</p>
-            <h4 style="font-family:var(--font-serif);font-size:1.05rem;margin:0.5rem 0 0.65rem;color:var(--sea)">Ninongs</h4>
-            <div id="ninongFields"></div>
-            <button type="button" class="btn btn-ghost" id="addNinong">Add ninong</button>
-            <h4 style="font-family:var(--font-serif);font-size:1.05rem;margin:1.25rem 0 0.65rem;color:var(--sea)">Ninangs</h4>
-            <div id="ninangFields"></div>
-            <button type="button" class="btn btn-ghost" id="addNinang">Add ninang</button>
           </div>
 
           <div class="card">
@@ -852,6 +851,8 @@
 
       const ATTIRE_PHOTO_FIELDS = [
         { key: "teaser", label: "Teaser card (collapsed section)" },
+        { key: "ninong", label: "Principal sponsors — Ninong attire (illustration)" },
+        { key: "ninang", label: "Principal sponsors — Ninang attire (illustration)" },
         { key: "guest", label: "Guest dress code" },
       ];
 
@@ -874,31 +875,24 @@
         }).join("");
       }
 
-      function renderSponsorFields(wrapId, list, removeAttr) {
+      function renderSponsorNameFields(wrapId, list, removeAttr) {
         const wrap = document.getElementById(wrapId);
         if (!wrap) return;
         wrap.innerHTML = (list || []).map((p, i) => `
           <div class="timeline-editor" data-i="${i}">
-            <div class="row-2">
-              <div><label>Name</label><input data-field="name" value="${escapeAttr(p.name || "")}" /></div>
-              <div><label>Photo alt text</label><input data-field="photoAlt" value="${escapeAttr(p.photoAlt || "")}" /></div>
-            </div>
-            <label>Photo (Google Drive link or image URL)</label>
-            <input data-field="photo" type="text" value="${escapeAttr(p.photo || "")}" placeholder="https://drive.google.com/file/d/xxxxx/view?usp=sharing" />
-            ${p.photo ? `<div style="margin:0.5rem 0 0.75rem;background:linear-gradient(145deg,rgba(183,212,230,0.28),rgba(220,200,170,0.22));padding:0.35rem;display:inline-block"><img src="${escapeAttr(p.photo)}" alt="" style="max-width:120px;max-height:120px;object-fit:contain;display:block;border:1px solid rgba(30,90,110,0.15)" onerror="this.style.display='none'" /></div>` : ""}
-            <label>Short description</label>
-            <textarea data-field="description">${escapeHtml(p.description || "")}</textarea>
+            <label>Name</label>
+            <input data-field="name" value="${escapeAttr(p.name || "")}" />
             <button type="button" class="btn btn-danger" ${removeAttr}="${i}">Remove</button>
           </div>
         `).join("");
       }
 
       function renderNinongs() {
-        renderSponsorFields("ninongFields", content.ninongs || [], "data-remove-ninong");
+        renderSponsorNameFields("ninongFields", content.ninongs || [], "data-remove-ninong");
       }
 
       function renderNinangs() {
-        renderSponsorFields("ninangFields", content.ninangs || [], "data-remove-ninang");
+        renderSponsorNameFields("ninangFields", content.ninangs || [], "data-remove-ninang");
       }
 
       function renderEntourageGroups() {
@@ -1035,16 +1029,10 @@
 
         data.ninongs = [...document.querySelectorAll("#ninongFields .timeline-editor")].map((row) => ({
           name: row.querySelector('[data-field="name"]').value,
-          description: row.querySelector('[data-field="description"]').value,
-          photo: row.querySelector('[data-field="photo"]').value,
-          photoAlt: row.querySelector('[data-field="photoAlt"]').value,
         }));
 
         data.ninangs = [...document.querySelectorAll("#ninangFields .timeline-editor")].map((row) => ({
           name: row.querySelector('[data-field="name"]').value,
-          description: row.querySelector('[data-field="description"]').value,
-          photo: row.querySelector('[data-field="photo"]').value,
-          photoAlt: row.querySelector('[data-field="photoAlt"]').value,
         }));
 
         data.entourageGroups = [...document.querySelectorAll("#entourageGroupFields .timeline-editor")].map((row) => ({
@@ -1093,14 +1081,14 @@
       document.getElementById("addNinong").addEventListener("click", () => {
         content = collectContent();
         content.ninongs = content.ninongs || [];
-        content.ninongs.push({ name: "", description: "", photo: "", photoAlt: "" });
+        content.ninongs.push({ name: "" });
         renderNinongs();
       });
 
       document.getElementById("addNinang").addEventListener("click", () => {
         content = collectContent();
         content.ninangs = content.ninangs || [];
-        content.ninangs.push({ name: "", description: "", photo: "", photoAlt: "" });
+        content.ninangs.push({ name: "" });
         renderNinangs();
       });
 
