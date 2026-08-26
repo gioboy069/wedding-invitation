@@ -66,9 +66,9 @@ function createToken() {
 }
 
 function safeEqual(a, b) {
-  const bufA = Buffer.from(String(a));
-  const bufB = Buffer.from(String(b));
-  if (bufA.length !== bufB.length) return false;
+  const bufA = Buffer.from(String(a).trim());
+  const bufB = Buffer.from(String(b).trim());
+  if (!bufA.length || bufA.length !== bufB.length) return false;
   return timingSafeEqual(bufA, bufB);
 }
 
@@ -101,8 +101,21 @@ const upload = multer({
 });
 
 const app = express();
+app.set("trust proxy", 1);
 app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
+
+function sessionCookieOptions(req) {
+  const forwarded = String(req.get("x-forwarded-proto") || "").split(",")[0].trim();
+  const isHttps = req.secure || forwarded === "https";
+  return {
+    httpOnly: true,
+    path: "/",
+    maxAge: 1000 * 60 * 60 * 12,
+    secure: isHttps,
+    sameSite: isHttps ? "none" : "lax",
+  };
+}
 
 // Block private paths from static serving
 app.use(["/data", "/server.js", "/package.json", "/package-lock.json", "/.git", "/.env"], (_req, res) => {
@@ -328,17 +341,12 @@ app.delete("/api/admin/guests/:id", requireAdmin, (req, res) => {
 app.post("/api/admin/login", (req, res) => {
   const { password } = req.body || {};
   if (!safeEqual(password || "", ADMIN_PASSWORD)) {
-    return res.status(401).json({ error: "Invalid password" });
+    return res.status(401).json({ error: "Invalid password. Use augiela-gio-2027 unless you set ADMIN_PASSWORD." });
   }
   const token = createToken();
   sessions.set(token, Date.now());
   persistSessions();
-  res.cookie("admin_session", token, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 1000 * 60 * 60 * 12,
-  });
+  res.cookie("admin_session", token, sessionCookieOptions(req));
   res.json({ ok: true });
 });
 
@@ -346,7 +354,7 @@ app.post("/api/admin/logout", (req, res) => {
   const token = req.cookies?.admin_session;
   if (token) sessions.delete(token);
   persistSessions();
-  res.clearCookie("admin_session", { path: "/" });
+  res.clearCookie("admin_session", { ...sessionCookieOptions(req), maxAge: 0 });
   res.json({ ok: true });
 });
 
