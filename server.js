@@ -72,8 +72,16 @@ function safeEqual(a, b) {
   return timingSafeEqual(bufA, bufB);
 }
 
+function getSessionToken(req) {
+  const cookie = String(req.cookies?.admin_session || "").trim();
+  if (cookie) return cookie;
+  const header = String(req.get("authorization") || "");
+  if (/^bearer\s+/i.test(header)) return header.replace(/^bearer\s+/i, "").trim();
+  return String(req.get("x-admin-token") || "").trim();
+}
+
 function requireAdmin(req, res, next) {
-  const token = req.cookies?.admin_session;
+  const token = getSessionToken(req);
   if (!token || !sessions.has(token)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
@@ -114,6 +122,7 @@ function sessionCookieOptions(req) {
     maxAge: 1000 * 60 * 60 * 12,
     secure: isHttps,
     sameSite: isHttps ? "none" : "lax",
+    partitioned: isHttps,
   };
 }
 
@@ -347,11 +356,11 @@ app.post("/api/admin/login", (req, res) => {
   sessions.set(token, Date.now());
   persistSessions();
   res.cookie("admin_session", token, sessionCookieOptions(req));
-  res.json({ ok: true });
+  res.json({ ok: true, token });
 });
 
 app.post("/api/admin/logout", (req, res) => {
-  const token = req.cookies?.admin_session;
+  const token = getSessionToken(req);
   if (token) sessions.delete(token);
   persistSessions();
   res.clearCookie("admin_session", { ...sessionCookieOptions(req), maxAge: 0 });
@@ -359,7 +368,7 @@ app.post("/api/admin/logout", (req, res) => {
 });
 
 app.get("/api/admin/me", (req, res) => {
-  const token = req.cookies?.admin_session;
+  const token = getSessionToken(req);
   if (!token || !sessions.has(token)) {
     return res.status(401).json({ authenticated: false });
   }

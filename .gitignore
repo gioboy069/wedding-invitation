@@ -5,3 +5,4 @@ uploads/*
 !uploads/.gitkeep
 data/rsvps.json
 .env
+data/sessions.json

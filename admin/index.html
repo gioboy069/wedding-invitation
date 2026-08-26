@@ -452,7 +452,7 @@
       <p class="login-hint">Password: <code>augiela-gio-2027</code></p>
       <div id="loginError" class="error-msg hidden"></div>
       <label for="password">Password</label>
-      <input type="password" id="password" name="password" autocomplete="current-password" required />
+      <input type="password" id="password" name="password" value="augiela-gio-2027" autocomplete="current-password" required />
       <button type="submit" class="btn btn-primary" style="width:100%">Sign In</button>
     </form>
   </div>
@@ -730,6 +730,8 @@
 
   <script>
     (function () {
+      const TOKEN_KEY = "ga-admin-token";
+      let adminToken = sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY) || "";
       const loginScreen = document.getElementById("loginScreen");
       const dashboard = document.getElementById("dashboard");
       const toastEl = document.getElementById("toast");
@@ -746,35 +748,40 @@
       }
 
       async function api(path, options = {}) {
+        const headers = options.body instanceof FormData
+          ? { ...(options.headers || {}) }
+          : { "Content-Type": "application/json", ...(options.headers || {}) };
+        if (adminToken) {
+          headers.Authorization = "Bearer " + adminToken;
+          headers["X-Admin-Token"] = adminToken;
+        }
         const res = await fetch(path, {
-          credentials: "include",
           ...options,
-          headers: options.body instanceof FormData
-            ? options.headers
-            : { "Content-Type": "application/json", ...(options.headers || {}) },
+          credentials: "include",
+          headers,
         });
         const data = await res.json().catch(() => ({}));
         if (res.status === 401 && path !== "/api/admin/login" && path !== "/api/admin/me") {
           loginScreen.classList.remove("hidden");
           dashboard.classList.add("hidden");
           document.getElementById("menuToggle").classList.add("hidden");
-          throw new Error("Session expired — please sign in again");
+          throw new Error("Could not stay signed in. Use password augiela-gio-2027 and try again.");
         }
         if (!res.ok) throw new Error(data.error || "Request failed");
         return data;
       }
 
-      function showDashboard() {
+      async function showDashboard() {
         loginScreen.classList.add("hidden");
         dashboard.classList.remove("hidden");
         document.getElementById("menuToggle").classList.remove("hidden");
-        loadAll();
+        await loadAll();
       }
 
       async function checkAuth() {
         try {
           await api("/api/admin/me");
-          showDashboard();
+          await showDashboard();
         } catch {
           loginScreen.classList.remove("hidden");
           dashboard.classList.add("hidden");
@@ -786,11 +793,16 @@
         const err = document.getElementById("loginError");
         err.classList.add("hidden");
         try {
-          await api("/api/admin/login", {
+          const data = await api("/api/admin/login", {
             method: "POST",
             body: JSON.stringify({ password: document.getElementById("password").value.trim() }),
           });
-          showDashboard();
+          adminToken = data.token || "";
+          if (adminToken) {
+            sessionStorage.setItem(TOKEN_KEY, adminToken);
+            localStorage.setItem(TOKEN_KEY, adminToken);
+          }
+          await showDashboard();
         } catch (ex) {
           err.textContent = ex.message;
           err.classList.remove("hidden");
@@ -798,7 +810,10 @@
       });
 
       document.getElementById("logoutBtn").addEventListener("click", async () => {
-        await api("/api/admin/logout", { method: "POST" });
+        try { await api("/api/admin/logout", { method: "POST" }); } catch (_) {}
+        adminToken = "";
+        sessionStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(TOKEN_KEY);
         location.reload();
       });
 
