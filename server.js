@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import cookieParser from "cookie-parser";
+import nodemailer from "nodemailer";
 import { randomBytes, timingSafeEqual } from "crypto";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from "fs";
 import { join, dirname, extname } from "path";
@@ -14,6 +15,24 @@ const PORT = Number(process.env.PORT || 4317);
 const HOST = process.env.HOST || "0.0.0.0";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "augiela-gio-2027";
 const RSVP_EMAIL = process.env.RSVP_EMAIL || "gomez.wed2027@gmail.com";
+const GMAIL_USER = process.env.GMAIL_USER || RSVP_EMAIL;
+const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD || "";
+const GUEST_LIST_ERROR = "Name not found on the guest list. Please contact the couple.";
+
+let mailTransporter = null;
+function getMailTransporter() {
+  if (!GMAIL_APP_PASSWORD) return null;
+  if (!mailTransporter) {
+    mailTransporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: GMAIL_USER,
+        pass: GMAIL_APP_PASSWORD,
+      },
+    });
+  }
+  return mailTransporter;
+}
 
 if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
@@ -174,6 +193,96 @@ app.get("/api/gallery", (_req, res) => {
   );
 });
 
+function findGuestByNameOrId(guests, name, guestId) {
+  const normalizedName = normalizeGuestName(name);
+  let matchedGuest = null;
+  if (guestId) {
+    matchedGuest = guests.find((g) => g.id === guestId) || null;
+    if (matchedGuest && normalizeGuestName(matchedGuest.name) !== normalizedName) {
+      return { matchedGuest: null, mismatch: true };
+    }
+  }
+  if (!matchedGuest) {
+    matchedGuest = guests.find((g) => normalizeGuestName(g.name) === normalizedName) || null;
+  }
+  return { matchedGuest, mismatch: false };
+}
+
+async function sendRsvpNotification(entry, { isUpdate = false } = {}) {
+  const attendanceLabel =
+    entry.attendance === "attending" ? "Joyfully Accepts" : "Regretfully Declines";
+  const companionsText = entry.companions?.length ? entry.companions.join(", ") : "(none)";
+  const subjectPrefix = isUpdate ? "Updated Wedding RSVP" : "Wedding RSVP";
+  const subject = `${subjectPrefix}: ${entry.name} — ${entry.attendance}`;
+
+  const transporter = getMailTransporter();
+  if (transporter) {
+    await transporter.sendMail({
+      from: `"Wedding RSVP" <${GMAIL_USER}>`,
+      to: RSVP_EMAIL,
+      subject,
+      text: [
+        `Primary guest: ${entry.name}`,
+        `Status: ${attendanceLabel}`,
+        `Party size: ${entry.partySize} / ${entry.allocation}`,
+        `Companions: ${companionsText}`,
+        `Message: ${entry.message || "(no message)"}`,
+        `Submitted: ${entry.submittedAt}`,
+        isUpdate && entry.updatedAt ? `Updated: ${entry.updatedAt}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      html: `
+        <h2>${isUpdate ? "Updated RSVP" : "New RSVP"}</h2>
+        <table cellpadding="6" cellspacing="0" border="1" style="border-collapse:collapse;font-family:sans-serif;font-size:14px">
+          <tr><td><strong>Primary guest</strong></td><td>${escapeHtml(entry.name)}</td></tr>
+          <tr><td><strong>Status</strong></td><td>${escapeHtml(attendanceLabel)}</td></tr>
+          <tr><td><strong>Party size</strong></td><td>${entry.partySize} / ${entry.allocation}</td></tr>
+          <tr><td><strong>Companions</strong></td><td>${escapeHtml(companionsText)}</td></tr>
+          <tr><td><strong>Message</strong></td><td>${escapeHtml(entry.message || "(no message)")}</td></tr>
+          <tr><td><strong>Submitted</strong></td><td>${escapeHtml(entry.submittedAt)}</td></tr>
+          ${isUpdate && entry.updatedAt ? `<tr><td><strong>Updated</strong></td><td>${escapeHtml(entry.updatedAt)}</td></tr>` : ""}
+        </table>
+      `,
+    });
+    return true;
+  }
+
+  const emailRes = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(RSVP_EMAIL)}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      name: entry.name,
+      attendance: attendanceLabel,
+      partySize: entry.partySize,
+      companions: companionsText,
+      message: entry.message || "(no message)",
+      submittedAt: entry.submittedAt,
+      updatedAt: entry.updatedAt || "",
+      isUpdate: isUpdate ? "Yes" : "No",
+      _subject: subject,
+      _template: "table",
+      _captcha: "false",
+    }),
+  });
+  if (!emailRes.ok) {
+    const body = await emailRes.text();
+    throw new Error(`FormSubmit failed (${emailRes.status}): ${body}`);
+  }
+  return true;
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 app.post("/api/rsvp", async (req, res) => {
   const { name, attendance, message, companions, guestId } = req.body || {};
   if (!name || !String(name).trim()) {
@@ -184,75 +293,65 @@ app.post("/api/rsvp", async (req, res) => {
   }
 
   const guests = readJson("guests.json", []);
-  const normalizedName = normalizeGuestName(name);
-  let matchedGuest = null;
-  if (guestId) {
-    matchedGuest = guests.find((g) => g.id === guestId) || null;
-  }
+  const { matchedGuest, mismatch } = findGuestByNameOrId(guests, name, guestId);
   if (!matchedGuest) {
-    matchedGuest = guests.find((g) => normalizeGuestName(g.name) === normalizedName) || null;
+    return res.status(403).json({ error: GUEST_LIST_ERROR, code: "guest_not_found" });
+  }
+  if (mismatch) {
+    return res.status(403).json({ error: GUEST_LIST_ERROR, code: "guest_mismatch" });
   }
 
-  const allocation = matchedGuest
-    ? Math.min(10, Math.max(1, Number(matchedGuest.allocation) || 1))
-    : 1;
+  const allocation = Math.min(10, Math.max(1, Number(matchedGuest.allocation) || 1));
   const maxCompanions = Math.max(0, allocation - 1);
   const companionList = Array.isArray(companions)
     ? companions.map((c) => String(c || "").trim()).filter(Boolean).slice(0, maxCompanions)
     : [];
 
+  const now = new Date().toISOString();
+  const rsvps = readJson("rsvps.json", []);
+  const existingIdx = rsvps.findIndex((r) => r.guestId === matchedGuest.id);
+  const isUpdate = existingIdx !== -1;
+  const existing = isUpdate ? rsvps[existingIdx] : null;
+
   const entry = {
-    id: `rsvp-${Date.now()}-${randomBytes(3).toString("hex")}`,
-    name: String(name).trim(),
+    id: existing?.id || `rsvp-${Date.now()}-${randomBytes(3).toString("hex")}`,
+    name: String(matchedGuest.name).trim(),
     attendance,
     message: String(message || "").trim(),
-    companions: companionList,
-    partySize: 1 + companionList.length,
+    companions: attendance === "attending" ? companionList : [],
+    partySize: attendance === "attending" ? 1 + companionList.length : 1,
     allocation,
-    guestId: matchedGuest ? matchedGuest.id : null,
-    guestMatched: !!matchedGuest,
-    submittedAt: new Date().toISOString(),
+    guestId: matchedGuest.id,
+    guestMatched: true,
+    submittedAt: existing?.submittedAt || now,
+    updatedAt: isUpdate ? now : null,
   };
 
   try {
-    const rsvps = readJson("rsvps.json", []);
-    rsvps.push(entry);
+    if (isUpdate) {
+      rsvps[existingIdx] = entry;
+    } else {
+      rsvps.push(entry);
+    }
     writeJson("rsvps.json", rsvps);
   } catch (err) {
     console.error("Failed to save RSVP locally:", err);
+    return res.status(500).json({ error: "Unable to save RSVP. Please try again." });
   }
 
   let emailed = false;
   try {
-    const emailRes = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(RSVP_EMAIL)}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        name: entry.name,
-        attendance: entry.attendance === "attending" ? "Joyfully Accepts" : "Regretfully Declines",
-        partySize: entry.partySize,
-        companions: companionList.length ? companionList.join(", ") : "(none)",
-        message: entry.message || "(no message)",
-        guestMatched: entry.guestMatched ? "Yes" : "No",
-        submittedAt: entry.submittedAt,
-        _subject: `Wedding RSVP: ${entry.name} — ${entry.attendance}`,
-        _template: "table",
-        _captcha: "false",
-      }),
-    });
-    emailed = emailRes.ok;
-    if (!emailed) {
-      const body = await emailRes.text();
-      console.error("RSVP email failed:", emailRes.status, body);
-    }
+    emailed = await sendRsvpNotification(entry, { isUpdate });
   } catch (err) {
     console.error("RSVP email error:", err);
   }
 
-  res.status(201).json({ ok: true, id: entry.id, emailed });
+  res.status(isUpdate ? 200 : 201).json({
+    ok: true,
+    id: entry.id,
+    updated: isUpdate,
+    emailed,
+  });
 });
 
 function normalizeGuestName(value) {
