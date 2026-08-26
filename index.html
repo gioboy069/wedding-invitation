@@ -1670,6 +1670,25 @@
       margin-bottom: 1.75rem;
     }
 
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .companion-person {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 560px) {
+      .form-row-2,
+      .companion-person {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .form-label {
       display: block;
       font-size: 0.65rem;
@@ -2617,7 +2636,6 @@
       <li><a href="#wedding-day">Schedule</a></li>
       <li><a href="#entourage">Entourage</a></li>
       <li><a href="#attire">Attire</a></li>
-      <li><a href="print.html">Print</a></li>
       <li><a href="#rsvp">RSVP</a></li>
     </ul>
   </nav>
@@ -3013,10 +3031,18 @@
 
       <form class="rsvp-form reveal reveal-delay-3" id="rsvpForm" novalidate>
         <div class="form-group" id="nameGroup">
-          <label class="form-label" for="guestName">Full Name</label>
-          <input type="text" id="guestName" name="name" class="form-input" placeholder="Your full name (as on your invitation)" autocomplete="name" required />
+          <div class="form-row-2">
+            <div>
+              <label class="form-label" for="guestSurname">Surname</label>
+              <input type="text" id="guestSurname" name="surname" class="form-input" placeholder="Rivera" autocomplete="family-name" required />
+            </div>
+            <div>
+              <label class="form-label" for="guestFirstName">First name</label>
+              <input type="text" id="guestFirstName" name="firstName" class="form-input" placeholder="Alex" autocomplete="given-name" required />
+            </div>
+          </div>
           <p class="guest-match-status" id="guestMatchStatus" aria-live="polite"></p>
-          <p class="form-error">Please enter your full name.</p>
+          <p class="form-error">Please enter your surname and first name.</p>
         </div>
 
         <div class="rsvp-already" id="rsvpAlready" role="status" hidden>
@@ -3048,7 +3074,7 @@
 
         <div class="companion-fields" id="companionFields" hidden>
           <span class="form-label">Guests attending with you</span>
-          <p class="companion-hint" id="companionHint">Enter the full names of your additional guests.</p>
+          <p class="companion-hint" id="companionHint">Enter the surname and first name of your additional guests.</p>
           <div class="companion-list" id="companionList"></div>
         </div>
 
@@ -3077,7 +3103,6 @@
     <p class="footer-date" id="footerDate">June 14, 2027</p>
     <p class="footer-note" id="footerQuote">"And now these three remain: faith, hope, and love. But the greatest of these is love."</p>
     <a class="rsvp-cta" href="#rsvp">RSVP Now</a>
-    <a class="rsvp-cta" href="print.html" style="margin-top:0.85rem">Print Invitation</a>
   </footer>
 
   </div><!-- /.site-reveal -->
@@ -3092,6 +3117,7 @@
     </div>
   </div>
 
+  <script src="/js/names.js"></script>
   <script>
     (function () {
       "use strict";
@@ -3644,7 +3670,8 @@
       const attendingRadio = document.getElementById("attending");
       const declinedRadio = document.getElementById("declined");
       const submitBtn = document.getElementById("submitBtn");
-      const guestNameInput = document.getElementById("guestName");
+      const guestSurnameInput = document.getElementById("guestSurname");
+      const guestFirstNameInput = document.getElementById("guestFirstName");
       const guestMatchStatus = document.getElementById("guestMatchStatus");
       const companionFields = document.getElementById("companionFields");
       const companionList = document.getElementById("companionList");
@@ -3655,6 +3682,15 @@
       let alreadySubmitted = false;
       let lookupTimer = null;
       const COUPLE_EMAIL = "gomez.wed2027@gmail.com";
+      const Names = window.WeddingNames;
+
+      function currentPerson() {
+        return Names.parsePersonName(
+          "",
+          guestFirstNameInput.value,
+          guestSurnameInput.value
+        );
+      }
 
       function setAlreadySubmitted(isDone) {
         alreadySubmitted = !!isDone;
@@ -3681,21 +3717,39 @@
         companionHint.textContent =
           "Your invitation includes up to " + matchedGuest.allocation +
           " guest" + (matchedGuest.allocation === 1 ? "" : "s") +
-          " (including you). Please enter the full names of anyone attending with you.";
+          " (including you). Please enter the surname and first name of anyone attending with you.";
 
-        const existing = Array.from(companionList.querySelectorAll("input")).map(function (input) {
-          return input.value;
+        const existing = Array.from(companionList.querySelectorAll(".companion-person")).map(function (row) {
+          return {
+            surname: (row.querySelector("[data-companion-surname]") || {}).value || "",
+            firstName: (row.querySelector("[data-companion-first]") || {}).value || "",
+          };
         });
         companionList.innerHTML = "";
         for (var i = 0; i < maxCompanions; i++) {
-          var input = document.createElement("input");
-          input.type = "text";
-          input.className = "form-input";
-          input.name = "companion" + (i + 1);
-          input.placeholder = "Guest " + (i + 2) + " full name";
-          input.autocomplete = "off";
-          if (existing[i]) input.value = existing[i];
-          companionList.appendChild(input);
+          var row = document.createElement("div");
+          row.className = "companion-person";
+          var surnameInput = document.createElement("input");
+          surnameInput.type = "text";
+          surnameInput.className = "form-input";
+          surnameInput.setAttribute("data-companion-surname", "1");
+          surnameInput.name = "companionSurname" + (i + 1);
+          surnameInput.placeholder = "Guest " + (i + 2) + " surname";
+          surnameInput.autocomplete = "off";
+          var firstInput = document.createElement("input");
+          firstInput.type = "text";
+          firstInput.className = "form-input";
+          firstInput.setAttribute("data-companion-first", "1");
+          firstInput.name = "companionFirst" + (i + 1);
+          firstInput.placeholder = "Guest " + (i + 2) + " first name";
+          firstInput.autocomplete = "off";
+          if (existing[i]) {
+            surnameInput.value = existing[i].surname || "";
+            firstInput.value = existing[i].firstName || "";
+          }
+          row.appendChild(surnameInput);
+          row.appendChild(firstInput);
+          companionList.appendChild(row);
         }
         companionFields.hidden = false;
         companionFields.classList.add("is-visible");
@@ -3708,8 +3762,8 @@
       }
 
       function lookupGuestName() {
-        var name = guestNameInput.value.trim();
-        if (name.length < 2) {
+        var person = currentPerson();
+        if (!person.surname || !person.firstName) {
           matchedGuest = null;
           setAlreadySubmitted(false);
           setMatchStatus("", "");
@@ -3717,7 +3771,7 @@
           return;
         }
 
-        fetch("/api/guests/lookup?name=" + encodeURIComponent(name))
+        fetch("/api/guests/lookup?surname=" + encodeURIComponent(person.surname) + "&firstName=" + encodeURIComponent(person.firstName))
           .then(function (res) { return res.json(); })
           .then(function (data) {
             if (data && data.alreadySubmitted) {
@@ -3735,7 +3789,7 @@
               );
             } else {
               matchedGuest = null;
-              setMatchStatus("unmatched", "Name not found on the guest list yet. Please use the full name as it appears on your invitation.");
+              setMatchStatus("unmatched", "Name not found on the guest list yet. Please use the surname and first name as they appear on your invitation.");
             }
             updateCompanionVisibility();
           })
@@ -3747,18 +3801,22 @@
           });
       }
 
-      guestNameInput.addEventListener("input", function () {
+      function scheduleLookup() {
         clearTimeout(lookupTimer);
         lookupTimer = setTimeout(lookupGuestName, 350);
-      });
-      guestNameInput.addEventListener("blur", lookupGuestName);
+      }
+
+      guestSurnameInput.addEventListener("input", scheduleLookup);
+      guestFirstNameInput.addEventListener("input", scheduleLookup);
+      guestSurnameInput.addEventListener("blur", lookupGuestName);
+      guestFirstNameInput.addEventListener("blur", lookupGuestName);
       attendingRadio.addEventListener("change", updateCompanionVisibility);
       declinedRadio.addEventListener("change", updateCompanionVisibility);
 
       function validateForm() {
         let valid = true;
         const nameGroup = document.getElementById("nameGroup");
-        if (!guestNameInput.value.trim()) {
+        if (!guestSurnameInput.value.trim() || !guestFirstNameInput.value.trim()) {
           nameGroup.classList.add("invalid");
           valid = false;
         } else {
@@ -3782,12 +3840,21 @@
         submitBtn.disabled = true;
         submitBtn.textContent = "Sending…";
 
-        const companions = Array.from(companionList.querySelectorAll("input"))
-          .map(function (input) { return input.value.trim(); })
-          .filter(Boolean);
+        const companions = Array.from(companionList.querySelectorAll(".companion-person"))
+          .map(function (row) {
+            return Names.parsePersonName(
+              "",
+              (row.querySelector("[data-companion-first]") || {}).value,
+              (row.querySelector("[data-companion-surname]") || {}).value
+            );
+          })
+          .filter(function (person) { return person.firstName && person.surname; });
 
+        const person = currentPerson();
         const data = {
-          name: guestNameInput.value.trim(),
+          name: person.name,
+          firstName: person.firstName,
+          surname: person.surname,
           attendance: attendingRadio.checked ? "attending" : "declined",
           message: document.getElementById("guestMessage").value.trim(),
           companions: attendingRadio.checked ? companions : [],
@@ -3798,12 +3865,12 @@
           form.style.display = "none";
           successEl.classList.add("show");
           if (data.attendance === "declined") {
-            successMessage.textContent = "Thank you for letting us know, " + data.name.split(" ")[0] + ". We'll miss you dearly and hold you close in our hearts on our special day.";
+            successMessage.textContent = "Thank you for letting us know, " + data.firstName + ". We'll miss you dearly and hold you close in our hearts on our special day.";
           } else {
             var partyNote = data.companions.length
               ? " We've noted your party of " + (1 + data.companions.length) + "."
               : "";
-            successMessage.textContent = "Thank you, " + data.name.split(" ")[0] + "! We're thrilled you'll be joining us." + partyNote + " Your RSVP has been received — see you in Napa Valley.";
+            successMessage.textContent = "Thank you, " + data.firstName + "! We're thrilled you'll be joining us." + partyNote + " Your RSVP has been received — see you in Napa Valley.";
           }
           successEl.scrollIntoView({ behavior: "smooth", block: "center" });
         }
@@ -3823,7 +3890,7 @@
             body: JSON.stringify({
               name: data.name,
               attendance: data.attendance === "attending" ? "Joyfully Accepts" : "Regretfully Declines",
-              companions: data.companions.length ? data.companions.join(", ") : "(none)",
+              companions: data.companions.length ? data.companions.map(function (c) { return c.name; }).join(", ") : "(none)",
               partySize: 1 + data.companions.length,
               message: data.message || "(no message)",
               submittedAt: new Date().toISOString(),

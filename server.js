@@ -12,7 +12,7 @@ const DATA_DIR = join(ROOT, "data");
 const UPLOAD_DIR = join(ROOT, "uploads");
 const PORT = Number(process.env.PORT || 4317);
 const HOST = process.env.HOST || "0.0.0.0";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "gomeZ120822@";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "augiela-gio-2027";
 const RSVP_EMAIL = process.env.RSVP_EMAIL || "gomez.wed2027@gmail.com";
 
 if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -175,31 +175,32 @@ app.get("/api/gallery", (_req, res) => {
 });
 
 app.post("/api/rsvp", async (req, res) => {
-  const { name, attendance, message, companions, guestId } = req.body || {};
-  if (!name || !String(name).trim()) {
-    return res.status(400).json({ error: "Name is required" });
+  const { name, firstName, surname, attendance, message, companions, guestId } = req.body || {};
+  const person = parsePersonName(name, firstName, surname);
+  if (!person.surname || !person.firstName) {
+    return res.status(400).json({ error: "Surname and first name are required" });
   }
   if (!["attending", "declined"].includes(attendance)) {
     return res.status(400).json({ error: "Attendance must be attending or declined" });
   }
 
-  const guests = readJson("guests.json", []);
-  const normalizedName = normalizeGuestName(name);
+  const guests = readJson("guests.json", []).map(hydratePerson);
   let matchedGuest = null;
   if (guestId) {
     matchedGuest = guests.find((g) => g.id === guestId) || null;
   }
   if (!matchedGuest) {
-    matchedGuest = guests.find((g) => normalizeGuestName(g.name) === normalizedName) || null;
+    matchedGuest = guests.find((g) => namesMatch(g, person)) || null;
   }
 
   const allocation = matchedGuest
     ? Math.min(10, Math.max(1, Number(matchedGuest.allocation) || 1))
     : 1;
   const maxCompanions = Math.max(0, allocation - 1);
-  const companionList = Array.isArray(companions)
-    ? companions.map((c) => String(c || "").trim()).filter(Boolean).slice(0, maxCompanions)
-    : [];
+  const companionList = (Array.isArray(companions) ? companions : [])
+    .map(parseCompanion)
+    .filter((c) => c.firstName && c.surname)
+    .slice(0, maxCompanions);
 
   let rsvps = [];
   try {
@@ -208,13 +209,15 @@ app.post("/api/rsvp", async (req, res) => {
     console.error("Failed to read RSVPs:", err);
   }
 
-  if (findExistingRsvp(rsvps, name, matchedGuest?.id)) {
+  if (findExistingRsvp(rsvps, person, matchedGuest?.id)) {
     return res.status(409).json(alreadySubmittedPayload());
   }
 
   const entry = {
     id: `rsvp-${Date.now()}-${randomBytes(3).toString("hex")}`,
-    name: String(name).trim(),
+    name: person.name,
+    firstName: person.firstName,
+    surname: person.surname,
     attendance,
     message: String(message || "").trim(),
     companions: companionList,
@@ -242,9 +245,11 @@ app.post("/api/rsvp", async (req, res) => {
       },
       body: JSON.stringify({
         name: entry.name,
+        firstName: entry.firstName,
+        surname: entry.surname,
         attendance: entry.attendance === "attending" ? "Joyfully Accepts" : "Regretfully Declines",
         partySize: entry.partySize,
-        companions: companionList.length ? companionList.join(", ") : "(none)",
+        companions: companionList.length ? companionList.map((c) => c.name).join(", ") : "(none)",
         message: entry.message || "(no message)",
         guestMatched: entry.guestMatched ? "Yes" : "No",
         submittedAt: entry.submittedAt,
@@ -275,11 +280,83 @@ function normalizeGuestName(value) {
     .trim();
 }
 
-function findExistingRsvp(rsvps, name, guestId) {
-  const needle = normalizeGuestName(name);
+function trimNamePart(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function formatPersonName(firstName, surname) {
+  const first = trimNamePart(firstName);
+  const last = trimNamePart(surname);
+  if (last && first) return `${last}, ${first}`;
+  return last || first;
+}
+
+function parsePersonName(value, fallbackFirst, fallbackSurname) {
+  let firstName = trimNamePart(fallbackFirst);
+  let surname = trimNamePart(fallbackSurname);
+  const raw = trimNamePart(value);
+  if (!firstName && !surname && raw) {
+    if (raw.includes(",")) {
+      const comma = raw.indexOf(",");
+      surname = trimNamePart(raw.slice(0, comma));
+      firstName = trimNamePart(raw.slice(comma + 1));
+    } else {
+      const parts = raw.split(" ").filter(Boolean);
+      if (parts.length === 1) firstName = parts[0];
+      else {
+        surname = parts[parts.length - 1];
+        firstName = parts.slice(0, -1).join(" ");
+      }
+    }
+  }
+  return {
+    firstName,
+    surname,
+    name: formatPersonName(firstName, surname) || raw,
+  };
+}
+
+function hydratePerson(record) {
+  const rec = record && typeof record === "object" ? record : {};
+  return { ...rec, ...parsePersonName(rec.name, rec.firstName, rec.surname) };
+}
+
+function nameKey(personOrString) {
+  const parsed = typeof personOrString === "string"
+    ? parsePersonName(personOrString)
+    : parsePersonName(personOrString?.name, personOrString?.firstName, personOrString?.surname);
+  const tokens = normalizeGuestName(`${parsed.firstName} ${parsed.surname}`)
+    .split(" ")
+    .filter(Boolean);
+  return [...new Set(tokens)].sort().join(" ");
+}
+
+function namesMatch(a, b) {
+  const ka = nameKey(a);
+  const kb = nameKey(b);
+  return Boolean(ka && kb && ka === kb);
+}
+
+function parseCompanion(value) {
+  if (value && typeof value === "object") {
+    return parsePersonName(value.name, value.firstName, value.surname);
+  }
+  return parsePersonName(String(value || ""));
+}
+
+function sortGuestsBySurname(guests) {
+  return guests.sort((a, b) => {
+    const pa = hydratePerson(a);
+    const pb = hydratePerson(b);
+    return pa.surname.localeCompare(pb.surname, undefined, { sensitivity: "base" })
+      || pa.firstName.localeCompare(pb.firstName, undefined, { sensitivity: "base" });
+  });
+}
+
+function findExistingRsvp(rsvps, person, guestId) {
   return (rsvps || []).find((r) => {
     if (guestId && r.guestId && r.guestId === guestId) return true;
-    return needle && normalizeGuestName(r.name) === needle;
+    return namesMatch(hydratePerson(r), person);
   }) || null;
 }
 
@@ -293,15 +370,18 @@ function alreadySubmittedPayload() {
 
 // Public guest lookup for RSVP form (does not expose full list)
 app.get("/api/guests/lookup", (req, res) => {
-  const name = String(req.query.name || "").trim();
-  if (!name || name.length < 2) {
+  const person = parsePersonName(
+    req.query.name,
+    req.query.firstName,
+    req.query.surname
+  );
+  if (!person.surname || !person.firstName) {
     return res.json({ matched: false, alreadySubmitted: false });
   }
-  const guests = readJson("guests.json", []);
+  const guests = readJson("guests.json", []).map(hydratePerson);
   const rsvps = readJson("rsvps.json", []);
-  const needle = normalizeGuestName(name);
-  const guest = guests.find((g) => normalizeGuestName(g.name) === needle) || null;
-  const existing = findExistingRsvp(rsvps, name, guest?.id);
+  const guest = guests.find((g) => namesMatch(g, person)) || null;
+  const existing = findExistingRsvp(rsvps, person, guest?.id);
   if (existing) {
     return res.json({
       matched: !!guest,
@@ -310,6 +390,8 @@ app.get("/api/guests/lookup", (req, res) => {
         ? {
             id: guest.id,
             name: guest.name,
+            firstName: guest.firstName,
+            surname: guest.surname,
             allocation: Math.min(10, Math.max(1, Number(guest.allocation) || 1)),
             maxCompanions: Math.max(0, Math.min(10, Math.max(1, Number(guest.allocation) || 1)) - 1),
           }
@@ -324,6 +406,8 @@ app.get("/api/guests/lookup", (req, res) => {
     guest: {
       id: guest.id,
       name: guest.name,
+      firstName: guest.firstName,
+      surname: guest.surname,
       allocation,
       maxCompanions: Math.max(0, allocation - 1),
     },
@@ -333,49 +417,63 @@ app.get("/api/guests/lookup", (req, res) => {
 // ── Admin guest list ──
 
 app.get("/api/admin/guests", requireAdmin, (_req, res) => {
-  res.json(readJson("guests.json", []));
+  res.json(readJson("guests.json", []).map(hydratePerson));
 });
 
 app.post("/api/admin/guests", requireAdmin, (req, res) => {
-  const name = String(req.body?.name || "").trim();
+  const person = parsePersonName(req.body?.name, req.body?.firstName, req.body?.surname);
   let allocation = Number(req.body?.allocation);
-  if (!name) return res.status(400).json({ error: "Guest name is required" });
+  if (!person.surname || !person.firstName) {
+    return res.status(400).json({ error: "Surname and first name are required" });
+  }
   if (!Number.isFinite(allocation)) allocation = 1;
   allocation = Math.min(10, Math.max(1, Math.round(allocation)));
 
-  const guests = readJson("guests.json", []);
-  const exists = guests.some((g) => normalizeGuestName(g.name) === normalizeGuestName(name));
+  const guests = readJson("guests.json", []).map(hydratePerson);
+  const exists = guests.some((g) => namesMatch(g, person));
   if (exists) return res.status(400).json({ error: "That guest is already on the list" });
 
   const item = {
     id: `guest-${Date.now()}-${randomBytes(3).toString("hex")}`,
-    name,
+    name: person.name,
+    firstName: person.firstName,
+    surname: person.surname,
     allocation,
   };
   guests.push(item);
-  guests.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+  sortGuestsBySurname(guests);
   writeJson("guests.json", guests);
   res.status(201).json(item);
 });
 
 app.put("/api/admin/guests/:id", requireAdmin, (req, res) => {
-  const guests = readJson("guests.json", []);
+  const guests = readJson("guests.json", []).map(hydratePerson);
   const idx = guests.findIndex((g) => g.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: "Guest not found" });
 
-  const name = String(req.body?.name ?? guests[idx].name).trim();
+  const person = parsePersonName(
+    req.body?.name,
+    req.body?.firstName ?? guests[idx].firstName,
+    req.body?.surname ?? guests[idx].surname
+  );
   let allocation = Number(req.body?.allocation ?? guests[idx].allocation);
-  if (!name) return res.status(400).json({ error: "Guest name is required" });
+  if (!person.surname || !person.firstName) {
+    return res.status(400).json({ error: "Surname and first name are required" });
+  }
   if (!Number.isFinite(allocation)) allocation = guests[idx].allocation || 1;
   allocation = Math.min(10, Math.max(1, Math.round(allocation)));
 
-  const duplicate = guests.some(
-    (g, i) => i !== idx && normalizeGuestName(g.name) === normalizeGuestName(name)
-  );
+  const duplicate = guests.some((g, i) => i !== idx && namesMatch(g, person));
   if (duplicate) return res.status(400).json({ error: "That guest is already on the list" });
 
-  guests[idx] = { ...guests[idx], name, allocation };
-  guests.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+  guests[idx] = {
+    ...guests[idx],
+    name: person.name,
+    firstName: person.firstName,
+    surname: person.surname,
+    allocation,
+  };
+  sortGuestsBySurname(guests);
   writeJson("guests.json", guests);
   res.json(guests.find((g) => g.id === req.params.id));
 });
@@ -695,8 +793,78 @@ app.delete("/api/admin/gallery/:id", requireAdmin, (req, res) => {
 // ── Admin RSVPs ──
 
 app.get("/api/admin/rsvps", requireAdmin, (_req, res) => {
-  const rsvps = readJson("rsvps.json", []);
+  const rsvps = readJson("rsvps.json", []).map((r) => {
+    const person = hydratePerson(r);
+    const companions = (Array.isArray(r.companions) ? r.companions : []).map(parseCompanion);
+    return { ...person, companions };
+  });
   res.json(rsvps);
+});
+
+app.put("/api/admin/rsvps/:id", requireAdmin, (req, res) => {
+  const rsvps = readJson("rsvps.json", []);
+  const idx = rsvps.findIndex((r) => r.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: "RSVP not found" });
+
+  const current = hydratePerson(rsvps[idx]);
+  const person = parsePersonName(
+    req.body?.name,
+    req.body?.firstName ?? current.firstName,
+    req.body?.surname ?? current.surname
+  );
+  if (!person.surname || !person.firstName) {
+    return res.status(400).json({ error: "Surname and first name are required" });
+  }
+
+  const nameTaken = rsvps.some(
+    (r, i) => i !== idx && namesMatch(hydratePerson(r), person)
+  );
+  if (nameTaken) {
+    return res.status(400).json({ error: "Another RSVP already uses that name" });
+  }
+
+  const allocation = Math.min(10, Math.max(1, Number(current.allocation) || 1));
+  const maxCompanions = Math.max(0, allocation - 1);
+  let companions = Array.isArray(req.body?.companions)
+    ? req.body.companions.map(parseCompanion).filter((c) => c.firstName && c.surname)
+    : (Array.isArray(current.companions) ? current.companions.map(parseCompanion) : []);
+  if (current.attendance !== "attending") companions = [];
+  companions = companions.slice(0, maxCompanions);
+
+  const next = {
+    ...current,
+    name: person.name,
+    firstName: person.firstName,
+    surname: person.surname,
+    companions,
+    partySize: current.attendance === "attending" ? 1 + companions.length : 1,
+    updatedAt: new Date().toISOString(),
+  };
+
+  let guestListUpdated = false;
+  if (current.guestId) {
+    const guests = readJson("guests.json", []).map(hydratePerson);
+    const gIdx = guests.findIndex((g) => g.id === current.guestId);
+    if (gIdx !== -1) {
+      const clash = guests.some((g, i) => i !== gIdx && namesMatch(g, person));
+      if (!clash) {
+        guests[gIdx] = {
+          ...guests[gIdx],
+          name: person.name,
+          firstName: person.firstName,
+          surname: person.surname,
+        };
+        sortGuestsBySurname(guests);
+        writeJson("guests.json", guests);
+        guestListUpdated = true;
+        next.guestMatched = true;
+      }
+    }
+  }
+
+  rsvps[idx] = next;
+  writeJson("rsvps.json", rsvps);
+  res.json({ ...next, guestListUpdated });
 });
 
 app.delete("/api/admin/rsvps/:id", requireAdmin, (req, res) => {

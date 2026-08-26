@@ -1,12 +1,16 @@
 [
   {
     "id": "guest-1787618657187-78e851",
-    "name": "Alex Rivera",
+    "name": "Rivera, Alex",
+    "firstName": "Alex",
+    "surname": "Rivera",
     "allocation": 2
   },
   {
     "id": "guest-1787618654151-874a78",
-    "name": "Jordan Lee",
+    "name": "Lee, Jordan",
+    "firstName": "Jordan",
+    "surname": "Lee",
     "allocation": 3
   }
 ]

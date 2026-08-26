@@ -389,6 +389,45 @@
       background: var(--bg-alt);
     }
 
+    td input {
+      margin-bottom: 0;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .table-actions .btn {
+      padding: 0.45rem 0.75rem;
+      font-size: 0.65rem;
+    }
+
+    .name-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+      min-width: 220px;
+    }
+
+    .name-pair input {
+      margin-bottom: 0;
+    }
+
+    .companion-edit .name-pair {
+      margin-bottom: 0.15rem;
+    }
+
+    .companion-edit .hint {
+      font-size: 0.72rem;
+      color: var(--text-soft);
+      letter-spacing: 0;
+      text-transform: none;
+      margin: 0;
+    }
+
     .badge {
       display: inline-block;
       font-size: 0.65rem;
@@ -642,33 +681,37 @@
       <!-- Guest List -->
       <section class="panel" id="panel-guests">
         <h2>Guest List</h2>
-        <p class="lead">Add invited guests and set how many seats each invitation includes (1–10). When someone RSVPs with a matching full name, they can enter companion names up to that allocation.</p>
+        <p class="lead">Add invited guests with surname first, then first name, and set how many seats each invitation includes (1–10). When someone RSVPs with a matching surname and first name, they can enter companion names up to that allocation.</p>
 
         <div class="card" style="margin-bottom:1.25rem">
           <h3>Add guest</h3>
           <form id="guestForm">
             <div class="row-2">
               <div>
-                <label for="guestListName">Full name (as on invitation)</label>
-                <input id="guestListName" name="name" required placeholder="Jordan Lee" autocomplete="off" />
+                <label for="guestListSurname">Surname</label>
+                <input id="guestListSurname" name="surname" required placeholder="Lee" autocomplete="off" />
               </div>
               <div>
-                <label for="guestAllocation">Allocation (party size)</label>
-                <div class="toolbar" style="gap:0.5rem;align-items:stretch;margin:0">
-                  <select id="guestAllocation" style="flex:1">
-                    <option value="1">1</option>
-                    <option value="2" selected>2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
-                  </select>
-                  <input type="number" id="guestAllocationManual" min="1" max="10" step="1" placeholder="Or type 1–10" style="width:7.5rem" />
-                </div>
+                <label for="guestListFirstName">First name</label>
+                <input id="guestListFirstName" name="firstName" required placeholder="Jordan" autocomplete="off" />
+              </div>
+            </div>
+            <div>
+              <label for="guestAllocation">Allocation (party size)</label>
+              <div class="toolbar" style="gap:0.5rem;align-items:stretch;margin:0">
+                <select id="guestAllocation" style="flex:1">
+                  <option value="1">1</option>
+                  <option value="2" selected>2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+                <input type="number" id="guestAllocationManual" min="1" max="10" step="1" placeholder="Or type 1–10" style="width:7.5rem" />
               </div>
             </div>
             <button type="submit" class="btn btn-primary">Add to Guest List</button>
@@ -683,7 +726,8 @@
           <table>
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Surname</th>
+                <th>First name</th>
                 <th>Allocation</th>
                 <th></th>
               </tr>
@@ -696,7 +740,7 @@
       <!-- RSVPs -->
       <section class="panel" id="panel-rsvps">
         <h2>RSVPs</h2>
-        <p class="lead">Track guest responses in real time.</p>
+        <p class="lead">Track guest responses in real time. Edit a name or plus-one if someone asks you to update who is attending.</p>
         <div class="toolbar">
           <select id="rsvpFilter">
             <option value="all">All responses</option>
@@ -710,7 +754,8 @@
           <table>
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Surname</th>
+                <th>First name</th>
                 <th>Status</th>
                 <th>Party</th>
                 <th>Companions</th>
@@ -728,6 +773,7 @@
 
   <div class="toast" id="toast"></div>
 
+  <script src="/js/names.js"></script>
   <script>
     (function () {
       const TOKEN_KEY = "ga-admin-token";
@@ -739,6 +785,7 @@
       let gallery = [];
       let rsvps = [];
       let guests = [];
+      const Names = window.WeddingNames;
 
       function toast(msg, isError) {
         toastEl.textContent = msg;
@@ -1290,17 +1337,26 @@
 
       function renderGuests() {
         const search = (document.getElementById("guestSearch").value || "").trim().toLowerCase();
-        const list = guests.filter((g) => !search || String(g.name || "").toLowerCase().includes(search));
+        const list = guests.filter((g) => {
+          const person = Names.hydratePerson(g);
+          const haystack = [person.surname, person.firstName, person.name].join(" ").toLowerCase();
+          return !search || haystack.includes(search);
+        });
         document.getElementById("statGuests").textContent = guests.length;
         const tbody = document.getElementById("guestTable");
         if (!list.length) {
-          tbody.innerHTML = '<tr><td colspan="3">No guests yet. Add invited names above.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="4">No guests yet. Add invited names above.</td></tr>';
           return;
         }
-        tbody.innerHTML = list.map((g) => `
+        tbody.innerHTML = list.map((g) => {
+          const person = Names.hydratePerson(g);
+          return `
           <tr data-guest-id="${escapeAttr(g.id)}">
             <td>
-              <input data-edit-name value="${escapeAttr(g.name)}" style="width:100%;min-width:160px" />
+              <input data-edit-surname value="${escapeAttr(person.surname)}" placeholder="Surname" style="width:100%;min-width:120px" />
+            </td>
+            <td>
+              <input data-edit-first value="${escapeAttr(person.firstName)}" placeholder="First name" style="width:100%;min-width:120px" />
             </td>
             <td>
               <div class="toolbar" style="gap:0.4rem;margin:0;flex-wrap:nowrap">
@@ -1313,8 +1369,8 @@
               <button type="button" class="btn btn-ghost" data-guest-save="${escapeAttr(g.id)}">Save</button>
               <button type="button" class="btn btn-danger" data-guest-del="${escapeAttr(g.id)}">Delete</button>
             </td>
-          </tr>
-        `).join("");
+          </tr>`;
+        }).join("");
       }
 
       document.getElementById("guestAllocationManual").addEventListener("input", (e) => {
@@ -1330,15 +1386,17 @@
 
       document.getElementById("guestForm").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const name = document.getElementById("guestListName").value.trim();
+        const surname = document.getElementById("guestListSurname").value.trim();
+        const firstName = document.getElementById("guestListFirstName").value.trim();
         const manual = document.getElementById("guestAllocationManual").value;
         const allocation = clampAllocation(manual !== "" ? manual : document.getElementById("guestAllocation").value);
         try {
           await api("/api/admin/guests", {
             method: "POST",
-            body: JSON.stringify({ name, allocation }),
+            body: JSON.stringify({ surname, firstName, allocation }),
           });
-          document.getElementById("guestListName").value = "";
+          document.getElementById("guestListSurname").value = "";
+          document.getElementById("guestListFirstName").value = "";
           document.getElementById("guestAllocation").value = "2";
           document.getElementById("guestAllocationManual").value = "";
           guests = await api("/api/admin/guests");
@@ -1361,12 +1419,17 @@
         const delBtn = e.target.closest("[data-guest-del]");
         if (saveBtn) {
           const row = saveBtn.closest("tr");
-          const name = row.querySelector("[data-edit-name]").value.trim();
+          const surname = row.querySelector("[data-edit-surname]").value.trim();
+          const firstName = row.querySelector("[data-edit-first]").value.trim();
           const allocation = clampAllocation(row.querySelector("[data-edit-allocation]").value);
+          if (!surname || !firstName) {
+            toast("Enter surname and first name", true);
+            return;
+          }
           try {
             await api("/api/admin/guests/" + saveBtn.dataset.guestSave, {
               method: "PUT",
-              body: JSON.stringify({ name, allocation }),
+              body: JSON.stringify({ surname, firstName, allocation }),
             });
             guests = await api("/api/admin/guests");
             renderGuests();
@@ -1390,8 +1453,14 @@
       });
 
       // RSVPs
+      function companionPeople(r) {
+        return (Array.isArray(r.companions) ? r.companions : [])
+          .map((c) => Names.parseCompanion(c))
+          .filter((c) => c.firstName || c.surname || c.name);
+      }
+
       function partySizeOf(r) {
-        const companions = Array.isArray(r.companions) ? r.companions.filter(Boolean) : [];
+        const companions = companionPeople(r);
         const stored = Number(r.partySize);
         const fromCompanions = 1 + companions.length;
         if (Number.isFinite(stored) && stored > 0) return Math.max(stored, fromCompanions);
@@ -1411,21 +1480,52 @@
 
         const tbody = document.getElementById("rsvpTable");
         if (!list.length) {
-          tbody.innerHTML = '<tr><td colspan="7">No RSVPs yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8">No RSVPs yet.</td></tr>';
           return;
         }
         tbody.innerHTML = list.map((r) => {
-          const companions = Array.isArray(r.companions) ? r.companions.filter(Boolean) : [];
+          const person = Names.hydratePerson(r);
+          const companions = companionPeople(r);
           const party = partySizeOf(r);
+          const attending = r.attendance === "attending";
+          const maxCompanions = Math.max(0, (Number(r.allocation) || 1) - 1);
+          const slots = attending ? Math.max(maxCompanions, companions.length) : 0;
+          let companionEditors = companions.length
+            ? escapeHtml(companions.map((c) => c.name).join("; "))
+            : "—";
+          if (attending && slots > 0) {
+            const slotCount = slots;
+            let slotsHtml = "";
+            for (let i = 0; i < slotCount; i++) {
+              const c = companions[i] || { surname: "", firstName: "" };
+              slotsHtml += `<div class="name-pair">
+                <input data-edit-companion-surname type="text" value="${escapeAttr(c.surname || "")}" placeholder="Surname" autocomplete="off" />
+                <input data-edit-companion-first type="text" value="${escapeAttr(c.firstName || "")}" placeholder="First name" autocomplete="off" />
+              </div>`;
+            }
+            const guestWord = maxCompanions === 1 ? "" : "s";
+            companionEditors = `<div class="companion-edit">${slotsHtml}<p class="hint">Up to ${maxCompanions} additional guest${guestWord} — surname, then first name</p></div>`;
+          }
           return `
-          <tr>
-            <td>${escapeHtml(r.name)}${r.guestMatched === false ? ' <span class="badge no">Unmatched</span>' : ""}</td>
-            <td><span class="badge ${r.attendance === "attending" ? "yes" : "no"}">${r.attendance === "attending" ? "Attending" : "Declined"}</span></td>
+          <tr data-rsvp-id="${escapeAttr(r.id)}">
+            <td>
+              <input data-edit-rsvp-surname type="text" value="${escapeAttr(person.surname)}" placeholder="Surname" autocomplete="off" style="min-width:110px" />
+            </td>
+            <td>
+              <input data-edit-rsvp-first type="text" value="${escapeAttr(person.firstName)}" placeholder="First name" autocomplete="off" style="min-width:110px" />
+              ${r.guestMatched === false ? ' <span class="badge no">Unmatched</span>' : ""}
+            </td>
+            <td><span class="badge ${attending ? "yes" : "no"}">${attending ? "Attending" : "Declined"}</span></td>
             <td>${party}${r.allocation ? " / " + r.allocation : ""}</td>
-            <td>${companions.length ? escapeHtml(companions.join(", ")) : "—"}</td>
+            <td>${companionEditors}</td>
             <td>${escapeHtml(r.message || "—")}</td>
             <td>${new Date(r.submittedAt).toLocaleString()}</td>
-            <td><button type="button" class="btn btn-danger" data-rsvp-del="${r.id}">Delete</button></td>
+            <td>
+              <div class="table-actions">
+                <button type="button" class="btn btn-ghost" data-rsvp-save="${escapeAttr(r.id)}">Save names</button>
+                <button type="button" class="btn btn-danger" data-rsvp-del="${escapeAttr(r.id)}">Delete</button>
+              </div>
+            </td>
           </tr>`;
         }).join("");
       }
@@ -1438,11 +1538,40 @@
       });
 
       document.getElementById("rsvpTable").addEventListener("click", async (e) => {
-        const btn = e.target.closest("[data-rsvp-del]");
-        if (!btn) return;
+        const saveBtn = e.target.closest("[data-rsvp-save]");
+        const delBtn = e.target.closest("[data-rsvp-del]");
+        if (saveBtn) {
+          const row = saveBtn.closest("tr");
+          const surname = (row.querySelector("[data-edit-rsvp-surname]")?.value || "").trim();
+          const firstName = (row.querySelector("[data-edit-rsvp-first]")?.value || "").trim();
+          const pairs = row.querySelectorAll(".name-pair");
+          const companions = Array.from(pairs).map((pair) => ({
+            surname: (pair.querySelector("[data-edit-companion-surname]")?.value || "").trim(),
+            firstName: (pair.querySelector("[data-edit-companion-first]")?.value || "").trim(),
+          })).filter((c) => c.surname && c.firstName);
+          if (!surname || !firstName) {
+            toast("Enter surname and first name", true);
+            return;
+          }
+          try {
+            const saved = await api("/api/admin/rsvps/" + saveBtn.dataset.rsvpSave, {
+              method: "PUT",
+              body: JSON.stringify({ surname, firstName, companions }),
+            });
+            rsvps = await api("/api/admin/rsvps");
+            guests = await api("/api/admin/guests");
+            renderRsvps();
+            renderGuests();
+            toast(saved.guestListUpdated ? "Names updated on RSVP and guest list" : "RSVP names updated");
+          } catch (ex) {
+            toast(ex.message, true);
+          }
+          return;
+        }
+        if (!delBtn) return;
         if (!confirm("Delete this RSVP?")) return;
         try {
-          await api("/api/admin/rsvps/" + btn.dataset.rsvpDel, { method: "DELETE" });
+          await api("/api/admin/rsvps/" + delBtn.dataset.rsvpDel, { method: "DELETE" });
           rsvps = await api("/api/admin/rsvps");
           renderRsvps();
           toast("RSVP deleted");
@@ -1452,15 +1581,17 @@
       });
 
       document.getElementById("exportCsv").addEventListener("click", () => {
-        const rows = [["Name", "Attendance", "Party Size", "Allocation", "Companions", "Matched Guest List", "Message", "Submitted"]];
+        const rows = [["Surname", "First name", "Attendance", "Party Size", "Allocation", "Companions", "Matched Guest List", "Message", "Submitted"]];
         rsvps.forEach((r) => {
-          const companions = Array.isArray(r.companions) ? r.companions.filter(Boolean) : [];
+          const person = Names.hydratePerson(r);
+          const companions = companionPeople(r);
           rows.push([
-            r.name,
+            person.surname,
+            person.firstName,
             r.attendance,
             String(partySizeOf(r)),
             String(r.allocation || ""),
-            companions.join("; "),
+            companions.map((c) => c.name).join("; "),
             r.guestMatched ? "Yes" : "No",
             (r.message || "").replace(/"/g, '""'),
             r.submittedAt,

@@ -78,21 +78,12 @@ RSVP_EMAIL='your@email.com' npm run dev
 - **Gallery** — upload, caption, and delete prenup photos
 - **RSVPs** — track attending/declined, party size, companions, filter, delete, export CSV
 
-## Print invitation
-
-A 5 × 7 inch card suite (invitation + celebration details) is at [http://127.0.0.1:4317/print.html](http://127.0.0.1:4317/print.html).
-
-- Download: `print/Gio-Anthony-Augiela-Shane-Invitation.pdf`
-- Paper: 5 × 7 in cardstock, 110–130 lb cotton, felt, or eggshell, ivory or warm white
-- Print at **100% / actual size** (do not fit to page)
-
 ## Pages
 
 | Page | Purpose |
 |------|---------|
 | `index.html` | Invitation with countdown, story, gallery teaser, venues, expandable attire guide, RSVP |
 | `gallery.html` | Full prenup photo gallery |
-| `print.html` | Print studio — 5×7 invitation + details cards, PDF download |
 | `admin/` | Password-protected dashboard |
 
 ## Data
