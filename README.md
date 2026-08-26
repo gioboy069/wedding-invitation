@@ -61,28 +61,9 @@ Drive links are proxied by the site so they display reliably (Google’s share U
 
 ## RSVP emails
 
-Guest RSVPs trigger an email to **gomez.wed2027@gmail.com** whenever someone submits or updates their response.
+Guest RSVPs are emailed to **gomez.wed2027@gmail.com** via [FormSubmit](https://formsubmit.co).
 
-### Gmail SMTP (recommended)
-
-1. In your Google Account, enable **2-Step Verification**
-2. Create an **App Password** (Google Account → Security → App passwords)
-3. Set environment variables when running or deploying:
-
-```bash
-GMAIL_USER='gomez.wed2027@gmail.com' \
-GMAIL_APP_PASSWORD='your-16-char-app-password' \
-RSVP_EMAIL='gomez.wed2027@gmail.com' \
-npm run dev
-```
-
-| Variable | Purpose |
-|----------|---------|
-| `GMAIL_USER` | Gmail account used to send (defaults to `RSVP_EMAIL`) |
-| `GMAIL_APP_PASSWORD` | Google App Password (required for SMTP) |
-| `RSVP_EMAIL` | Inbox that receives RSVP notifications |
-
-If `GMAIL_APP_PASSWORD` is not set, the server falls back to [FormSubmit](https://formsubmit.co) (requires one-time activation in that inbox).
+**First-time setup:** After the first RSVP is submitted, FormSubmit sends an activation link to that inbox. Open the email and click **Confirm** once. After that, every RSVP arrives automatically.
 
 Override the destination email if needed:
 
@@ -93,9 +74,9 @@ RSVP_EMAIL='your@email.com' npm run dev
 ## Admin features
 
 - **Edit details** — names, date, story timeline, venues, and copy
-- **Guest list** — invited names with seat allocation (1–10); only listed names can RSVP; companion fields match each guest's allocation
+- **Guest list** — invited names with seat allocation (1–10); RSVP form matches names and collects companion guests
 - **Gallery** — upload, caption, and delete prenup photos
-- **RSVPs** — track attending/declined, primary guest + companions, live auto-refresh, filter, delete, export CSV
+- **RSVPs** — track attending/declined, party size, companions, filter, delete, export CSV
 
 ## Print invitation
 

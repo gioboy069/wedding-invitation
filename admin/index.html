@@ -400,27 +400,6 @@
 
     .badge.yes { background: rgba(74, 124, 89, 0.15); color: var(--ok); }
     .badge.no { background: rgba(184, 84, 80, 0.12); color: var(--danger); }
-    .badge.pending { background: rgba(13, 43, 69, 0.08); color: var(--text-soft); }
-    .badge.updated { background: rgba(30, 90, 110, 0.12); color: var(--accent); }
-    .live-dot {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.75rem;
-      color: var(--text-soft);
-    }
-    .live-dot::before {
-      content: "";
-      width: 0.5rem;
-      height: 0.5rem;
-      border-radius: 50%;
-      background: var(--ok);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.35; }
-    }
 
     .toolbar {
       display: flex;
@@ -663,7 +642,7 @@
       <!-- Guest List -->
       <section class="panel" id="panel-guests">
         <h2>Guest List</h2>
-        <p class="lead">Add invited guests and set how many seats each invitation includes (1–10). Only names on this list can RSVP; companions are limited to each guest's allocation.</p>
+        <p class="lead">Add invited guests and set how many seats each invitation includes (1–10). When someone RSVPs with a matching full name, they can enter companion names up to that allocation.</p>
 
         <div class="card" style="margin-bottom:1.25rem">
           <h3>Add guest</h3>
@@ -706,8 +685,6 @@
               <tr>
                 <th>Name</th>
                 <th>Allocation</th>
-                <th>RSVP Status</th>
-                <th>Companions</th>
                 <th></th>
               </tr>
             </thead>
@@ -726,7 +703,6 @@
             <option value="attending">Attending only</option>
             <option value="declined">Declined only</option>
           </select>
-          <span class="live-dot" id="rsvpLiveStatus" title="Auto-refreshes every 10 seconds">Live</span>
           <button type="button" class="btn btn-ghost" id="exportCsv">Export CSV</button>
           <button type="button" class="btn btn-ghost" id="refreshRsvps">Refresh</button>
         </div>
@@ -734,12 +710,12 @@
           <table>
             <thead>
               <tr>
-                <th>Primary Guest</th>
+                <th>Name</th>
                 <th>Status</th>
                 <th>Party</th>
                 <th>Companions</th>
                 <th>Message</th>
-                <th>Last Activity</th>
+                <th>Submitted</th>
                 <th></th>
               </tr>
             </thead>
@@ -763,19 +739,6 @@
       let gallery = [];
       let rsvps = [];
       let guests = [];
-      let rsvpPollTimer = null;
-      const RSVP_POLL_MS = 10000;
-
-      function rsvpByGuestId(guestId) {
-        return rsvps.find((r) => r.guestId === guestId) || null;
-      }
-
-      function formatActivity(r) {
-        const stamp = r.updatedAt || r.submittedAt;
-        if (!stamp) return "—";
-        const label = r.updatedAt ? "Updated" : "Submitted";
-        return label + " · " + new Date(stamp).toLocaleString();
-      }
 
       function toast(msg, isError) {
         toastEl.textContent = msg;
@@ -1331,19 +1294,10 @@
         document.getElementById("statGuests").textContent = guests.length;
         const tbody = document.getElementById("guestTable");
         if (!list.length) {
-          tbody.innerHTML = '<tr><td colspan="5">No guests yet. Add invited names above.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="3">No guests yet. Add invited names above.</td></tr>';
           return;
         }
-        tbody.innerHTML = list.map((g) => {
-          const rsvp = rsvpByGuestId(g.id);
-          const companions = rsvp && Array.isArray(rsvp.companions) ? rsvp.companions.filter(Boolean) : [];
-          let statusBadge = '<span class="badge pending">Pending</span>';
-          if (rsvp) {
-            statusBadge = rsvp.attendance === "attending"
-              ? '<span class="badge yes">Attending</span>'
-              : '<span class="badge no">Declined</span>';
-          }
-          return `
+        tbody.innerHTML = list.map((g) => `
           <tr data-guest-id="${escapeAttr(g.id)}">
             <td>
               <input data-edit-name value="${escapeAttr(g.name)}" style="width:100%;min-width:160px" />
@@ -1355,14 +1309,12 @@
                 </select>
               </div>
             </td>
-            <td>${statusBadge}</td>
-            <td>${companions.length ? escapeHtml(companions.join(", ")) : "—"}</td>
             <td style="white-space:nowrap">
               <button type="button" class="btn btn-ghost" data-guest-save="${escapeAttr(g.id)}">Save</button>
               <button type="button" class="btn btn-danger" data-guest-del="${escapeAttr(g.id)}">Delete</button>
             </td>
-          </tr>`;
-        }).join("");
+          </tr>
+        `).join("");
       }
 
       document.getElementById("guestAllocationManual").addEventListener("input", (e) => {
@@ -1462,50 +1414,28 @@
           tbody.innerHTML = '<tr><td colspan="7">No RSVPs yet.</td></tr>';
           return;
         }
-        tbody.innerHTML = list
-          .slice()
-          .sort((a, b) => new Date(b.updatedAt || b.submittedAt) - new Date(a.updatedAt || a.submittedAt))
-          .map((r) => {
+        tbody.innerHTML = list.map((r) => {
           const companions = Array.isArray(r.companions) ? r.companions.filter(Boolean) : [];
           const party = partySizeOf(r);
-          const updatedBadge = r.updatedAt ? ' <span class="badge updated">Updated</span>' : "";
           return `
           <tr>
-            <td>${escapeHtml(r.name)}${updatedBadge}</td>
+            <td>${escapeHtml(r.name)}${r.guestMatched === false ? ' <span class="badge no">Unmatched</span>' : ""}</td>
             <td><span class="badge ${r.attendance === "attending" ? "yes" : "no"}">${r.attendance === "attending" ? "Attending" : "Declined"}</span></td>
             <td>${party}${r.allocation ? " / " + r.allocation : ""}</td>
             <td>${companions.length ? escapeHtml(companions.join(", ")) : "—"}</td>
             <td>${escapeHtml(r.message || "—")}</td>
-            <td>${escapeHtml(formatActivity(r))}</td>
+            <td>${new Date(r.submittedAt).toLocaleString()}</td>
             <td><button type="button" class="btn btn-danger" data-rsvp-del="${r.id}">Delete</button></td>
           </tr>`;
         }).join("");
       }
 
-      async function refreshRsvps(silent) {
+      document.getElementById("rsvpFilter").addEventListener("change", renderRsvps);
+      document.getElementById("refreshRsvps").addEventListener("click", async () => {
         rsvps = await api("/api/admin/rsvps");
         renderRsvps();
-        renderGuests();
-        if (!silent) toast("RSVPs refreshed");
-      }
-
-      function startRsvpPolling() {
-        stopRsvpPolling();
-        rsvpPollTimer = setInterval(() => {
-          if (dashboard.classList.contains("hidden")) return;
-          refreshRsvps(true).catch(() => {});
-        }, RSVP_POLL_MS);
-      }
-
-      function stopRsvpPolling() {
-        if (rsvpPollTimer) {
-          clearInterval(rsvpPollTimer);
-          rsvpPollTimer = null;
-        }
-      }
-
-      document.getElementById("rsvpFilter").addEventListener("change", renderRsvps);
-      document.getElementById("refreshRsvps").addEventListener("click", () => refreshRsvps(false));
+        toast("RSVPs refreshed");
+      });
 
       document.getElementById("rsvpTable").addEventListener("click", async (e) => {
         const btn = e.target.closest("[data-rsvp-del]");
@@ -1522,7 +1452,7 @@
       });
 
       document.getElementById("exportCsv").addEventListener("click", () => {
-        const rows = [["Primary Guest", "Attendance", "Party Size", "Allocation", "Companions", "Message", "Submitted", "Updated"]];
+        const rows = [["Name", "Attendance", "Party Size", "Allocation", "Companions", "Matched Guest List", "Message", "Submitted"]];
         rsvps.forEach((r) => {
           const companions = Array.isArray(r.companions) ? r.companions.filter(Boolean) : [];
           rows.push([
@@ -1531,9 +1461,9 @@
             String(partySizeOf(r)),
             String(r.allocation || ""),
             companions.join("; "),
+            r.guestMatched ? "Yes" : "No",
             (r.message || "").replace(/"/g, '""'),
             r.submittedAt,
-            r.updatedAt || "",
           ]);
         });
         const csv = rows.map((row) => row.map((c) => `"${c}"`).join(",")).join("\n");
@@ -1553,7 +1483,6 @@
         renderGalleryAdmin();
         renderGuests();
         renderRsvps();
-        startRsvpPolling();
       }
 
       function escapeHtml(s) {
