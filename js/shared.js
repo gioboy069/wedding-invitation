@@ -87,7 +87,9 @@
 
   function isGuestPage() {
     var path = window.location.pathname;
-    return !/\/admin(\/|$)/.test(path) && !/\/download\.html$/i.test(path);
+    return !/\/admin(\/|$)/.test(path)
+      && !/\/download\.html$/i.test(path)
+      && !/\/print(\.html|\/|$)/i.test(path);
   }
 
   function injectFrameDecor() {

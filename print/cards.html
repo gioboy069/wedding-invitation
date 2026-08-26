@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gio Anthony &amp; Augiela Shane — Print Invitation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    @page {
+      size: 5in 7in;
+      margin: 0;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #fff;
+    }
+
+    .card {
+      width: 5in;
+      height: 7in;
+      position: relative;
+      overflow: hidden;
+      page-break-after: always;
+      break-after: page;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color: #0d2b45;
+      font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(ellipse 90% 42% at 50% 0%, rgba(183, 212, 230, 0.55), transparent 58%),
+        radial-gradient(ellipse 80% 36% at 50% 100%, rgba(220, 200, 170, 0.58), transparent 60%),
+        linear-gradient(180deg, #f4f8fa 0%, #f7f3ea 48%, #efe4d2 100%);
+    }
+
+    .card:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+
+    .rule {
+      position: absolute;
+      inset: 0.26in;
+      border: 0.85pt solid rgba(30, 90, 110, 0.55);
+      pointer-events: none;
+    }
+
+    .rule::after {
+      content: "";
+      position: absolute;
+      inset: 0.075in;
+      border: 0.6pt solid rgba(184, 154, 110, 0.7);
+    }
+
+    .inner {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      padding: 0.52in 0.5in 0.48in;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .mono {
+      width: 0.58in;
+      height: 0.58in;
+      border: 0.75pt solid rgba(30, 90, 110, 0.5);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13.5pt;
+      letter-spacing: 0.04em;
+      color: #1e5a6e;
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    .mono span {
+      font-style: italic;
+      color: #6ba7a0;
+      padding: 0 0.06em;
+    }
+
+    .kicker {
+      margin-top: 0.22in;
+      font-family: Montserrat, "Helvetica Neue", sans-serif;
+      font-size: 7pt;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #1e5a6e;
+    }
+
+    .flourish {
+      width: 1.45in;
+      height: 0.22in;
+      margin: 0.14in 0 0.12in;
+    }
+
+    .names {
+      font-weight: 300;
+      font-size: 32pt;
+      line-height: 0.95;
+      letter-spacing: 0.01em;
+    }
+
+    .amp {
+      display: block;
+      font-style: italic;
+      font-weight: 400;
+      font-size: 18pt;
+      color: #6ba7a0;
+      line-height: 1.15;
+      padding: 0.04in 0 0.02in;
+    }
+
+    .invite-line {
+      margin-top: 0.16in;
+      font-size: 11.5pt;
+      font-style: italic;
+      font-weight: 400;
+      color: #1e5a6e;
+      line-height: 1.45;
+      max-width: 3.4in;
+    }
+
+    .when {
+      margin-top: 0.2in;
+      font-size: 13.5pt;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    .when em {
+      display: block;
+      font-style: italic;
+      font-size: 12.5pt;
+    }
+
+    .where {
+      margin-top: 0.16in;
+      font-size: 12pt;
+      line-height: 1.4;
+    }
+
+    .where strong {
+      display: block;
+      font-weight: 500;
+      font-size: 13pt;
+    }
+
+    .closing {
+      margin-top: auto;
+      font-size: 11pt;
+      font-style: italic;
+      color: #1e5a6e;
+    }
+
+    .details-title {
+      margin-top: 0.1in;
+      font-weight: 400;
+      font-size: 20pt;
+      letter-spacing: 0.04em;
+    }
+
+    .event {
+      width: 100%;
+      max-width: 3.45in;
+      margin-top: 0.14in;
+      padding-bottom: 0.1in;
+      border-bottom: 0.5pt solid rgba(107, 167, 160, 0.45);
+    }
+
+    .event:last-of-type {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .event .role {
+      font-family: Montserrat, "Helvetica Neue", sans-serif;
+      font-size: 6.5pt;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #6ba7a0;
+    }
+
+    .event h3 {
+      margin: 0.04in 0 0.02in;
+      font-size: 14pt;
+      font-weight: 500;
+    }
+
+    .event p {
+      margin: 0;
+      font-size: 10.5pt;
+      line-height: 1.4;
+      color: #1e5a6e;
+    }
+
+    .note {
+      margin-top: auto;
+      font-size: 10.5pt;
+      font-style: italic;
+      line-height: 1.45;
+      color: #1e5a6e;
+      max-width: 3.4in;
+    }
+
+    #details .inner {
+      padding: 0.46in 0.5in 0.42in;
+    }
+
+    #details .event h3 {
+      font-size: 13pt;
+    }
+
+    #details .note {
+      margin-top: 0.14in;
+    }
+  </style>
+</head>
+<body>
+  <article class="card" id="invite" aria-label="Main wedding invitation">
+    <div class="rule" aria-hidden="true"></div>
+    <div class="inner">
+      <div class="mono" aria-hidden="true">G<span>&amp;</span>A</div>
+      <p class="kicker">Together with their families</p>
+      <svg class="flourish" viewBox="0 0 160 24" fill="none" aria-hidden="true">
+        <path d="M8 12 C28 12 36 6 52 12 C68 18 76 12 80 12 C84 12 92 18 108 12 C124 6 132 12 152 12" stroke="#6ba7a0" stroke-width="0.9" stroke-linecap="round"/>
+        <path d="M80 6.5 C82.4 6.5 84 8.1 84 10.2 C84 13.4 80 16.8 80 16.8 C80 16.8 76 13.4 76 10.2 C76 8.1 77.6 6.5 80 6.5Z" fill="#dcc8aa"/>
+      </svg>
+      <h1 class="names">
+        Gio Anthony
+        <span class="amp">&amp;</span>
+        Augiela Shane
+      </h1>
+      <p class="invite-line">joyfully request the honour of your presence<br />at the celebration of their marriage</p>
+      <p class="when">Thursday, the eighteenth of February<br /><em>two thousand twenty-seven</em></p>
+      <p class="where">
+        <strong>Auberge du Soleil</strong>
+        Rutherford, Napa Valley<br />
+        at four o’clock in the afternoon
+      </p>
+      <p class="closing">Reception to follow · Estate Garden</p>
+    </div>
+  </article>
+
+  <article class="card" id="details" aria-label="Wedding details card">
+    <div class="rule" aria-hidden="true"></div>
+    <div class="inner">
+      <div class="mono" aria-hidden="true">G<span>&amp;</span>A</div>
+      <p class="kicker">The Celebration</p>
+      <h2 class="details-title">With Joyful Hearts</h2>
+      <svg class="flourish" viewBox="0 0 160 24" fill="none" aria-hidden="true">
+        <path d="M8 12 C28 12 36 6 52 12 C68 18 76 12 80 12 C84 12 92 18 108 12 C124 6 132 12 152 12" stroke="#6ba7a0" stroke-width="0.9" stroke-linecap="round"/>
+        <path d="M80 6.5 C82.4 6.5 84 8.1 84 10.2 C84 13.4 80 16.8 80 16.8 C80 16.8 76 13.4 76 10.2 C76 8.1 77.6 6.5 80 6.5Z" fill="#dcc8aa"/>
+      </svg>
+
+      <div class="event">
+        <p class="role">Ceremony</p>
+        <h3>Four o’clock in the afternoon</h3>
+        <p>Auberge du Soleil<br />180 Rutherford Hill Road<br />Rutherford, California</p>
+      </div>
+      <div class="event">
+        <p class="role">Reception</p>
+        <h3>Six o’clock in the evening</h3>
+        <p>The Estate Garden<br />on the same grounds</p>
+      </div>
+      <div class="event">
+        <p class="role">Sunday Brunch</p>
+        <h3>Eleven o’clock in the morning</h3>
+        <p>Vineyard Terrace</p>
+      </div>
+      <div class="event">
+        <p class="role">Attire</p>
+        <h3>Cocktail &amp; smart-formal</h3>
+        <p>A coastal palette of peach, sage, taupe,<br />dusty blue, olive, and slate</p>
+      </div>
+
+      <p class="note">Kindly reply by the first of January,<br />two thousand twenty-seven</p>
+    </div>
+  </article>
+</body>
+</html>

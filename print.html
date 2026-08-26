@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Print Invitation — Gio Anthony &amp; Augiela Shane</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --deep: #0d2b45;
+      --teal: #1e5a6e;
+      --seafoam: #6ba7a0;
+      --sand: #dcc8aa;
+      --sky: #b7d4e6;
+      --bg: #eef6f8;
+      --serif: "Cormorant Garamond", Georgia, serif;
+      --sans: Montserrat, system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--sans);
+      color: var(--deep);
+      background:
+        radial-gradient(ellipse 90% 50% at 50% -10%, rgba(183, 212, 230, 0.8), transparent 55%),
+        linear-gradient(180deg, #dceef5 0%, #eef6f8 45%, #e8dfd0 100%);
+      min-height: 100vh;
+    }
+
+    .studio {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+
+    .top {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .kicker {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: clamp(2rem, 5vw, 3rem);
+      margin: 0.4rem 0 0.6rem;
+    }
+
+    .lead {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--teal);
+      max-width: 34rem;
+      margin: 0 auto 1.4rem;
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0.7rem 1.2rem;
+      border: 1px solid var(--teal);
+      background: var(--deep);
+      color: #f7f4ee;
+      text-decoration: none;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--deep);
+    }
+
+    .desk {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.75rem;
+      justify-content: center;
+      align-items: flex-start;
+      margin: 2.25rem 0 2rem;
+    }
+
+    .sheet {
+      width: min(100%, 5in);
+      height: 7in;
+      border: 0;
+      background: #fff;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.7),
+        0 22px 50px rgba(13, 43, 69, 0.18);
+    }
+
+    .notes {
+      max-width: 640px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(107, 167, 160, 0.25);
+      padding: 1.35rem 1.4rem 1.45rem;
+    }
+
+    .notes h2 {
+      font-family: var(--serif);
+      font-size: 1.45rem;
+      font-weight: 400;
+      margin-bottom: 0.65rem;
+    }
+
+    .notes ol {
+      padding-left: 1.2rem;
+      display: grid;
+      gap: 0.55rem;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      color: var(--teal);
+    }
+
+    .home {
+      display: block;
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--teal);
+      text-decoration: none;
+    }
+
+    @media (max-width: 860px) {
+      .sheet {
+        width: min(100%, 360px);
+        height: calc(min(100vw - 2.5rem, 360px) * 1.4);
+      }
+    }
+
+    @media print {
+      @page { size: 5in 7in; margin: 0; }
+      .studio { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="studio">
+    <div class="top">
+      <p class="kicker">Print suite · 5 × 7 inches</p>
+      <h1>A card for the post</h1>
+      <p class="lead">Two matching cards — the invitation and the celebration details — sized for fine cardstock. Download the print-ready PDF, or print directly at actual size.</p>
+      <div class="actions">
+        <a class="btn" href="/print/Gio-Anthony-Augiela-Shane-Invitation.pdf" download>Download PDF</a>
+        <button type="button" class="btn ghost" id="printBtn">Print cards</button>
+      </div>
+    </div>
+
+    <div class="desk">
+      <iframe class="sheet" title="Invitation card" src="/print/cards.html#invite"></iframe>
+      <iframe class="sheet" title="Details card" src="/print/cards.html#details"></iframe>
+    </div>
+
+    <div class="notes">
+      <h2>For the printer</h2>
+      <ol>
+        <li>Paper: <strong>5 × 7 in</strong> cardstock, <strong>110–130 lb</strong> (about 300–350 gsm). Cotton, felt, or eggshell in ivory or warm white.</li>
+        <li>File: use the downloaded PDF. Print at <strong>100% / actual size</strong> — do not “fit to page.”</li>
+        <li>Home printer: load 5×7 cards or print centered on letter paper and trim to the double border.</li>
+        <li>Shop print: ask for a two-sided suite, or print invitation and details as two separate cards.</li>
+      </ol>
+    </div>
+    <a class="home" href="/">Back to the invitation</a>
+  </div>
+
+  <script>
+    document.getElementById("printBtn").addEventListener("click", function () {
+      var frame = document.createElement("iframe");
+      frame.style.position = "fixed";
+      frame.style.right = "0";
+      frame.style.bottom = "0";
+      frame.style.width = "0";
+      frame.style.height = "0";
+      frame.style.border = "0";
+      frame.src = "/print/cards.html";
+      frame.onload = function () {
+        setTimeout(function () {
+          frame.contentWindow.focus();
+          frame.contentWindow.print();
+        }, 400);
+      };
+      document.body.appendChild(frame);
+    });
+  </script>
+</body>
+</html>
