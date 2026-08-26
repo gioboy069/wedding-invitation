@@ -2630,11 +2630,7 @@
       <span></span>
     </button>
     <ul class="nav-links" id="navLinks">
-      <li><a href="#story">Our Story</a></li>
-      <li><a href="gallery.html">Gallery</a></li>
       <li><a href="#venue">Venue</a></li>
-      <li><a href="#wedding-day">Schedule</a></li>
-      <li><a href="#entourage">Entourage</a></li>
       <li><a href="#attire">Attire</a></li>
       <li><a href="#rsvp">RSVP</a></li>
     </ul>
@@ -3050,7 +3046,7 @@
           <p>We've already received your response. If you need to change names or update your RSVP, please contact Gio and Augiela directly at <a href="mailto:gomez.wed2027@gmail.com">gomez.wed2027@gmail.com</a>.</p>
         </div>
 
-        <div id="rsvpEntryFields">
+        <div id="rsvpEntryFields" hidden>
         <div class="form-group" id="attendanceGroup">
           <span class="form-label">Will you be attending?</span>
           <div class="attendance-group">
@@ -3083,7 +3079,7 @@
           <textarea id="guestMessage" name="message" class="form-textarea" placeholder="Share your well wishes, dietary notes, or a fond memory..." rows="4"></textarea>
         </div>
 
-        <button type="submit" class="form-submit" id="submitBtn">Send RSVP</button>
+        <button type="submit" class="form-submit" id="submitBtn" disabled>Send RSVP</button>
         </div>
       </form>
 
@@ -3694,14 +3690,20 @@
 
       function setAlreadySubmitted(isDone) {
         alreadySubmitted = !!isDone;
-        rsvpAlready.classList.toggle("show", alreadySubmitted);
-        rsvpAlready.hidden = !alreadySubmitted;
-        rsvpEntryFields.hidden = alreadySubmitted;
-        rsvpEntryFields.style.display = alreadySubmitted ? "none" : "";
         if (alreadySubmitted) {
           setMatchStatus("matched", "Your RSVP is already on file.");
-          updateCompanionVisibility();
         }
+        syncResponseFields();
+        updateCompanionVisibility();
+      }
+
+      function syncResponseFields() {
+        const canRespond = !!matchedGuest && !alreadySubmitted;
+        rsvpAlready.classList.toggle("show", alreadySubmitted);
+        rsvpAlready.hidden = !alreadySubmitted;
+        rsvpEntryFields.hidden = !canRespond;
+        rsvpEntryFields.style.display = canRespond ? "" : "none";
+        submitBtn.disabled = !canRespond;
       }
 
       function updateCompanionVisibility() {
@@ -3767,6 +3769,7 @@
           matchedGuest = null;
           setAlreadySubmitted(false);
           setMatchStatus("", "");
+          syncResponseFields();
           updateCompanionVisibility();
           return;
         }
@@ -3779,7 +3782,7 @@
               setAlreadySubmitted(true);
               return;
             }
-            setAlreadySubmitted(false);
+            alreadySubmitted = false;
             if (data && data.matched && data.guest) {
               matchedGuest = data.guest;
               setMatchStatus(
@@ -3789,14 +3792,19 @@
               );
             } else {
               matchedGuest = null;
-              setMatchStatus("unmatched", "Name not found on the guest list yet. Please use the surname and first name as they appear on your invitation.");
+              setMatchStatus(
+                "unmatched",
+                "This name is not on our guest list. Please enter the surname and first name as they appear on your invitation. If you need help, contact Gio and Augiela at gomez.wed2027@gmail.com."
+              );
             }
+            syncResponseFields();
             updateCompanionVisibility();
           })
           .catch(function () {
             matchedGuest = null;
             setAlreadySubmitted(false);
             setMatchStatus("", "");
+            syncResponseFields();
             updateCompanionVisibility();
           });
       }
@@ -3812,6 +3820,7 @@
       guestFirstNameInput.addEventListener("blur", lookupGuestName);
       attendingRadio.addEventListener("change", updateCompanionVisibility);
       declinedRadio.addEventListener("change", updateCompanionVisibility);
+      syncResponseFields();
 
       function validateForm() {
         let valid = true;
@@ -3821,6 +3830,14 @@
           valid = false;
         } else {
           nameGroup.classList.remove("invalid");
+        }
+        if (!matchedGuest) {
+          nameGroup.classList.add("invalid");
+          setMatchStatus(
+            "unmatched",
+            "This name is not on our guest list. Please enter the surname and first name as they appear on your invitation."
+          );
+          valid = false;
         }
         const attendanceGroup = document.getElementById("attendanceGroup");
         if (!(attendingRadio.checked || declinedRadio.checked)) {
@@ -3836,6 +3853,7 @@
         e.preventDefault();
         if (alreadySubmitted) return;
         if (!validateForm()) return;
+        if (!matchedGuest) return;
 
         submitBtn.disabled = true;
         submitBtn.textContent = "Sending…";
@@ -3922,8 +3940,16 @@
               rsvpAlready.scrollIntoView({ behavior: "smooth", block: "center" });
               return null;
             }
-            if (!result.ok) throw new Error("API failed");
-            if (result.body && result.body.emailed === false) {
+            if (result.body && result.body.notOnGuestList) {
+              matchedGuest = null;
+              alreadySubmitted = false;
+              setMatchStatus("unmatched", result.body.error || "This name is not on our guest list.");
+              syncResponseFields();
+              resetSubmit();
+              return null;
+            }
+            if (!result.ok) throw new Error((result.body && result.body.error) || "API failed");
+            if (result.body && result.body.emailed === false && matchedGuest) {
               return emailCouple().then(function () { return result.body; });
             }
             return result.body;
@@ -3932,14 +3958,8 @@
             if (result) showSuccess();
           })
           .catch(function () {
-            emailCouple()
-              .then(function () {
-                showSuccess();
-              })
-              .catch(function () {
-                resetSubmit();
-                alert("Unable to send RSVP right now. Please try again in a moment.");
-              });
+            resetSubmit();
+            alert("Unable to send RSVP right now. Please try again in a moment.");
           });
       });
 

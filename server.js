@@ -12,7 +12,7 @@ const DATA_DIR = join(ROOT, "data");
 const UPLOAD_DIR = join(ROOT, "uploads");
 const PORT = Number(process.env.PORT || 4317);
 const HOST = process.env.HOST || "0.0.0.0";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "augiela-gio-2027";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "gomeZ120822@";
 const RSVP_EMAIL = process.env.RSVP_EMAIL || "gomez.wed2027@gmail.com";
 
 if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -187,10 +187,17 @@ app.post("/api/rsvp", async (req, res) => {
   const guests = readJson("guests.json", []).map(hydratePerson);
   let matchedGuest = null;
   if (guestId) {
-    matchedGuest = guests.find((g) => g.id === guestId) || null;
+    const byId = guests.find((g) => g.id === guestId) || null;
+    if (byId && namesMatch(byId, person)) matchedGuest = byId;
   }
   if (!matchedGuest) {
     matchedGuest = guests.find((g) => namesMatch(g, person)) || null;
+  }
+  if (!matchedGuest) {
+    return res.status(403).json({
+      notOnGuestList: true,
+      error: "This name is not on the guest list. Please use the surname and first name on your invitation, or contact Gio and Augiela.",
+    });
   }
 
   const allocation = matchedGuest
