@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import cookieParser from "cookie-parser";
-import { randomBytes, timingSafeEqual } from "crypto";
+import { randomBytes, timingSafeEqual, scryptSync, createHash } from "crypto";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from "fs";
 import { join, dirname, extname } from "path";
 import { fileURLToPath } from "url";
@@ -14,6 +14,7 @@ const PORT = Number(process.env.PORT || 4317);
 const HOST = process.env.HOST || "0.0.0.0";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "augiela-gio-2027";
 const RSVP_EMAIL = process.env.RSVP_EMAIL || "gomez.wed2027@gmail.com";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || RSVP_EMAIL;
 
 if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
@@ -46,7 +47,95 @@ function persistSessions() {
   }
 }
 
+function defaultAdminConfig() {
+  return {
+    email: ADMIN_EMAIL,
+    passwordHash: "",
+    salt: "",
+    resetTokenHash: "",
+    resetExpires: 0,
+    lastResetSentAt: 0,
+  };
+}
+
+function loadAdminConfig() {
+  const saved = readJson("admin.json", defaultAdminConfig());
+  return { ...defaultAdminConfig(), ...saved, email: saved.email || ADMIN_EMAIL };
+}
+
+function saveAdminConfig(cfg) {
+  writeJson("admin.json", cfg);
+}
+
+function hashPassword(password, salt = randomBytes(16).toString("hex")) {
+  const hash = scryptSync(String(password), salt, 64).toString("hex");
+  return { hash, salt };
+}
+
+function hashToken(token) {
+  return createHash("sha256").update(String(token)).digest("hex");
+}
+
+function verifyPassword(password) {
+  const cfg = loadAdminConfig();
+  if (cfg.passwordHash && cfg.salt) {
+    const check = scryptSync(String(password), cfg.salt, 64);
+    const stored = Buffer.from(cfg.passwordHash, "hex");
+    if (!stored.length || check.length !== stored.length) return false;
+    return timingSafeEqual(check, stored);
+  }
+  return safeEqual(password || "", ADMIN_PASSWORD);
+}
+
+function ensureAdminPassword() {
+  const cfg = loadAdminConfig();
+  if (!cfg.passwordHash || !cfg.salt) {
+    const hashed = hashPassword(ADMIN_PASSWORD);
+    cfg.passwordHash = hashed.hash;
+    cfg.salt = hashed.salt;
+    saveAdminConfig(cfg);
+  }
+}
+
+function publicBaseUrl(req) {
+  const host = String(req.get("x-forwarded-host") || req.get("host") || `127.0.0.1:${PORT}`)
+    .split(",")[0]
+    .trim();
+  const forwarded = String(req.get("x-forwarded-proto") || "").split(",")[0].trim();
+  const proto = forwarded || (req.secure ? "https" : "http");
+  return `${proto}://${host}`;
+}
+
+async function sendAdminResetEmail(resetUrl) {
+  const emailRes = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(ADMIN_EMAIL)}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      _subject: "Reset your wedding admin password",
+      _template: "box",
+      _captcha: "false",
+      name: "Wedding admin",
+      message:
+        "Hello Gio and Augiela,\n\n" +
+        "Someone asked to reset the password for your wedding invitation admin.\n\n" +
+        "Open this link to choose a new password. It expires in one hour:\n" +
+        resetUrl +
+        "\n\nIf you did not ask for this, you can ignore this email.",
+    }),
+  });
+  if (!emailRes.ok) {
+    const body = await emailRes.text();
+    console.error("Admin reset email failed:", emailRes.status, body);
+    return false;
+  }
+  return true;
+}
+
 loadSessions();
+ensureAdminPassword();
 
 function readJson(name, fallback) {
   const path = join(DATA_DIR, name);
@@ -497,14 +586,92 @@ app.delete("/api/admin/guests/:id", requireAdmin, (req, res) => {
 
 app.post("/api/admin/login", (req, res) => {
   const { password } = req.body || {};
-  if (!safeEqual(password || "", ADMIN_PASSWORD)) {
-    return res.status(401).json({ error: "Invalid password. Use augiela-gio-2027 unless you set ADMIN_PASSWORD." });
+  if (!verifyPassword(password || "")) {
+    return res.status(401).json({ error: "Invalid password." });
   }
   const token = createToken();
   sessions.set(token, Date.now());
   persistSessions();
   res.cookie("admin_session", token, sessionCookieOptions(req));
   res.json({ ok: true, token });
+});
+
+app.get("/api/admin/login-options", (_req, res) => {
+  res.json({ email: loadAdminConfig().email });
+});
+
+app.post("/api/admin/forgot-password", async (req, res) => {
+  const cfg = loadAdminConfig();
+  const now = Date.now();
+  if (cfg.lastResetSentAt && now - Number(cfg.lastResetSentAt) < 60 * 1000) {
+    return res.json({
+      ok: true,
+      emailed: true,
+      email: cfg.email,
+      message: "If an account exists, a reset link is on its way. Please wait a moment before requesting another.",
+    });
+  }
+
+  const rawToken = createToken();
+  cfg.resetTokenHash = hashToken(rawToken);
+  cfg.resetExpires = now + 60 * 60 * 1000;
+  cfg.lastResetSentAt = now;
+  saveAdminConfig(cfg);
+
+  const resetUrl = `${publicBaseUrl(req)}/admin/?token=${encodeURIComponent(rawToken)}`;
+  let emailed = false;
+  try {
+    emailed = await sendAdminResetEmail(resetUrl);
+  } catch (err) {
+    console.error("Admin reset email error:", err);
+  }
+  if (!emailed) {
+    console.log("Admin password reset link (email delivery failed):", resetUrl);
+  }
+
+  res.json({
+    ok: true,
+    emailed,
+    email: cfg.email,
+    message: emailed
+      ? `A reset link was sent to ${cfg.email}. Check your inbox and spam folder.`
+      : `We couldn't send email just now. Please try again in a moment, or check that ${cfg.email} can receive mail from the site.`,
+  });
+});
+
+app.post("/api/admin/reset-password", (req, res) => {
+  const token = String(req.body?.token || "").trim();
+  const password = String(req.body?.password || "");
+  const confirm = String(req.body?.confirm || password);
+  if (!token) return res.status(400).json({ error: "This reset link is missing. Please request a new one." });
+  if (password.length < 8) {
+    return res.status(400).json({ error: "Please choose a password of at least 8 characters." });
+  }
+  if (password !== confirm) {
+    return res.status(400).json({ error: "Those passwords do not match." });
+  }
+
+  const cfg = loadAdminConfig();
+  const now = Date.now();
+  if (!cfg.resetTokenHash || !cfg.resetExpires || now > Number(cfg.resetExpires)) {
+    return res.status(400).json({ error: "This reset link has expired. Please request a new one." });
+  }
+  const incoming = Buffer.from(hashToken(token), "hex");
+  const stored = Buffer.from(String(cfg.resetTokenHash), "hex");
+  if (!incoming.length || incoming.length !== stored.length || !timingSafeEqual(incoming, stored)) {
+    return res.status(400).json({ error: "This reset link is invalid. Please request a new one." });
+  }
+
+  const hashed = hashPassword(password);
+  cfg.passwordHash = hashed.hash;
+  cfg.salt = hashed.salt;
+  cfg.resetTokenHash = "";
+  cfg.resetExpires = 0;
+  saveAdminConfig(cfg);
+
+  sessions.clear();
+  persistSessions();
+  res.json({ ok: true });
 });
 
 app.post("/api/admin/logout", (req, res) => {

@@ -18,9 +18,11 @@ npm run dev
 
 ### Admin login
 
-Default password: `augiela-gio-2027`
+The login page does not show the password. Sign in with the password you chose, or tap **Forgot password?** to email a reset link to `gomez.wed2027@gmail.com`. The link expires in one hour.
 
-Override with an environment variable:
+The first-time password (until you reset it) is `augiela-gio-2027`. After the first launch, change it with Forgot password rather than the environment variable.
+
+To set a different first-time password, set `ADMIN_PASSWORD` **before** the first launch (before `data/admin.json` exists):
 
 ```bash
 ADMIN_PASSWORD='your-secure-password' npm run dev

@@ -6,3 +6,4 @@ uploads/*
 data/rsvps.json
 .env
 data/sessions.json
+data/admin.json

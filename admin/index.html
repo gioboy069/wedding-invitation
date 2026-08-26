@@ -73,18 +73,34 @@
       margin-bottom: 1.75rem;
     }
 
-    .login-hint {
-      margin: -1.1rem 0 1.25rem !important;
-      font-size: 0.78rem !important;
-      color: var(--sea) !important;
+    .login-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.25rem;
     }
 
-    .login-hint code {
+    .login-link {
+      display: block;
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--sea);
       font-family: var(--font-sans);
-      font-size: 0.82rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      color: var(--sea-deep);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0.35rem;
+    }
+
+    .login-link:hover { color: var(--sea-deep); }
+
+    .login-ok {
+      color: var(--ok);
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
     }
 
     /* Layout */
@@ -488,11 +504,39 @@
     <form class="login-card" id="loginForm">
       <h1>Admin</h1>
       <p>Sign in to manage your wedding invitation</p>
-      <p class="login-hint">Password: <code>augiela-gio-2027</code></p>
+      <div id="loginNotice" class="login-ok hidden"></div>
       <div id="loginError" class="error-msg hidden"></div>
       <label for="password">Password</label>
-      <input type="password" id="password" name="password" value="augiela-gio-2027" autocomplete="current-password" required />
-      <button type="submit" class="btn btn-primary" style="width:100%">Sign In</button>
+      <input type="password" id="password" name="password" autocomplete="current-password" required />
+      <div class="login-actions">
+        <button type="submit" class="btn btn-primary" style="width:100%">Sign In</button>
+        <button type="button" class="login-link" id="showForgot">Forgot password?</button>
+      </div>
+    </form>
+
+    <form class="login-card hidden" id="forgotForm">
+      <h1>Reset password</h1>
+      <p>We’ll email a reset link to <strong id="adminEmailLabel">gomez.wed2027@gmail.com</strong>. Open it to choose a new password.</p>
+      <div id="forgotError" class="error-msg hidden"></div>
+      <div id="forgotNotice" class="login-ok hidden"></div>
+      <div class="login-actions">
+        <button type="submit" class="btn btn-primary" style="width:100%" id="forgotSubmit">Send reset link</button>
+        <button type="button" class="login-link" id="backToLogin">Back to sign in</button>
+      </div>
+    </form>
+
+    <form class="login-card hidden" id="resetForm">
+      <h1>New password</h1>
+      <p>Choose a new password for your admin dashboard.</p>
+      <div id="resetError" class="error-msg hidden"></div>
+      <label for="newPassword">New password</label>
+      <input type="password" id="newPassword" name="newPassword" autocomplete="new-password" minlength="8" required />
+      <label for="confirmPassword">Confirm password</label>
+      <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" minlength="8" required />
+      <div class="login-actions">
+        <button type="submit" class="btn btn-primary" style="width:100%">Save password</button>
+        <button type="button" class="login-link" id="cancelReset">Back to sign in</button>
+      </div>
     </form>
   </div>
 
@@ -808,11 +852,11 @@
           headers,
         });
         const data = await res.json().catch(() => ({}));
-        if (res.status === 401 && path !== "/api/admin/login" && path !== "/api/admin/me") {
+        if (res.status === 401 && path !== "/api/admin/login" && path !== "/api/admin/me" && path !== "/api/admin/forgot-password" && path !== "/api/admin/reset-password") {
           loginScreen.classList.remove("hidden");
           dashboard.classList.add("hidden");
           document.getElementById("menuToggle").classList.add("hidden");
-          throw new Error("Could not stay signed in. Use password augiela-gio-2027 and try again.");
+          throw new Error("Could not stay signed in. Please sign in again.");
         }
         if (!res.ok) throw new Error(data.error || "Request failed");
         return data;
@@ -835,6 +879,85 @@
         }
       }
 
+      function showCard(which) {
+        document.getElementById("loginForm").classList.toggle("hidden", which !== "login");
+        document.getElementById("forgotForm").classList.toggle("hidden", which !== "forgot");
+        document.getElementById("resetForm").classList.toggle("hidden", which !== "reset");
+      }
+
+      fetch("/api/admin/login-options").then((r) => r.json()).then((data) => {
+        if (data && data.email) {
+          const label = document.getElementById("adminEmailLabel");
+          if (label) label.textContent = data.email;
+        }
+      }).catch(() => {});
+
+      document.getElementById("showForgot").addEventListener("click", () => {
+        document.getElementById("forgotError").classList.add("hidden");
+        document.getElementById("forgotNotice").classList.add("hidden");
+        showCard("forgot");
+      });
+      document.getElementById("backToLogin").addEventListener("click", () => showCard("login"));
+      document.getElementById("cancelReset").addEventListener("click", () => {
+        history.replaceState({}, "", "/admin/");
+        showCard("login");
+      });
+
+      document.getElementById("forgotForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const err = document.getElementById("forgotError");
+        const note = document.getElementById("forgotNotice");
+        const btn = document.getElementById("forgotSubmit");
+        err.classList.add("hidden");
+        note.classList.add("hidden");
+        btn.disabled = true;
+        btn.textContent = "Sending…";
+        try {
+          const data = await api("/api/admin/forgot-password", { method: "POST", body: JSON.stringify({}) });
+          note.textContent = data.message || "A reset link is on its way to your Gmail.";
+          note.classList.remove("hidden");
+        } catch (ex) {
+          err.textContent = ex.message;
+          err.classList.remove("hidden");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Send reset link";
+        }
+      });
+
+      document.getElementById("resetForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const err = document.getElementById("resetError");
+        err.classList.add("hidden");
+        const password = document.getElementById("newPassword").value;
+        const confirm = document.getElementById("confirmPassword").value;
+        if (password !== confirm) {
+          err.textContent = "Those passwords do not match.";
+          err.classList.remove("hidden");
+          return;
+        }
+        try {
+          const token = new URLSearchParams(location.search).get("token") || "";
+          await api("/api/admin/reset-password", {
+            method: "POST",
+            body: JSON.stringify({ token, password, confirm }),
+          });
+          adminToken = "";
+          sessionStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(TOKEN_KEY);
+          history.replaceState({}, "", "/admin/");
+          showCard("login");
+          const notice = document.getElementById("loginNotice");
+          notice.textContent = "Your password was updated. Please sign in.";
+          notice.classList.remove("hidden");
+          document.getElementById("password").value = "";
+          document.getElementById("password").focus();
+        } catch (ex) {
+          err.textContent = ex.message;
+          err.classList.remove("hidden");
+        }
+      });
+
       document.getElementById("loginForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const err = document.getElementById("loginError");
@@ -842,7 +965,7 @@
         try {
           const data = await api("/api/admin/login", {
             method: "POST",
-            body: JSON.stringify({ password: document.getElementById("password").value.trim() }),
+            body: JSON.stringify({ password: document.getElementById("password").value }),
           });
           adminToken = data.token || "";
           if (adminToken) {
@@ -1628,7 +1751,12 @@
         return escapeHtml(s).replace(/'/g, "&#39;");
       }
 
-      checkAuth();
+      const resetTokenFromUrl = new URLSearchParams(window.location.search).get("token");
+      if (resetTokenFromUrl) {
+        showCard("reset");
+      } else {
+        checkAuth();
+      }
     })();
   </script>
 </body>
