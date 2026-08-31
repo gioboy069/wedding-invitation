@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import cookieParser from "cookie-parser";
+import ExcelJS from "exceljs";
 import { randomBytes, timingSafeEqual, scryptSync, createHash } from "crypto";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from "fs";
 import { join, dirname, extname } from "path";
@@ -12,7 +13,7 @@ const DATA_DIR = join(ROOT, "data");
 const UPLOAD_DIR = join(ROOT, "uploads");
 const PORT = Number(process.env.PORT || 4317);
 const HOST = process.env.HOST || "0.0.0.0";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "gomeZ120822@";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "augiela-gio-2027";
 const RSVP_EMAIL = process.env.RSVP_EMAIL || "gomez.wed2027@gmail.com";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || RSVP_EMAIL;
 
@@ -194,6 +195,25 @@ const upload = multer({
   fileFilter: (_req, file, cb) => {
     if (/^image\/(jpeg|png|webp|gif)$/.test(file.mimetype)) cb(null, true);
     else cb(new Error("Only image uploads are allowed"));
+  },
+});
+
+const spreadsheetUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 6 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const name = String(file.originalname || "").toLowerCase();
+    const type = String(file.mimetype || "").toLowerCase();
+    if (
+      name.endsWith(".xlsx") ||
+      name.endsWith(".xlsm") ||
+      type.includes("spreadsheet") ||
+      type.includes("excel")
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error("Please upload an Excel file (.xlsx)"));
+    }
   },
 });
 
@@ -578,10 +598,28 @@ app.get("/api/guests/lookup", (req, res) => {
   const guest = guests.find((g) => namesMatch(g, person)) || null;
   const existing = findExistingRsvp(rsvps, person, guest?.id);
   if (existing) {
+    const payload = guest ? publicGuestPayload(guest) : null;
+    if (payload) {
+      if (!payload.tableNumber && existing.tableNumber) {
+        payload.tableNumber = trimGuestField(existing.tableNumber, 40);
+        payload.tableLabel = formatTableLabel(payload.tableNumber);
+      }
+      if (!payload.category && existing.category) {
+        payload.category = trimGuestField(existing.category, 80);
+      }
+    }
     return res.json({
       matched: !!guest,
       alreadySubmitted: true,
-      guest: guest ? publicGuestPayload(guest) : null,
+      attendance: existing.attendance || "",
+      guest: payload || {
+        name: existing.name,
+        firstName: existing.firstName,
+        surname: existing.surname,
+        category: trimGuestField(existing.category, 80),
+        tableNumber: trimGuestField(existing.tableNumber, 40),
+        tableLabel: formatTableLabel(existing.tableNumber),
+      },
     });
   }
   if (!guest) return res.json({ matched: false, alreadySubmitted: false });
@@ -596,6 +634,195 @@ app.get("/api/guests/lookup", (req, res) => {
 
 app.get("/api/admin/guests", requireAdmin, (_req, res) => {
   res.json(readJson("guests.json", []).map(hydratePerson));
+});
+
+function excelCellText(value) {
+  if (value == null || value === "") return "";
+  if (typeof value === "object") {
+    if (value.hyperlink && value.text) return String(value.text).trim();
+    if (value.text) return String(value.text).trim();
+    if (Array.isArray(value.richText)) return value.richText.map((part) => part.text || "").join("").trim();
+    if (value.result != null) return String(value.result).trim();
+  }
+  return String(value).replace(/\s+/g, " ").trim();
+}
+
+function excelHeaderKey(value) {
+  return excelCellText(value).toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+app.get("/api/admin/guests.xlsx", requireAdmin, async (_req, res) => {
+  const guests = sortGuestsBySurname(readJson("guests.json", []).map(hydratePerson));
+  const rsvps = readJson("rsvps.json", []);
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "Augiela & Gio wedding";
+  const sheet = workbook.addWorksheet("Guest list");
+  sheet.columns = [
+    { header: "Guest ID", key: "id", width: 32 },
+    { header: "Surname", key: "surname", width: 18 },
+    { header: "First name", key: "firstName", width: 18 },
+    { header: "Category", key: "category", width: 22 },
+    { header: "Table", key: "tableNumber", width: 12 },
+    { header: "Allocation", key: "allocation", width: 12 },
+    { header: "RSVP", key: "rsvp", width: 22 },
+  ];
+  sheet.getRow(1).font = { bold: true };
+  guests.forEach((guest) => {
+    const existing = findExistingRsvp(rsvps, guest, guest.id);
+    let rsvp = "Waiting";
+    if (existing) rsvp = existing.attendance === "attending" ? "Replied · attending" : "Replied · declined";
+    sheet.addRow({
+      id: guest.id || "",
+      surname: guest.surname || "",
+      firstName: guest.firstName || "",
+      category: guest.category || "",
+      tableNumber: guest.tableNumber || "",
+      allocation: Math.min(10, Math.max(1, Number(guest.allocation) || 1)),
+      rsvp,
+    });
+  });
+  const help = workbook.addWorksheet("How to update");
+  help.getColumn(1).width = 92;
+  [
+    "Download this file, edit the Guest list sheet, then upload it in Admin → Guest List.",
+    "Leave Guest ID unchanged for people already on the list. That keeps their RSVP linked.",
+    "To add someone new, leave Guest ID blank and fill Surname and First name.",
+    "Category examples: The Groom, The Bride, Groom’s mother, Family, Friend.",
+    "Table is the table number they will see on the RSVP form.",
+    "Allocation is how many seats that invitation includes (1–10).",
+    "The RSVP column is for your reference only — uploading will not change replies.",
+    "Removing a row from Excel does not delete that guest on the website. Delete guests in Admin.",
+  ].forEach((line, i) => {
+    help.getCell(i + 1, 1).value = line;
+  });
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", 'attachment; filename="wedding-guest-list.xlsx"');
+  await workbook.xlsx.write(res);
+  res.end();
+});
+
+app.post("/api/admin/guests/import", requireAdmin, (req, res) => {
+  spreadsheetUpload.single("file")(req, res, async (err) => {
+    if (err) return res.status(400).json({ error: err.message || "Please upload an Excel file." });
+    if (!req.file?.buffer) return res.status(400).json({ error: "Please choose an Excel file to upload." });
+    try {
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(req.file.buffer);
+      const sheet = workbook.getWorksheet("Guest list") || workbook.worksheets[0];
+      if (!sheet) return res.status(400).json({ error: "That Excel file has no worksheet to import." });
+
+      const headerRow = sheet.getRow(1);
+      const colIndex = {};
+      headerRow.eachCell((cell, col) => {
+        const key = excelHeaderKey(cell.value);
+        if (key === "guestid" || key === "id") colIndex.id = col;
+        if (key === "surname" || key === "lastname" || key === "last") colIndex.surname = col;
+        if (key === "firstname" || key === "first" || key === "givenname") colIndex.firstName = col;
+        if (key === "category" || key === "role") colIndex.category = col;
+        if (key === "table" || key === "tablenumber" || key === "tableno") colIndex.tableNumber = col;
+        if (key === "allocation" || key === "partysize" || key === "seats") colIndex.allocation = col;
+      });
+      if (!colIndex.surname || !colIndex.firstName) {
+        return res.status(400).json({ error: "The spreadsheet needs Surname and First name columns." });
+      }
+
+      const guests = readJson("guests.json", []).map(hydratePerson);
+      const seenNames = new Set();
+      const seenIds = new Set();
+      let added = 0;
+      let updated = 0;
+      const skipped = [];
+
+      sheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return;
+        const person = parsePersonName(
+          "",
+          excelCellText(row.getCell(colIndex.firstName).value),
+          excelCellText(row.getCell(colIndex.surname).value)
+        );
+        if (!person.surname && !person.firstName) return;
+        if (!person.surname || !person.firstName) {
+          skipped.push("Row " + rowNumber + " needs both surname and first name.");
+          return;
+        }
+        const nameKeyValue = nameKey(person);
+        if (seenNames.has(nameKeyValue)) {
+          skipped.push(person.name + " appears more than once in the file.");
+          return;
+        }
+        seenNames.add(nameKeyValue);
+
+        const incomingId = colIndex.id ? excelCellText(row.getCell(colIndex.id).value) : "";
+        if (incomingId) {
+          if (seenIds.has(incomingId)) {
+            skipped.push("Guest ID " + incomingId + " appears more than once in the file.");
+            return;
+          }
+          seenIds.add(incomingId);
+        }
+
+        let allocation = colIndex.allocation
+          ? Number(excelCellText(row.getCell(colIndex.allocation).value))
+          : NaN;
+        const placement = guestPlacement({
+          category: colIndex.category ? excelCellText(row.getCell(colIndex.category).value) : "",
+          tableNumber: colIndex.tableNumber ? excelCellText(row.getCell(colIndex.tableNumber).value) : "",
+        });
+
+        let idx = incomingId ? guests.findIndex((g) => g.id === incomingId) : -1;
+        if (idx === -1) idx = guests.findIndex((g) => namesMatch(g, person));
+
+        if (idx !== -1) {
+          if (!Number.isFinite(allocation)) allocation = guests[idx].allocation || 1;
+          allocation = Math.min(10, Math.max(1, Math.round(allocation)));
+          const duplicate = guests.some((g, i) => i !== idx && namesMatch(g, person));
+          if (duplicate) {
+            skipped.push(person.name + " would duplicate another guest.");
+            return;
+          }
+          guests[idx] = {
+            ...guests[idx],
+            name: person.name,
+            firstName: person.firstName,
+            surname: person.surname,
+            allocation,
+            category: placement.category,
+            tableNumber: placement.tableNumber,
+          };
+          updated += 1;
+          return;
+        }
+
+        if (!Number.isFinite(allocation)) allocation = 1;
+        allocation = Math.min(10, Math.max(1, Math.round(allocation)));
+        guests.push({
+          id: `guest-${Date.now()}-${randomBytes(3).toString("hex")}-${rowNumber}`,
+          name: person.name,
+          firstName: person.firstName,
+          surname: person.surname,
+          allocation,
+          category: placement.category,
+          tableNumber: placement.tableNumber,
+        });
+        added += 1;
+      });
+
+      sortGuestsBySurname(guests);
+      writeJson("guests.json", guests);
+      res.json({
+        ok: true,
+        added,
+        updated,
+        skipped,
+        total: guests.length,
+        message: `Imported ${updated} update${updated === 1 ? "" : "s"} and ${added} new guest${added === 1 ? "" : "s"}.`,
+      });
+    } catch (error) {
+      console.error("Guest Excel import failed:", error);
+      res.status(400).json({ error: "Could not read that Excel file. Please upload the downloaded .xlsx file." });
+    }
+  });
 });
 
 app.post("/api/admin/guests", requireAdmin, (req, res) => {

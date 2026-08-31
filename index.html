@@ -1659,11 +1659,19 @@
     .rsvp {
       background: var(--white);
       scroll-margin-top: 6rem;
+      position: relative;
+      z-index: 120;
+      padding-bottom: calc(var(--section-pad) + 5rem);
     }
 
     .rsvp-form {
       max-width: 560px;
       margin: 0 auto;
+    }
+
+    .rsvp-form.reveal,
+    .rsvp-form.reveal.visible {
+      transform: none;
     }
 
     .rsvp-guide {
@@ -1723,6 +1731,7 @@
 
     .name-search {
       position: relative;
+      z-index: 240;
     }
 
     .name-search-results {
@@ -1730,14 +1739,14 @@
       left: 0;
       right: 0;
       top: calc(100% + 0.2rem);
-      z-index: 30;
+      z-index: 241;
       margin: 0;
       padding: 0.3rem 0;
       list-style: none;
       background: var(--white);
       border: 1px solid rgba(107, 167, 160, 0.35);
-      box-shadow: 0 12px 28px rgba(13, 43, 69, 0.12);
-      max-height: 16rem;
+      box-shadow: 0 12px 28px rgba(13, 43, 69, 0.18);
+      max-height: min(16rem, calc(100dvh - var(--frame-clearance, 11rem) - 8rem));
       overflow-y: auto;
     }
 
@@ -1857,7 +1866,7 @@
 
     .guest-seat-card {
       margin: -0.4rem 0 1.75rem;
-      padding: 1.2rem 1.15rem 1.15rem;
+      padding: 1.3rem 1.15rem 1.25rem;
       border: 1px solid rgba(107, 167, 160, 0.32);
       background: rgba(238, 246, 248, 0.78);
       text-align: center;
@@ -1883,18 +1892,30 @@
     .guest-seat-category {
       font-size: 0.92rem;
       color: var(--text-soft);
-      margin-bottom: 0.55rem;
+      margin-bottom: 0.7rem;
     }
 
     .guest-seat-table {
       font-family: var(--font-serif);
-      font-size: 1.2rem;
+      font-size: 1.55rem;
       color: var(--teal);
+      line-height: 1.2;
+    }
+
+    .guest-seat-table-note {
+      margin-top: 0.35rem;
+      font-size: 0.82rem;
+      color: var(--text-soft);
     }
 
     .guest-seat-pending {
       font-size: 0.84rem;
       color: var(--text-soft);
+    }
+
+    .rsvp-already .guest-seat-card {
+      margin: 1.15rem 0 0;
+      background: var(--white);
     }
 
     .name-search-option .option-name {
@@ -3227,16 +3248,23 @@
         </div>
 
         <div class="guest-seat-card" id="guestSeatCard" hidden>
-          <p class="guest-seat-kicker">Your place</p>
+          <p class="guest-seat-kicker" id="guestSeatKicker">Your table</p>
           <p class="guest-seat-name" id="guestSeatName"></p>
           <p class="guest-seat-category" id="guestSeatCategory"></p>
           <p class="guest-seat-table" id="guestSeatTable"></p>
+          <p class="guest-seat-table-note" id="guestSeatTableNote" hidden>Please sit at this table on the wedding day.</p>
           <p class="guest-seat-pending" id="guestSeatPending" hidden>Your table will be shared as seating is finalized.</p>
         </div>
 
         <div class="rsvp-already" id="rsvpAlready" role="status" hidden>
           <h3>You've already RSVP'd</h3>
-          <p>We've already received your response. If you need to change names or update your RSVP, please contact Gio and Augiela directly at <a href="mailto:gomez.wed2027@gmail.com">gomez.wed2027@gmail.com</a>.</p>
+          <p id="rsvpAlreadyCopy">We've already received your response. If you need to change names or update your RSVP, please contact Gio and Augiela directly at <a href="mailto:gomez.wed2027@gmail.com">gomez.wed2027@gmail.com</a>.</p>
+          <div class="guest-seat-card" id="alreadySeatCard" hidden>
+            <p class="guest-seat-kicker">Your table</p>
+            <p class="guest-seat-table" id="alreadySeatTable"></p>
+            <p class="guest-seat-category" id="alreadySeatCategory"></p>
+            <p class="guest-seat-pending" id="alreadySeatPending" hidden>Your table will be shared as seating is finalized.</p>
+          </div>
         </div>
 
         <div id="rsvpEntryFields" hidden>
@@ -3894,6 +3922,53 @@
         updateCompanionVisibility();
       }
 
+      function seatingFromGuest(guest) {
+        guest = guest || {};
+        return {
+          name: guest.name || "",
+          category: Names.trimGuestField(guest.category, 80),
+          tableLabel: guest.tableLabel || Names.formatTableLabel(guest.tableNumber),
+        };
+      }
+
+      function renderGuestSeat() {
+        const card = document.getElementById("guestSeatCard");
+        const alreadyCard = document.getElementById("alreadySeatCard");
+        const seating = seatingFromGuest(matchedGuest);
+        if (!matchedGuest) {
+          card.hidden = true;
+          alreadyCard.hidden = true;
+          return;
+        }
+
+        document.getElementById("guestSeatName").textContent = seating.name;
+        document.getElementById("guestSeatCategory").textContent = seating.category;
+        document.getElementById("guestSeatCategory").hidden = !seating.category;
+        document.getElementById("guestSeatTable").textContent = seating.tableLabel;
+        document.getElementById("guestSeatTable").hidden = !seating.tableLabel;
+        document.getElementById("guestSeatTableNote").hidden = !seating.tableLabel;
+        document.getElementById("guestSeatKicker").textContent = seating.tableLabel ? "Your table" : "Your place";
+        const pending = document.getElementById("guestSeatPending");
+        if (!seating.tableLabel) {
+          pending.textContent = seating.category
+            ? "Your table will be shared as seating is finalized."
+            : "Your seating details will be shared as they are finalized.";
+          pending.hidden = false;
+        } else {
+          pending.hidden = true;
+        }
+        card.hidden = alreadySubmitted;
+
+        document.getElementById("alreadySeatTable").textContent = seating.tableLabel;
+        document.getElementById("alreadySeatTable").hidden = !seating.tableLabel;
+        document.getElementById("alreadySeatCategory").textContent = seating.category
+          ? (seating.name ? seating.name + " · " + seating.category : seating.category)
+          : seating.name;
+        document.getElementById("alreadySeatCategory").hidden = !(seating.category || seating.name);
+        document.getElementById("alreadySeatPending").hidden = !!seating.tableLabel;
+        alreadyCard.hidden = !alreadySubmitted;
+      }
+
       function syncResponseFields() {
         const canRespond = !!matchedGuest && !alreadySubmitted;
         rsvpAlready.classList.toggle("show", alreadySubmitted);
@@ -3902,31 +3977,6 @@
         rsvpEntryFields.style.display = canRespond ? "" : "none";
         submitBtn.disabled = !canRespond;
         renderGuestSeat();
-      }
-
-      function renderGuestSeat() {
-        const card = document.getElementById("guestSeatCard");
-        if (!matchedGuest) {
-          card.hidden = true;
-          return;
-        }
-        const category = Names.trimGuestField(matchedGuest.category, 80);
-        const tableLabel = Names.formatTableLabel(matchedGuest.tableNumber);
-        document.getElementById("guestSeatName").textContent = matchedGuest.name || "";
-        document.getElementById("guestSeatCategory").textContent = category;
-        document.getElementById("guestSeatCategory").hidden = !category;
-        document.getElementById("guestSeatTable").textContent = tableLabel;
-        document.getElementById("guestSeatTable").hidden = !tableLabel;
-        const pending = document.getElementById("guestSeatPending");
-        if (!tableLabel) {
-          pending.textContent = category
-            ? "Your table will be shared as seating is finalized."
-            : "Your seating details will be shared as they are finalized.";
-          pending.hidden = false;
-        } else {
-          pending.hidden = true;
-        }
-        card.hidden = false;
       }
 
       function updateCompanionVisibility() {
@@ -3989,10 +4039,40 @@
       function closeNameResults() {
         guestNameResults.hidden = true;
         guestNameResults.innerHTML = "";
+        guestNameResults.style.position = "";
+        guestNameResults.style.left = "";
+        guestNameResults.style.right = "";
+        guestNameResults.style.top = "";
+        guestNameResults.style.bottom = "";
+        guestNameResults.style.width = "";
+        guestNameResults.style.maxHeight = "";
         guestNameSearch.setAttribute("aria-expanded", "false");
         guestNameSearch.removeAttribute("aria-activedescendant");
         activeOption = -1;
         searchResults = [];
+      }
+
+      function placeNameResults() {
+        if (guestNameResults.hidden) return;
+        var inputRect = guestNameSearch.getBoundingClientRect();
+        var framePad = 56;
+        var gap = 6;
+        var spaceBelow = window.innerHeight - inputRect.bottom - framePad;
+        var spaceAbove = inputRect.top - framePad;
+        var openUp = spaceBelow < 168 && spaceAbove > spaceBelow;
+        var maxH = Math.max(120, Math.min(256, (openUp ? spaceAbove : spaceBelow) - gap));
+        guestNameResults.style.position = "fixed";
+        guestNameResults.style.left = Math.round(inputRect.left) + "px";
+        guestNameResults.style.width = Math.round(inputRect.width) + "px";
+        guestNameResults.style.right = "auto";
+        guestNameResults.style.maxHeight = Math.round(maxH) + "px";
+        if (openUp) {
+          guestNameResults.style.top = "auto";
+          guestNameResults.style.bottom = Math.round(window.innerHeight - inputRect.top + gap) + "px";
+        } else {
+          guestNameResults.style.top = Math.round(inputRect.bottom + gap) + "px";
+          guestNameResults.style.bottom = "auto";
+        }
       }
 
       function setActiveOption(index) {
@@ -4023,6 +4103,7 @@
           guestNameResults.hidden = false;
           guestNameSearch.setAttribute("aria-expanded", "true");
           activeOption = -1;
+          placeNameResults();
           return;
         }
         searchResults.forEach(function (guest, i) {
@@ -4058,6 +4139,7 @@
         guestNameResults.hidden = false;
         guestNameSearch.setAttribute("aria-expanded", "true");
         setActiveOption(0);
+        placeNameResults();
       }
 
       function clearSelectedGuest() {
@@ -4187,6 +4269,12 @@
       guestNameSearch.addEventListener("blur", function () {
         setTimeout(closeNameResults, 120);
       });
+      window.addEventListener("scroll", placeNameResults, { passive: true });
+      window.addEventListener("resize", placeNameResults);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", placeNameResults);
+        window.visualViewport.addEventListener("scroll", placeNameResults);
+      }
       attendingRadio.addEventListener("change", updateCompanionVisibility);
       declinedRadio.addEventListener("change", updateCompanionVisibility);
       syncResponseFields();

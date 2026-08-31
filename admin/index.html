@@ -963,6 +963,17 @@
           </form>
         </div>
 
+        <div class="card" style="margin-bottom:1.25rem">
+          <h3>Excel guest list</h3>
+          <p class="lead" style="font-size:0.85rem;margin-bottom:0.9rem">Download the list as an Excel file, update names, categories, tables, and allocations, then upload it here. Leave <strong>Guest ID</strong> as it is for people already on the list. Leave it blank to add someone new. Deleting a row in Excel does not remove them on the website.</p>
+          <div class="toolbar" style="margin-bottom:0">
+            <button type="button" class="btn btn-primary" id="downloadGuestsExcel">Download Excel</button>
+            <button type="button" class="btn btn-ghost" id="uploadGuestsExcelBtn">Upload Excel</button>
+            <input type="file" id="uploadGuestsExcel" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
+          </div>
+          <p class="lead" id="guestExcelStatus" style="font-size:0.8rem;margin:0.75rem 0 0;min-height:1.2em"></p>
+        </div>
+
         <div class="toolbar">
           <input type="search" id="guestSearch" placeholder="Search guests…" style="max-width:240px" />
           <button type="button" class="btn btn-ghost" id="refreshGuests">Refresh</button>
@@ -1868,6 +1879,60 @@
         guests = await api("/api/admin/guests");
         renderGuests();
         toast("Guest list refreshed");
+      });
+
+      async function downloadGuestsExcel() {
+        const headers = {};
+        if (adminToken) {
+          headers.Authorization = "Bearer " + adminToken;
+          headers["X-Admin-Token"] = adminToken;
+        }
+        const res = await fetch("/api/admin/guests.xlsx", { credentials: "include", headers });
+        if (res.status === 401) throw new Error("Could not stay signed in. Please sign in again.");
+        if (!res.ok) throw new Error("Could not download the Excel file.");
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "wedding-guest-list.xlsx";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      document.getElementById("downloadGuestsExcel").addEventListener("click", async () => {
+        try {
+          await downloadGuestsExcel();
+          toast("Guest list Excel downloaded");
+        } catch (ex) {
+          toast(ex.message, true);
+        }
+      });
+
+      document.getElementById("uploadGuestsExcelBtn").addEventListener("click", () => {
+        document.getElementById("uploadGuestsExcel").click();
+      });
+
+      document.getElementById("uploadGuestsExcel").addEventListener("change", async (e) => {
+        const file = e.target.files && e.target.files[0];
+        e.target.value = "";
+        if (!file) return;
+        const status = document.getElementById("guestExcelStatus");
+        status.textContent = "Uploading…";
+        const body = new FormData();
+        body.append("file", file);
+        try {
+          const result = await api("/api/admin/guests/import", { method: "POST", body });
+          guests = await api("/api/admin/guests");
+          renderGuests();
+          const skipNote = result.skipped && result.skipped.length
+            ? " Skipped: " + result.skipped.slice(0, 3).join(" ")
+            : "";
+          status.textContent = (result.message || "Guest list updated.") + skipNote;
+          toast(result.message || "Guest list updated");
+        } catch (ex) {
+          status.textContent = "";
+          toast(ex.message, true);
+        }
       });
 
       document.getElementById("guestTable").addEventListener("click", async (e) => {
