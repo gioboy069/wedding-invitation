@@ -7,7 +7,12 @@
   "heroPre": "Together with their families",
   "inviteGreeting": "Dear friends and family!",
   "inviteBody": "With joyful hearts we invite you to celebrate the wedding of Gio Anthony and Augiela Shane. Come share in the vows, the dinner, and the dancing as we begin our life together.",
+  "ceremonyPhoto": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&q=80",
   "venuePhoto": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&q=80",
+  "venueName": "Auberge du Soleil",
+  "venueTime": "Saturday · 6:00 PM",
+  "venueAddress": "The Estate Garden\n180 Rutherford Hill Road\nRutherford, CA 94573",
+  "venueMapUrl": "https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA",
   "rsvpDeadline": "January 1, 2027",
   "storyTitle": "A Love Written in Time",
   "storySubtitle": "Every great love story has a beginning. Ours started with a chance encounter and grew into something extraordinary.",
@@ -46,7 +51,8 @@
       "name": "Ceremony",
       "time": "Saturday · 4:00 PM",
       "address": "Auberge du Soleil\n180 Rutherford Hill Road\nRutherford, CA 94573",
-      "mapUrl": "https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA"
+      "mapUrl": "https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA",
+      "photo": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&q=80"
     },
     {
       "name": "Reception",

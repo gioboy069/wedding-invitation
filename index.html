@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/shared.css" />
-  <script src="/js/shared.js?v=no-top-dividers" defer></script>
+  <script src="/js/shared.js?v=no-top-dividers-2" defer></script>
   <style>
     :root {
       --deep: #0d2b45;
@@ -277,12 +277,9 @@
     /* ── Hero ── */
     .hero {
       min-height: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
+      display: block;
       text-align: center;
-      padding: 5.25rem 1.5rem 0.75rem;
+      padding: 5rem 1.5rem 0.25rem;
       position: relative;
       overflow: visible;
     }
@@ -2756,7 +2753,6 @@
     body.intro-open .site-reveal {
       opacity: 1;
       visibility: visible;
-      transition: opacity 2s var(--intro-ease) var(--intro-site-delay);
     }
 
     body.intro-open .nav {
@@ -2764,7 +2760,7 @@
       visibility: visible;
     }
   </style>
-  <link rel="stylesheet" href="/css/coastal.css?v=opening-sheet-2" />
+  <link rel="stylesheet" href="/css/coastal.css?v=ceremony-venue" />
 </head>
 <body class="intro-locked">
 
@@ -2864,6 +2860,14 @@
       </div>
     </div>
   </section>
+
+  <div class="silk-ribbon silk-ribbon--pause" aria-hidden="true">
+    <div class="silk-ribbon-band">
+      <span class="silk-ribbon-tail silk-ribbon-tail--left"></span>
+      <span class="silk-ribbon-face">18 · February · 2027</span>
+      <span class="silk-ribbon-tail silk-ribbon-tail--right"></span>
+    </div>
+  </div>
 
   <!-- Countdown -->
   <section class="countdown-finale" id="countdown-section">
@@ -3007,23 +3011,40 @@
   <!-- Venue -->
   <section class="venue" id="venue">
     <div class="container">
-      <p class="section-label reveal">Venue</p>
-      <h2 class="section-title reveal reveal-delay-1">Where we gather</h2>
-      <figure class="venue-photo-wave reveal reveal-delay-1">
-        <img id="venueHeroPhoto" src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&q=80" alt="Wedding venue" loading="lazy" />
-      </figure>
-      <div class="venue-featured reveal reveal-delay-2">
-        <h3 class="venue-featured-name" id="venueFeaturedName">Auberge du Soleil</h3>
-        <p class="venue-featured-time" id="venueFeaturedTime">Saturday · 4:00 PM</p>
-        <p class="venue-featured-address" id="venueFeaturedAddress">180 Rutherford Hill Road<br />Rutherford, CA 94573</p>
-        <a id="venueRouteBtn" class="route-btn" href="https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA" target="_blank" rel="noopener noreferrer">Show Route</a>
-        <svg class="pearl-shell" viewBox="0 0 86 54" fill="none" aria-hidden="true">
-          <path d="M10 36c8-18 22-28 33-28s25 10 33 28c-10 10-21 16-33 16S20 46 10 36z" fill="#e8dcc8" stroke="#cbb99a" stroke-width="1.2"/>
-          <path d="M22 36c6-10 12-14 21-14s15 4 21 14" stroke="#d4c4a8" stroke-width="0.9"/>
-          <circle cx="43" cy="34" r="7" fill="#f7f2ea"/>
-          <circle cx="41.5" cy="32" r="3" fill="#fff" opacity="0.75"/>
-        </svg>
-      </div>
+      <p class="section-label reveal">Where we gather</p>
+      <h2 class="section-title reveal reveal-delay-1">Ceremony &amp; venue</h2>
+
+      <article class="venue-place reveal reveal-delay-1">
+        <p class="venue-place-kicker">Ceremony</p>
+        <figure class="venue-photo-wave">
+          <img id="ceremonyHeroPhoto" src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&q=80" alt="Wedding ceremony" loading="lazy" />
+        </figure>
+        <div class="venue-featured">
+          <h3 class="venue-featured-name" id="ceremonyFeaturedName">Auberge du Soleil</h3>
+          <p class="venue-featured-time" id="ceremonyFeaturedTime">Saturday · 4:00 PM</p>
+          <p class="venue-featured-address" id="ceremonyFeaturedAddress">Auberge du Soleil<br />180 Rutherford Hill Road<br />Rutherford, CA 94573</p>
+          <a id="ceremonyMapLink" class="venue-link" href="https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA" target="_blank" rel="noopener noreferrer">
+            View on Map
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+          </a>
+        </div>
+      </article>
+
+      <article class="venue-place reveal reveal-delay-2">
+        <p class="venue-place-kicker">Venue</p>
+        <figure class="venue-photo-wave">
+          <img id="venueHeroPhoto" src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&q=80" alt="Wedding venue" loading="lazy" />
+        </figure>
+        <div class="venue-featured">
+          <h3 class="venue-featured-name" id="venueFeaturedName">Auberge du Soleil</h3>
+          <p class="venue-featured-time" id="venueFeaturedTime">Saturday · 6:00 PM</p>
+          <p class="venue-featured-address" id="venueFeaturedAddress">The Estate Garden<br />180 Rutherford Hill Road<br />Rutherford, CA 94573</p>
+          <a id="venueMapLink" class="venue-link" href="https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA" target="_blank" rel="noopener noreferrer">
+            View on Map
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+          </a>
+        </div>
+      </article>
 
       <div class="venue-grid" id="venueGrid">
         <article class="venue-card reveal">
@@ -3268,6 +3289,13 @@
   <!-- RSVP -->
   <section class="rsvp" id="rsvp">
     <div class="container">
+      <div class="silk-ribbon silk-ribbon--rsvp reveal" aria-hidden="true">
+        <div class="silk-ribbon-band">
+          <span class="silk-ribbon-tail silk-ribbon-tail--left"></span>
+          <span class="silk-ribbon-face">Kindly reply</span>
+          <span class="silk-ribbon-tail silk-ribbon-tail--right"></span>
+        </div>
+      </div>
       <p class="section-label reveal">Questionnaire</p>
       <h2 class="section-title reveal reveal-delay-1">Guest RSVP</h2>
       <p class="section-subtitle reveal reveal-delay-2"><span id="rsvpSubtitle">Please let us know if you'll be joining us by May 1, 2027. We can't wait to celebrate with you.</span></p>
@@ -3365,7 +3393,7 @@
           <textarea id="guestMessage" name="message" class="form-textarea" placeholder="Share your well wishes, dietary notes, or a fond memory..." rows="4"></textarea>
         </div>
 
-        <button type="submit" class="form-submit" id="submitBtn" disabled>Send</button>
+        <button type="submit" class="form-submit" id="submitBtn" disabled>Send RSVP</button>
         </div>
       </form>
 
@@ -3494,6 +3522,11 @@
         var hash = window.location.hash;
         if (!hash || hash === "#") return;
         var id = decodeURIComponent(hash.slice(1));
+        /* Opening hashes skip the envelope and stay at the names */
+        if (id === "invite" || id === "hero") {
+          window.scrollTo(0, 0);
+          return;
+        }
         if (id === "attire") {
           setAttireExpanded(true, false);
         }
@@ -3520,7 +3553,7 @@
         if (envelopeIntro) {
           envelopeIntro.classList.add("revealed");
           envelopeIntro.setAttribute("aria-hidden", "true");
-          setTimeout(function () { envelopeIntro.remove(); }, 1200);
+          envelopeIntro.remove();
         }
         /* Deep links like #rsvp need the page unlocked before scrolling */
         setTimeout(scrollToHashTarget, 80);
@@ -3978,19 +4011,39 @@
             '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
             '<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M9 22V12h6v10"/>'
           ];
-          var featured = c.venues[0];
-          var featName = document.getElementById("venueFeaturedName");
-          var featTime = document.getElementById("venueFeaturedTime");
-          var featAddr = document.getElementById("venueFeaturedAddress");
-          var featBtn = document.getElementById("venueRouteBtn");
-          var featPhoto = document.getElementById("venueHeroPhoto");
-          if (featName) featName.textContent = featured.name || "";
-          if (featTime) featTime.textContent = featured.time || "";
-          if (featAddr) featAddr.innerHTML = escapeHtml(featured.address || "").replace(/\n/g, "<br />");
-          if (featBtn && featured.mapUrl) featBtn.href = featured.mapUrl;
-          if (featPhoto && (c.venuePhoto || featured.photo)) {
-            featPhoto.src = c.venuePhoto || featured.photo;
+          var ceremony = c.venues.find(function (v) {
+            return /ceremony/i.test(v.name || "");
+          }) || c.venues[0];
+          var reception = c.venues.find(function (v) {
+            return /reception/i.test(v.name || "");
+          }) || c.venues[1] || ceremony;
+
+          function fillPlace(prefix, place, photoUrl) {
+            var nameEl = document.getElementById(prefix + "FeaturedName");
+            var timeEl = document.getElementById(prefix + "FeaturedTime");
+            var addrEl = document.getElementById(prefix + "FeaturedAddress");
+            var mapEl = document.getElementById(prefix === "ceremony" ? "ceremonyMapLink" : "venueMapLink");
+            var photoEl = document.getElementById(prefix === "ceremony" ? "ceremonyHeroPhoto" : "venueHeroPhoto");
+            if (nameEl) nameEl.textContent = place.name || "";
+            if (timeEl) timeEl.textContent = place.time || "";
+            if (addrEl) addrEl.innerHTML = escapeHtml(place.address || "").replace(/\n/g, "<br />");
+            if (mapEl && place.mapUrl) mapEl.href = place.mapUrl;
+            if (photoEl && photoUrl) photoEl.src = photoUrl;
           }
+
+          fillPlace("ceremony", {
+            name: (ceremony.address || "").split("\n")[0] || ceremony.name,
+            time: ceremony.time,
+            address: ceremony.address,
+            mapUrl: ceremony.mapUrl
+          }, c.ceremonyPhoto || ceremony.photo);
+          fillPlace("venue", {
+            name: c.venueName || reception.name || "Auberge du Soleil",
+            time: c.venueTime || reception.time || "",
+            address: c.venueAddress || reception.address || "",
+            mapUrl: c.venueMapUrl || reception.mapUrl || ceremony.mapUrl
+          }, c.venuePhoto || reception.photo);
+
           document.getElementById("venueGrid").innerHTML = c.venues.map(function (v, i) {
             const delay = i ? " reveal-delay-" + Math.min(i, 2) : "";
             const addr = escapeHtml(v.address || "").replace(/\n/g, "<br />");

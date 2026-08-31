@@ -158,6 +158,10 @@
   function scrollToHash(hash, behavior) {
     if (!hash || hash === "#") return false;
     var id = decodeURIComponent(hash.replace(/^#/, ""));
+    if (id === "invite" || id === "hero") {
+      window.scrollTo({ top: 0, behavior: behavior || "auto" });
+      return true;
+    }
     if (id === "attire" && window.WeddingUI && window.WeddingUI.setAttireExpanded) {
       window.WeddingUI.setAttireExpanded(true, false);
     }
