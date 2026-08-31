@@ -76,7 +76,7 @@ RSVP_EMAIL='your@email.com' npm run dev
 ## Admin features
 
 - **Edit details** — names, date, story timeline, venues, and copy
-- **Guest list** — invited names with seat allocation (1–10); RSVP guests search by a few letters and choose their full name from a dropdown
+- **Guest list** — invited names with category, table number, and seat allocation (1–10); RSVP guests search by a few letters, choose their full name, and see their table and category
 - **RSVP monitor** — live count of guest-list names that have replied versus those still waiting
 - **Gallery** — upload, caption, and delete prenup photos
 - **RSVPs** — track attending/declined, party size, companions, filter, delete, export CSV

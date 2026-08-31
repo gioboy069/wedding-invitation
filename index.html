@@ -1855,6 +1855,61 @@
       color: #8a5a4a;
     }
 
+    .guest-seat-card {
+      margin: -0.4rem 0 1.75rem;
+      padding: 1.2rem 1.15rem 1.15rem;
+      border: 1px solid rgba(107, 167, 160, 0.32);
+      background: rgba(238, 246, 248, 0.78);
+      text-align: center;
+    }
+
+    .guest-seat-kicker {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.35rem;
+    }
+
+    .guest-seat-name {
+      font-family: var(--font-serif);
+      font-size: 1.45rem;
+      font-weight: 500;
+      color: var(--deep);
+      margin-bottom: 0.35rem;
+    }
+
+    .guest-seat-category {
+      font-size: 0.92rem;
+      color: var(--text-soft);
+      margin-bottom: 0.55rem;
+    }
+
+    .guest-seat-table {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      color: var(--teal);
+    }
+
+    .guest-seat-pending {
+      font-size: 0.84rem;
+      color: var(--text-soft);
+    }
+
+    .name-search-option .option-name {
+      display: block;
+    }
+
+    .name-search-option .option-meta {
+      display: block;
+      margin-top: 0.15rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+
     .companion-fields {
       display: none;
       margin-bottom: 1.75rem;
@@ -3135,7 +3190,7 @@
         <p class="rsvp-guide-lead">How to reply</p>
         <ol>
           <li>Start typing your surname or first name — a few letters is enough.</li>
-          <li>Tap your full name when it appears, then tell us whether you will be attending.</li>
+          <li>Tap your full name when it appears. You’ll see your category and table, then tell us whether you will be attending.</li>
           <li>If your invitation includes others, kindly add each guest’s surname and first name.</li>
           <li>A message is optional. Then tap Send RSVP — once is enough.</li>
         </ol>
@@ -3169,6 +3224,14 @@
           </div>
           <p class="guest-match-status" id="guestMatchStatus" aria-live="polite"></p>
           <p class="form-error">Please select your name from the list.</p>
+        </div>
+
+        <div class="guest-seat-card" id="guestSeatCard" hidden>
+          <p class="guest-seat-kicker">Your place</p>
+          <p class="guest-seat-name" id="guestSeatName"></p>
+          <p class="guest-seat-category" id="guestSeatCategory"></p>
+          <p class="guest-seat-table" id="guestSeatTable"></p>
+          <p class="guest-seat-pending" id="guestSeatPending" hidden>Your table will be shared as seating is finalized.</p>
         </div>
 
         <div class="rsvp-already" id="rsvpAlready" role="status" hidden>
@@ -3838,6 +3901,32 @@
         rsvpEntryFields.hidden = !canRespond;
         rsvpEntryFields.style.display = canRespond ? "" : "none";
         submitBtn.disabled = !canRespond;
+        renderGuestSeat();
+      }
+
+      function renderGuestSeat() {
+        const card = document.getElementById("guestSeatCard");
+        if (!matchedGuest) {
+          card.hidden = true;
+          return;
+        }
+        const category = Names.trimGuestField(matchedGuest.category, 80);
+        const tableLabel = Names.formatTableLabel(matchedGuest.tableNumber);
+        document.getElementById("guestSeatName").textContent = matchedGuest.name || "";
+        document.getElementById("guestSeatCategory").textContent = category;
+        document.getElementById("guestSeatCategory").hidden = !category;
+        document.getElementById("guestSeatTable").textContent = tableLabel;
+        document.getElementById("guestSeatTable").hidden = !tableLabel;
+        const pending = document.getElementById("guestSeatPending");
+        if (!tableLabel) {
+          pending.textContent = category
+            ? "Your table will be shared as seating is finalized."
+            : "Your seating details will be shared as they are finalized.";
+          pending.hidden = false;
+        } else {
+          pending.hidden = true;
+        }
+        card.hidden = false;
       }
 
       function updateCompanionVisibility() {
@@ -3945,7 +4034,20 @@
           btn.id = "guestNameOption" + i;
           btn.setAttribute("role", "option");
           btn.setAttribute("aria-selected", "false");
-          btn.textContent = guest.name;
+          btn.textContent = "";
+          var nameEl = document.createElement("span");
+          nameEl.className = "option-name";
+          nameEl.textContent = guest.name;
+          btn.appendChild(nameEl);
+          var metaBits = [];
+          if (guest.category) metaBits.push(guest.category);
+          if (guest.tableLabel || guest.tableNumber) metaBits.push(guest.tableLabel || Names.formatTableLabel(guest.tableNumber));
+          if (metaBits.length) {
+            var metaEl = document.createElement("span");
+            metaEl.className = "option-meta";
+            metaEl.textContent = metaBits.join(" · ");
+            btn.appendChild(metaEl);
+          }
           btn.addEventListener("mousedown", function (e) {
             e.preventDefault();
             selectGuestName(guest);
@@ -4044,8 +4146,8 @@
               matchedGuest = data.guest;
               setMatchStatus(
                 "matched",
-                "Found on our guest list · allocation " + data.guest.allocation +
-                  (data.guest.maxCompanions > 0 ? " (you + up to " + data.guest.maxCompanions + " guest" + (data.guest.maxCompanions === 1 ? "" : "s") + ")" : "")
+                "Found on our guest list" +
+                  (data.guest.maxCompanions > 0 ? " · you + up to " + data.guest.maxCompanions + " guest" + (data.guest.maxCompanions === 1 ? "" : "s") : "")
               );
             } else {
               matchedGuest = null;
@@ -4155,7 +4257,13 @@
             var partyNote = data.companions.length
               ? " We've noted your party of " + (1 + data.companions.length) + "."
               : "";
-            successMessage.textContent = "Thank you, " + data.firstName + "! We're thrilled you'll be joining us." + partyNote + " Your RSVP has been received — see you in Napa Valley.";
+            var tableNote = matchedGuest && Names.formatTableLabel(matchedGuest.tableNumber)
+              ? " You will be seated at " + Names.formatTableLabel(matchedGuest.tableNumber) + "."
+              : "";
+            var categoryNote = matchedGuest && matchedGuest.category
+              ? " You are listed as " + matchedGuest.category + "."
+              : "";
+            successMessage.textContent = "Thank you, " + data.firstName + "! We're thrilled you'll be joining us." + partyNote + categoryNote + tableNote + " Your RSVP has been received — see you in Napa Valley.";
           }
           successEl.scrollIntoView({ behavior: "smooth", block: "center" });
         }
