@@ -309,6 +309,7 @@ app.post("/api/rsvp", async (req, res) => {
     return res.status(409).json(alreadySubmittedPayload());
   }
 
+  const placement = guestPlacement(matchedGuest);
   const entry = {
     id: `rsvp-${Date.now()}-${randomBytes(3).toString("hex")}`,
     name: person.name,
@@ -319,6 +320,8 @@ app.post("/api/rsvp", async (req, res) => {
     companions: companionList,
     partySize: 1 + companionList.length,
     allocation,
+    category: placement.category,
+    tableNumber: placement.tableNumber,
     guestId: matchedGuest ? matchedGuest.id : null,
     guestMatched: !!matchedGuest,
     submittedAt: new Date().toISOString(),
@@ -348,6 +351,8 @@ app.post("/api/rsvp", async (req, res) => {
         companions: companionList.length ? companionList.map((c) => c.name).join(", ") : "(none)",
         message: entry.message || "(no message)",
         guestMatched: entry.guestMatched ? "Yes" : "No",
+        category: entry.category || "(none)",
+        table: formatTableLabel(entry.tableNumber) || "(not assigned)",
         submittedAt: entry.submittedAt,
         _subject: `Wedding RSVP: ${entry.name} — ${entry.attendance}`,
         _template: "table",
@@ -478,6 +483,44 @@ function parseCompanion(value) {
   return parsePersonName(String(value || ""));
 }
 
+function trimGuestField(value, max) {
+  let text = String(value || "").replace(/\s+/g, " ").trim();
+  if (max) text = text.slice(0, max);
+  return text;
+}
+
+function formatTableLabel(value) {
+  const raw = trimGuestField(value, 40);
+  if (!raw) return "";
+  if (/^table\b/i.test(raw)) return raw;
+  return `Table ${raw}`;
+}
+
+function guestPlacement(guest) {
+  const rec = guest && typeof guest === "object" ? guest : {};
+  return {
+    category: trimGuestField(rec.category, 80),
+    tableNumber: trimGuestField(rec.tableNumber, 40),
+  };
+}
+
+function publicGuestPayload(guest) {
+  const person = hydratePerson(guest);
+  const placement = guestPlacement(person);
+  const allocation = Math.min(10, Math.max(1, Number(person.allocation) || 1));
+  return {
+    id: person.id,
+    name: person.name,
+    firstName: person.firstName,
+    surname: person.surname,
+    allocation,
+    maxCompanions: Math.max(0, allocation - 1),
+    category: placement.category,
+    tableNumber: placement.tableNumber,
+    tableLabel: formatTableLabel(placement.tableNumber),
+  };
+}
+
 function sortGuestsBySurname(guests) {
   return guests.sort((a, b) => {
     const pa = hydratePerson(a);
@@ -516,12 +559,7 @@ app.get("/api/guests/search", (req, res) => {
       || a.guest.surname.localeCompare(b.guest.surname, undefined, { sensitivity: "base" })
       || a.guest.firstName.localeCompare(b.guest.firstName, undefined, { sensitivity: "base" }))
     .slice(0, 8)
-    .map(({ guest }) => ({
-      id: guest.id,
-      name: guest.name,
-      firstName: guest.firstName,
-      surname: guest.surname,
-    }));
+    .map(({ guest }) => publicGuestPayload(guest));
   res.json({ matches });
 });
 
@@ -543,31 +581,14 @@ app.get("/api/guests/lookup", (req, res) => {
     return res.json({
       matched: !!guest,
       alreadySubmitted: true,
-      guest: guest
-        ? {
-            id: guest.id,
-            name: guest.name,
-            firstName: guest.firstName,
-            surname: guest.surname,
-            allocation: Math.min(10, Math.max(1, Number(guest.allocation) || 1)),
-            maxCompanions: Math.max(0, Math.min(10, Math.max(1, Number(guest.allocation) || 1)) - 1),
-          }
-        : null,
+      guest: guest ? publicGuestPayload(guest) : null,
     });
   }
   if (!guest) return res.json({ matched: false, alreadySubmitted: false });
-  const allocation = Math.min(10, Math.max(1, Number(guest.allocation) || 1));
   res.json({
     matched: true,
     alreadySubmitted: false,
-    guest: {
-      id: guest.id,
-      name: guest.name,
-      firstName: guest.firstName,
-      surname: guest.surname,
-      allocation,
-      maxCompanions: Math.max(0, allocation - 1),
-    },
+    guest: publicGuestPayload(guest),
   });
 });
 
@@ -590,12 +611,15 @@ app.post("/api/admin/guests", requireAdmin, (req, res) => {
   const exists = guests.some((g) => namesMatch(g, person));
   if (exists) return res.status(400).json({ error: "That guest is already on the list" });
 
+  const placement = guestPlacement(req.body);
   const item = {
     id: `guest-${Date.now()}-${randomBytes(3).toString("hex")}`,
     name: person.name,
     firstName: person.firstName,
     surname: person.surname,
     allocation,
+    category: placement.category,
+    tableNumber: placement.tableNumber,
   };
   guests.push(item);
   sortGuestsBySurname(guests);
@@ -623,12 +647,19 @@ app.put("/api/admin/guests/:id", requireAdmin, (req, res) => {
   const duplicate = guests.some((g, i) => i !== idx && namesMatch(g, person));
   if (duplicate) return res.status(400).json({ error: "That guest is already on the list" });
 
+  const placement = guestPlacement({
+    category: req.body?.category ?? guests[idx].category,
+    tableNumber: req.body?.tableNumber ?? guests[idx].tableNumber,
+  });
+
   guests[idx] = {
     ...guests[idx],
     name: person.name,
     firstName: person.firstName,
     surname: person.surname,
     allocation,
+    category: placement.category,
+    tableNumber: placement.tableNumber,
   };
   sortGuestsBySurname(guests);
   writeJson("guests.json", guests);

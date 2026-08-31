@@ -88,6 +88,19 @@
     return parsePersonName(String(value || ""));
   }
 
+  function trimGuestField(value, max) {
+    var text = String(value || "").replace(/\s+/g, " ").trim();
+    if (max) text = text.slice(0, max);
+    return text;
+  }
+
+  function formatTableLabel(value) {
+    var raw = trimGuestField(value, 40);
+    if (!raw) return "";
+    if (/^table\b/i.test(raw)) return raw;
+    return "Table " + raw;
+  }
+
   root.WeddingNames = {
     trimNamePart: trimNamePart,
     normalizeGuestName: normalizeGuestName,
@@ -97,5 +110,7 @@
     nameKey: nameKey,
     namesMatch: namesMatch,
     parseCompanion: parseCompanion,
+    trimGuestField: trimGuestField,
+    formatTableLabel: formatTableLabel,
   };
 })(typeof window !== "undefined" ? window : globalThis);

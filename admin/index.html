@@ -904,7 +904,7 @@
       <!-- Guest List -->
       <section class="panel" id="panel-guests">
         <h2>Guest List</h2>
-        <p class="lead">Add invited guests with surname first, then first name, and set how many seats each invitation includes (1–10). When someone RSVPs with a matching surname and first name, they can enter companion names up to that allocation.</p>
+        <p class="lead">Add invited guests with surname first, then first name. After the name, set their category (for example The Groom, The Bride, or Groom’s mother) and table number. Allocation is how many seats that invitation includes (1–10).</p>
 
         <div class="card" style="margin-bottom:1.25rem">
           <h3>Add guest</h3>
@@ -912,13 +912,35 @@
             <div class="row-2">
               <div>
                 <label for="guestListSurname">Surname</label>
-                <input id="guestListSurname" name="surname" required placeholder="Lee" autocomplete="off" />
+                <input id="guestListSurname" name="surname" required placeholder="Gomez" autocomplete="off" />
               </div>
               <div>
                 <label for="guestListFirstName">First name</label>
-                <input id="guestListFirstName" name="firstName" required placeholder="Jordan" autocomplete="off" />
+                <input id="guestListFirstName" name="firstName" required placeholder="Gio" autocomplete="off" />
               </div>
             </div>
+            <div class="row-2">
+              <div>
+                <label for="guestListCategory">Category</label>
+                <input id="guestListCategory" name="category" list="guestCategorySuggestions" placeholder="The Groom" autocomplete="off" />
+              </div>
+              <div>
+                <label for="guestListTable">Table number</label>
+                <input id="guestListTable" name="tableNumber" placeholder="1" autocomplete="off" />
+              </div>
+            </div>
+            <datalist id="guestCategorySuggestions">
+              <option value="The Groom"></option>
+              <option value="The Bride"></option>
+              <option value="Groom’s mother"></option>
+              <option value="Groom’s father"></option>
+              <option value="Bride’s mother"></option>
+              <option value="Bride’s father"></option>
+              <option value="Family"></option>
+              <option value="Principal sponsor"></option>
+              <option value="Entourage"></option>
+              <option value="Friend"></option>
+            </datalist>
             <div>
               <label for="guestAllocation">Allocation (party size)</label>
               <div class="toolbar" style="gap:0.5rem;align-items:stretch;margin:0">
@@ -951,6 +973,8 @@
               <tr>
                 <th>Surname</th>
                 <th>First name</th>
+                <th>Category</th>
+                <th>Table</th>
                 <th>Allocation</th>
                 <th>RSVP</th>
                 <th></th>
@@ -1755,14 +1779,14 @@
         const search = (document.getElementById("guestSearch").value || "").trim().toLowerCase();
         const list = guests.filter((g) => {
           const person = Names.hydratePerson(g);
-          const haystack = [person.surname, person.firstName, person.name].join(" ").toLowerCase();
+          const haystack = [person.surname, person.firstName, person.name, g.category, g.tableNumber].join(" ").toLowerCase();
           return !search || haystack.includes(search);
         });
         document.getElementById("statGuests").textContent = guests.length;
         renderRsvpMonitor();
         const tbody = document.getElementById("guestTable");
         if (!list.length) {
-          tbody.innerHTML = '<tr><td colspan="5">No guests yet. Add invited names above.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7">No guests yet. Add invited names above.</td></tr>';
           return;
         }
         tbody.innerHTML = list.map((g) => {
@@ -1774,10 +1798,16 @@
           return `
           <tr data-guest-id="${escapeAttr(g.id)}">
             <td>
-              <input data-edit-surname value="${escapeAttr(person.surname)}" placeholder="Surname" style="width:100%;min-width:120px" />
+              <input data-edit-surname value="${escapeAttr(person.surname)}" placeholder="Surname" style="width:100%;min-width:110px" />
             </td>
             <td>
-              <input data-edit-first value="${escapeAttr(person.firstName)}" placeholder="First name" style="width:100%;min-width:120px" />
+              <input data-edit-first value="${escapeAttr(person.firstName)}" placeholder="First name" style="width:100%;min-width:110px" />
+            </td>
+            <td>
+              <input data-edit-category list="guestCategorySuggestions" value="${escapeAttr(g.category || "")}" placeholder="The Bride" style="width:100%;min-width:130px" />
+            </td>
+            <td>
+              <input data-edit-table value="${escapeAttr(g.tableNumber || "")}" placeholder="1" style="width:100%;min-width:70px" />
             </td>
             <td>
               <div class="toolbar" style="gap:0.4rem;margin:0;flex-wrap:nowrap">
@@ -1810,15 +1840,19 @@
         e.preventDefault();
         const surname = document.getElementById("guestListSurname").value.trim();
         const firstName = document.getElementById("guestListFirstName").value.trim();
+        const category = document.getElementById("guestListCategory").value.trim();
+        const tableNumber = document.getElementById("guestListTable").value.trim();
         const manual = document.getElementById("guestAllocationManual").value;
         const allocation = clampAllocation(manual !== "" ? manual : document.getElementById("guestAllocation").value);
         try {
           await api("/api/admin/guests", {
             method: "POST",
-            body: JSON.stringify({ surname, firstName, allocation }),
+            body: JSON.stringify({ surname, firstName, allocation, category, tableNumber }),
           });
           document.getElementById("guestListSurname").value = "";
           document.getElementById("guestListFirstName").value = "";
+          document.getElementById("guestListCategory").value = "";
+          document.getElementById("guestListTable").value = "";
           document.getElementById("guestAllocation").value = "2";
           document.getElementById("guestAllocationManual").value = "";
           guests = await api("/api/admin/guests");
@@ -1843,6 +1877,8 @@
           const row = saveBtn.closest("tr");
           const surname = row.querySelector("[data-edit-surname]").value.trim();
           const firstName = row.querySelector("[data-edit-first]").value.trim();
+          const category = (row.querySelector("[data-edit-category]")?.value || "").trim();
+          const tableNumber = (row.querySelector("[data-edit-table]")?.value || "").trim();
           const allocation = clampAllocation(row.querySelector("[data-edit-allocation]").value);
           if (!surname || !firstName) {
             toast("Enter surname and first name", true);
@@ -1851,7 +1887,7 @@
           try {
             await api("/api/admin/guests/" + saveBtn.dataset.guestSave, {
               method: "PUT",
-              body: JSON.stringify({ surname, firstName, allocation }),
+              body: JSON.stringify({ surname, firstName, allocation, category, tableNumber }),
             });
             guests = await api("/api/admin/guests");
             renderGuests();
@@ -1997,13 +2033,19 @@
       });
 
       document.getElementById("exportCsv").addEventListener("click", () => {
-        const rows = [["Surname", "First name", "Attendance", "Party Size", "Allocation", "Companions", "Matched Guest List", "Message", "Submitted"]];
+        const rows = [["Surname", "First name", "Category", "Table", "Attendance", "Party Size", "Allocation", "Companions", "Matched Guest List", "Message", "Submitted"]];
         rsvps.forEach((r) => {
           const person = Names.hydratePerson(r);
           const companions = companionPeople(r);
+          const guest = guests.find((g) => g.id && r.guestId && g.id === r.guestId)
+            || guests.find((g) => Names.namesMatch(Names.hydratePerson(g), person));
+          const category = r.category || guest?.category || "";
+          const tableNumber = r.tableNumber || guest?.tableNumber || "";
           rows.push([
             person.surname,
             person.firstName,
+            category,
+            Names.formatTableLabel(tableNumber) || tableNumber,
             r.attendance,
             String(partySizeOf(r)),
             String(r.allocation || ""),

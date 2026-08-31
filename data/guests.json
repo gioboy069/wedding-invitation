@@ -1,16 +1,20 @@
 [
   {
-    "id": "guest-1787618657187-78e851",
-    "name": "Rivera, Alex",
-    "firstName": "Alex",
-    "surname": "Rivera",
-    "allocation": 2
-  },
-  {
     "id": "guest-1787618654151-874a78",
     "name": "Lee, Jordan",
     "firstName": "Jordan",
     "surname": "Lee",
-    "allocation": 3
+    "allocation": 3,
+    "category": "Friend",
+    "tableNumber": "2"
+  },
+  {
+    "id": "guest-1787618657187-78e851",
+    "name": "Rivera, Alex",
+    "firstName": "Alex",
+    "surname": "Rivera",
+    "allocation": 2,
+    "category": "Family",
+    "tableNumber": "4"
   }
 ]
