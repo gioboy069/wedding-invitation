@@ -2886,6 +2886,34 @@
     </div>
   </section>
 
+  <!-- Countdown -->
+  <section class="countdown-finale" id="countdown-section">
+    <div class="container">
+      <p class="countdown-kicker reveal">See you in...</p>
+      <div class="countdown reveal reveal-delay-1" id="countdown" aria-live="polite" aria-label="Countdown to wedding">
+        <div class="countdown-item">
+          <span class="countdown-value" id="cd-days">—</span>
+          <span class="countdown-label">Days</span>
+        </div>
+        <span class="countdown-sep" aria-hidden="true">:</span>
+        <div class="countdown-item">
+          <span class="countdown-value" id="cd-hours">—</span>
+          <span class="countdown-label">Hours</span>
+        </div>
+        <span class="countdown-sep" aria-hidden="true">:</span>
+        <div class="countdown-item">
+          <span class="countdown-value" id="cd-minutes">—</span>
+          <span class="countdown-label">Minutes</span>
+        </div>
+        <span class="countdown-sep" aria-hidden="true">:</span>
+        <div class="countdown-item">
+          <span class="countdown-value" id="cd-seconds">—</span>
+          <span class="countdown-label">Seconds</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Our Story -->
   <section class="story" id="story">
     <div class="container">
@@ -2997,24 +3025,6 @@
     </div>
   </section>
 
-  <!-- Gallery Teaser -->
-  <section class="gallery" id="gallery">
-    <div class="container">
-      <p class="section-label reveal">Our Moments</p>
-      <h2 class="section-title reveal reveal-delay-1">Prenup Gallery</h2>
-      <p class="section-subtitle reveal reveal-delay-2">A glimpse of the journey that brought us here — vineyards, coastlines, and quiet golden hours.</p>
-
-      <div class="gallery-grid" id="homeGallery"></div>
-
-      <div class="reveal reveal-delay-2" style="text-align:center;margin-top:2.5rem">
-        <a href="gallery.html" class="attire-teaser-link" style="color:var(--sage-light);border-color:rgba(197,212,186,0.45)">
-          View Full Gallery
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
-        </a>
-      </div>
-    </div>
-  </section>
-
   <!-- Venue -->
   <section class="venue" id="venue">
     <div class="container">
@@ -3105,47 +3115,6 @@
       <p class="section-subtitle reveal reveal-delay-1" id="weddingDaySubtitle">An elegant afternoon and evening among the vines.</p>
 
       <div class="wedding-day-board reveal reveal-delay-2" id="weddingDayTimeline" aria-label="Wedding day schedule"></div>
-    </div>
-  </section>
-
-  <!-- Entourage -->
-  <section class="entourage" id="entourage">
-    <div class="container">
-      <p class="section-label reveal">Wedding Party</p>
-      <h2 class="section-title reveal reveal-delay-1" id="entourageTitle">Our Entourage</h2>
-      <p class="section-subtitle reveal reveal-delay-2" id="entourageSubtitle">With grateful hearts, we honor the family and friends who walk beside us.</p>
-
-      <div class="entourage-sponsors-text reveal reveal-delay-3">
-        <p class="attire-look-label" id="principalSponsorsTitle">Principal Sponsors</p>
-        <div class="entourage-sponsors-columns">
-          <div class="entourage-sponsor-col">
-            <p class="entourage-group-role">Ninong</p>
-            <div class="entourage-sponsor-names" id="ninongNames"></div>
-          </div>
-          <div class="entourage-sponsor-col">
-            <p class="entourage-group-role">Ninang</p>
-            <div class="entourage-sponsor-names" id="ninangNames"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="entourage-groups reveal reveal-delay-3" id="entourageGroups" aria-label="Wedding entourage"></div>
-    </div>
-  </section>
-
-  <!-- Details note on a silver tray -->
-  <section class="details-tray" id="details">
-    <div class="tray-stage reveal">
-      <div class="silver-tray">
-        <div class="tray-note">
-          <svg class="tray-clip" viewBox="0 0 28 36" fill="none" aria-hidden="true">
-            <rect x="8" y="2" width="12" height="14" rx="3" fill="#c5cdd6" stroke="#9aa5b2"/>
-            <rect x="4" y="12" width="20" height="20" rx="2" fill="#dfe4ea" stroke="#9aa5b2"/>
-          </svg>
-          <h3>A note for our guests</h3>
-          <p id="detailsNote">Kindly reply from the guest list below by <span id="detailsDeadline">January 1, 2027</span>. If you cannot find your name, write to us at <a href="mailto:gomez.wed2027@gmail.com">gomez.wed2027@gmail.com</a>.</p>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -3253,6 +3222,65 @@
               </ul>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Entourage -->
+  <section class="entourage" id="entourage">
+    <div class="container">
+      <p class="section-label reveal">Wedding Party</p>
+      <h2 class="section-title reveal reveal-delay-1" id="entourageTitle">Our Entourage</h2>
+      <p class="section-subtitle reveal reveal-delay-2" id="entourageSubtitle">With grateful hearts, we honor the family and friends who walk beside us.</p>
+
+      <div class="entourage-sponsors-text reveal reveal-delay-3">
+        <p class="attire-look-label" id="principalSponsorsTitle">Principal Sponsors</p>
+        <div class="entourage-sponsors-columns">
+          <div class="entourage-sponsor-col">
+            <p class="entourage-group-role">Ninong</p>
+            <div class="entourage-sponsor-names" id="ninongNames"></div>
+          </div>
+          <div class="entourage-sponsor-col">
+            <p class="entourage-group-role">Ninang</p>
+            <div class="entourage-sponsor-names" id="ninangNames"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entourage-groups reveal reveal-delay-3" id="entourageGroups" aria-label="Wedding entourage"></div>
+    </div>
+  </section>
+
+  <!-- Gallery Teaser -->
+  <section class="gallery" id="gallery">
+    <div class="container">
+      <p class="section-label reveal">Our Moments</p>
+      <h2 class="section-title reveal reveal-delay-1">Prenup Gallery</h2>
+      <p class="section-subtitle reveal reveal-delay-2">A glimpse of the journey that brought us here — vineyards, coastlines, and quiet golden hours.</p>
+
+      <div class="gallery-grid" id="homeGallery"></div>
+
+      <div class="reveal reveal-delay-2" style="text-align:center;margin-top:2.5rem">
+        <a href="gallery.html" class="attire-teaser-link" style="color:var(--sage-light);border-color:rgba(197,212,186,0.45)">
+          View Full Gallery
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Details note on a silver tray -->
+  <section class="details-tray" id="details">
+    <div class="tray-stage reveal">
+      <div class="silver-tray">
+        <div class="tray-note">
+          <svg class="tray-clip" viewBox="0 0 28 36" fill="none" aria-hidden="true">
+            <rect x="8" y="2" width="12" height="14" rx="3" fill="#c5cdd6" stroke="#9aa5b2"/>
+            <rect x="4" y="12" width="20" height="20" rx="2" fill="#dfe4ea" stroke="#9aa5b2"/>
+          </svg>
+          <h3>A note for our guests</h3>
+          <p id="detailsNote">Kindly reply from the guest list below by <span id="detailsDeadline">January 1, 2027</span>. If you cannot find your name, write to us at <a href="mailto:gomez.wed2027@gmail.com">gomez.wed2027@gmail.com</a>.</p>
         </div>
       </div>
     </div>
@@ -3368,34 +3396,6 @@
         </div>
         <h3>Thank You</h3>
         <p id="successMessage">Your response has been received. We are deeply grateful you took the time to reply, and we look forward to celebrating with you.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Countdown -->
-  <section class="countdown-finale" id="countdown-section">
-    <div class="container">
-      <p class="countdown-kicker reveal">See you in...</p>
-      <div class="countdown reveal reveal-delay-1" id="countdown" aria-live="polite" aria-label="Countdown to wedding">
-        <div class="countdown-item">
-          <span class="countdown-value" id="cd-days">—</span>
-          <span class="countdown-label">Days</span>
-        </div>
-        <span class="countdown-sep" aria-hidden="true">:</span>
-        <div class="countdown-item">
-          <span class="countdown-value" id="cd-hours">—</span>
-          <span class="countdown-label">Hours</span>
-        </div>
-        <span class="countdown-sep" aria-hidden="true">:</span>
-        <div class="countdown-item">
-          <span class="countdown-value" id="cd-minutes">—</span>
-          <span class="countdown-label">Minutes</span>
-        </div>
-        <span class="countdown-sep" aria-hidden="true">:</span>
-        <div class="countdown-item">
-          <span class="countdown-value" id="cd-seconds">—</span>
-          <span class="countdown-label">Seconds</span>
-        </div>
       </div>
     </div>
   </section>
@@ -4037,9 +4037,15 @@
         if (Array.isArray(c.weddingDayTimeline) && c.weddingDayTimeline.length) {
           const board = document.getElementById("weddingDayTimeline");
           if (board) {
-            board.innerHTML = c.weddingDayTimeline.map(function (item, i) {
-              const delay = i ? " reveal-delay-" + Math.min(i, 3) : "";
-              return renderWeddingDayItem(item, delay);
+            const rows = chunkWeddingDayRows(c.weddingDayTimeline);
+            board.innerHTML = rows.map(function (rowItems, rowIdx) {
+              return '<div class="wedding-day-row" role="list">' +
+                '<div class="wedding-day-line" aria-hidden="true"></div>' +
+                rowItems.map(function (item, i) {
+                  const delay = (rowIdx + i) ? " reveal-delay-" + Math.min(rowIdx + i, 3) : "";
+                  return renderWeddingDayItem(item, delay);
+                }).join("") +
+                '</div>';
             }).join("");
           }
         }
