@@ -13,7 +13,7 @@ const DATA_DIR = join(ROOT, "data");
 const UPLOAD_DIR = join(ROOT, "uploads");
 const PORT = Number(process.env.PORT || 4317);
 const HOST = process.env.HOST || "0.0.0.0";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "gomeZ120822@";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "augiela-gio-2027";
 const RSVP_EMAIL = process.env.RSVP_EMAIL || "gomez.wed2027@gmail.com";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || RSVP_EMAIL;
 

@@ -2,9 +2,9 @@
 
 Coastal-chic wedding invitation with a prenup gallery, attire guide, interactive RSVP, and an admin dashboard. The guest page is a quiet cream field with a cinematic envelope opening and slow, editorial motion.
 
-**Palette:** powder blue `#8EAFD4` · periwinkle `#A8C0E0` · cream `#F7F3EC` · sand `#E6D8C4` · ink `#3A4454`
+**Palette:** ocean deep `#0D2B45` · teal `#1E5A6E` · seafoam `#6BA7A0` · sky `#B7D4E6` · sand `#DCC8AA`
 
-**Type:** Great Vibes for the couple’s names (the classic wedding script), Cormorant Garamond for headings, Josefin Sans for details and forms.
+**Type:** Cormorant Garamond for names and headings, Source Sans 3 for body and forms. Each section is a torn ocean-teal paper sheet, in invitation order from cover to RSVP.
 
 ## Quick Start
 
@@ -103,5 +103,5 @@ RSVP_EMAIL='your@email.com' npm run dev
 ## Tech
 
 - Express API + static pages
-- Cormorant Garamond, Great Vibes, and Josefin Sans
+- Cormorant Garamond and Source Sans 3
 - Local JSON storage (no database required)

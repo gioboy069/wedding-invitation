@@ -7,7 +7,7 @@
   <title>Gio Anthony & Augiela Shane — Wedding Invitation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Great+Vibes&family=Josefin+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/shared.css" />
   <script src="/js/shared.js" defer></script>
   <style>
@@ -32,8 +32,8 @@
       --shadow: rgba(13, 43, 69, 0.07);
       --shadow-deep: rgba(13, 43, 69, 0.14);
       --font-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
-      --font-script: "Great Vibes", "Snell Roundhand", cursive;
-      --font-sans: "Josefin Sans", "Montserrat", system-ui, sans-serif;
+      --font-script: "Cormorant Garamond", Georgia, serif;
+      --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
       --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
       --intro-ease: cubic-bezier(0.33, 1, 0.68, 1);
       --intro-flap: 2.4s;
@@ -59,7 +59,7 @@
 
     body {
       font-family: var(--font-sans);
-      font-weight: 300;
+      font-weight: 400;
       color: var(--text);
       background-color: var(--bg);
       line-height: 1.7;
@@ -2814,6 +2814,7 @@
       <span></span>
     </button>
     <ul class="nav-links" id="navLinks">
+      <li><a href="#story">Story</a></li>
       <li><a href="#venue">Venue</a></li>
       <li><a href="#attire">Attire</a></li>
       <li><a href="#rsvp">RSVP</a></li>
@@ -3602,6 +3603,24 @@
         document.getElementById("cd-minutes").textContent = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, "0");
         document.getElementById("cd-seconds").textContent = String(Math.floor((diff / 1000) % 60)).padStart(2, "0");
       }
+
+      (function stackTornSheets() {
+        var root = document.getElementById("siteReveal");
+        if (!root) return;
+        var flow = [
+          "hero", "invite", "calendar", "countdown-section", "story",
+          "venue", "wedding-day", "attire", "entourage", "gallery",
+          "details", "rsvp"
+        ];
+        var rank = {};
+        flow.forEach(function (id, i) { rank[id] = i + 1; });
+        var kids = root.children;
+        for (var i = 0; i < kids.length; i++) {
+          var el = kids[i];
+          var z = rank[el.id] || (el.classList.contains("footer") ? 13 : i + 1);
+          el.style.setProperty("--paper-z", String(z));
+        }
+      })();
 
       updateCountdown();
       setInterval(updateCountdown, 1000);
