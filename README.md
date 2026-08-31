@@ -1,8 +1,12 @@
 # Wedding Invitation — Augiela & Gio Anthony
 
-Minimal coastal wedding invitation with a prenup gallery, attire guide, interactive RSVP, and an admin dashboard.
+Coastal-chic wedding invitation with a prenup gallery, attire guide, interactive RSVP, and an admin dashboard. The guest page is a quiet cream field with a cinematic envelope opening and slow, editorial motion.
 
-**Palette:** deep ocean `#0D2B45` · ocean teal `#1E5A6E` · seafoam `#6BA7A0` · sandy beige `#DCC8AA` · light sky `#B7D4E6`
+**Palette:** powder blue `#8EAFD4` · periwinkle `#A8C0E0` · cream `#F7F3EC` · sand `#E6D8C4` · ink `#3A4454`
+
+**Type:** Great Vibes for the couple’s names (the classic wedding script), Cormorant Garamond for headings, Josefin Sans for details and forms.
+
+## Quick Start
 
 ## Quick Start
 
@@ -99,5 +103,5 @@ RSVP_EMAIL='your@email.com' npm run dev
 ## Tech
 
 - Express API + static pages
-- Cormorant Garamond + Montserrat
+- Cormorant Garamond, Great Vibes, and Josefin Sans
 - Local JSON storage (no database required)

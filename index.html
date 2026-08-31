@@ -7,7 +7,7 @@
   <title>Gio Anthony & Augiela Shane — Wedding Invitation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Great+Vibes&family=Josefin+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/shared.css" />
   <script src="/js/shared.js" defer></script>
   <style>
@@ -32,16 +32,17 @@
       --shadow: rgba(13, 43, 69, 0.07);
       --shadow-deep: rgba(13, 43, 69, 0.14);
       --font-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
-      --font-sans: "Montserrat", system-ui, sans-serif;
+      --font-script: "Great Vibes", "Snell Roundhand", cursive;
+      --font-sans: "Josefin Sans", "Montserrat", system-ui, sans-serif;
       --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
       --intro-ease: cubic-bezier(0.33, 1, 0.68, 1);
-      --intro-flap: 2s;
-      --intro-card: 1.8s;
-      --intro-card-delay: 1.1s;
-      --intro-exit: 1.8s;
-      --intro-exit-delay: 2.6s;
-      --intro-fade: 1.6s;
-      --intro-site-delay: 1.6s;
+      --intro-flap: 2.4s;
+      --intro-card: 2.2s;
+      --intro-card-delay: 1.25s;
+      --intro-exit: 2.1s;
+      --intro-exit-delay: 3.1s;
+      --intro-fade: 1.8s;
+      --intro-site-delay: 1.8s;
       --section-pad: clamp(4.5rem, 10vw, 7.5rem);
     }
 
@@ -2765,6 +2766,7 @@
       visibility: visible;
     }
   </style>
+  <link rel="stylesheet" href="/css/coastal.css" />
 </head>
 <body class="intro-locked">
 
@@ -2801,7 +2803,7 @@
         </div>
         <button type="button" class="envelope-btn" id="envelopeBtn" aria-label="Open wedding invitation"></button>
       </div>
-      <p class="envelope-hint" id="envelopeHint">Tap to open</p>
+      <p class="envelope-hint" id="envelopeHint">Open</p>
     </div>
   </div>
 
@@ -2824,7 +2826,6 @@
   <!-- Hero -->
   <header class="hero" id="hero">
     <div class="hero-bg"></div>
-    <div class="hero-ornament" aria-hidden="true"></div>
     <div class="hero-content">
       <p class="hero-pre" id="heroPre">Together with their families</p>
       <h1 class="hero-names" id="heroNames">
@@ -2832,32 +2833,57 @@
         <span class="hero-amp">&</span>
         <span class="hero-name hero-name-bride">Augiela Shane</span>
       </h1>
-      <p class="hero-date" id="heroDate">June 14, 2027 · Napa Valley, California</p>
-      <div class="hero-divider" aria-hidden="true"></div>
-      <div class="countdown" id="countdown" aria-live="polite" aria-label="Countdown to wedding">
-        <div class="countdown-item">
-          <span class="countdown-value" id="cd-days">—</span>
-          <span class="countdown-label">Days</span>
-        </div>
-        <div class="countdown-item">
-          <span class="countdown-value" id="cd-hours">—</span>
-          <span class="countdown-label">Hours</span>
-        </div>
-        <div class="countdown-item">
-          <span class="countdown-value" id="cd-minutes">—</span>
-          <span class="countdown-label">Minutes</span>
-        </div>
-        <div class="countdown-item">
-          <span class="countdown-value" id="cd-seconds">—</span>
-          <span class="countdown-label">Seconds</span>
-        </div>
+      <p class="hero-date" id="heroDate">February 18, 2027 · Napa Valley, California</p>
+    </div>
+    <div class="hero-stage">
+      <div class="sand-bed" aria-hidden="true"></div>
+      <div class="torn-sheet">
+        <figure class="polaroid">
+          <img id="heroPolaroid" src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80" alt="Gio Anthony and Augiela Shane" />
+          <span class="polaroid-pearl" aria-hidden="true"></span>
+        </figure>
       </div>
-      <a href="#story" class="hero-scroll" aria-label="Scroll to our story">
-        <span>Discover</span>
-        <span class="hero-scroll-line" aria-hidden="true"></span>
-      </a>
+      <span class="hero-deco hero-deco--pearl hero-deco--pearl-a" aria-hidden="true"></span>
+      <span class="hero-deco hero-deco--pearl hero-deco--pearl-b" aria-hidden="true"></span>
+      <svg class="hero-deco hero-deco--shell" viewBox="0 0 64 48" fill="none" aria-hidden="true">
+        <path d="M8 30c6-14 18-22 24-22s18 8 24 22c-8 8-16 12-24 12S16 38 8 30z" fill="#e8dcc8" stroke="#cbb99a" stroke-width="1.2"/>
+        <path d="M16 30c4-8 10-12 16-12s12 4 16 12" stroke="#d4c4a8" stroke-width="0.8"/>
+        <circle cx="32" cy="28" r="5" fill="#f4efe6"/>
+        <circle cx="31" cy="26.5" r="2.2" fill="#fff" opacity="0.7"/>
+      </svg>
+      <svg class="hero-deco hero-deco--shell-left" viewBox="0 0 64 48" fill="none" aria-hidden="true">
+        <path d="M10 32c4-16 14-24 22-24 8 0 18 8 22 24-6 6-14 10-22 10S16 38 10 32z" fill="#ddd0bc" stroke="#c4b49a" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="hero-wave" aria-hidden="true">
+      <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path fill="currentColor" d="M0 40c80-18 160 18 240 8s160-28 240-8 160 28 240 8 160-28 240-8 160 28 240 8 160-18 240 8v24H0z"/></svg>
     </div>
   </header>
+
+  <!-- Invitation letter -->
+  <section class="invite-letter" id="invite">
+    <div class="container">
+      <svg class="wave-divider" viewBox="0 0 220 28" fill="none" aria-hidden="true">
+        <path d="M4 16c18-10 28 10 46 0s28 10 46 0 28 10 46 0 28 10 46 0 18-10 28 0" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <p class="invite-greeting reveal" id="inviteGreeting">Dear friends and family!</p>
+      <p class="invite-body reveal reveal-delay-1" id="inviteBody">With joyful hearts we invite you to celebrate the wedding of Gio Anthony and Augiela Shane. Come share in the vows, the dinner, and the dancing as we begin our life together.</p>
+    </div>
+  </section>
+
+  <!-- Lace calendar -->
+  <section class="lace-calendar" id="calendar" aria-label="Wedding date">
+    <div class="container">
+      <p class="section-label reveal">Save the date</p>
+      <div class="lace-disk reveal reveal-delay-1">
+        <div class="lace-face">
+          <p class="lace-month" id="calMonth">February</p>
+          <div class="lace-grid" id="calGrid"></div>
+          <p class="lace-year" id="calYear">2027</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- Our Story -->
   <section class="story" id="story">
@@ -2991,9 +3017,23 @@
   <!-- Venue -->
   <section class="venue" id="venue">
     <div class="container">
-      <p class="section-label reveal">The Celebration</p>
-      <h2 class="section-title reveal reveal-delay-1">Venue & Schedule</h2>
-      <p class="section-subtitle reveal reveal-delay-2">Nestled among the vineyards of Napa Valley, our weekend unfolds across two breathtaking locations.</p>
+      <p class="section-label reveal">Venue</p>
+      <h2 class="section-title reveal reveal-delay-1">Where we gather</h2>
+      <figure class="venue-photo-wave reveal reveal-delay-1">
+        <img id="venueHeroPhoto" src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&q=80" alt="Wedding venue" loading="lazy" />
+      </figure>
+      <div class="venue-featured reveal reveal-delay-2">
+        <h3 class="venue-featured-name" id="venueFeaturedName">Auberge du Soleil</h3>
+        <p class="venue-featured-time" id="venueFeaturedTime">Saturday · 4:00 PM</p>
+        <p class="venue-featured-address" id="venueFeaturedAddress">180 Rutherford Hill Road<br />Rutherford, CA 94573</p>
+        <a id="venueRouteBtn" class="route-btn" href="https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA" target="_blank" rel="noopener noreferrer">Show Route</a>
+        <svg class="pearl-shell" viewBox="0 0 86 54" fill="none" aria-hidden="true">
+          <path d="M10 36c8-18 22-28 33-28s25 10 33 28c-10 10-21 16-33 16S20 46 10 36z" fill="#e8dcc8" stroke="#cbb99a" stroke-width="1.2"/>
+          <path d="M22 36c6-10 12-14 21-14s15 4 21 14" stroke="#d4c4a8" stroke-width="0.9"/>
+          <circle cx="43" cy="34" r="7" fill="#f7f2ea"/>
+          <circle cx="41.5" cy="32" r="3" fill="#fff" opacity="0.75"/>
+        </svg>
+      </div>
 
       <div class="venue-grid" id="venueGrid">
         <article class="venue-card reveal">
@@ -3059,8 +3099,9 @@
   <!-- Wedding Day Timeline -->
   <section class="wedding-day" id="wedding-day">
     <div class="container">
-      <h2 class="wedding-day-script reveal" id="weddingDayTitle">Wedding Day Timeline</h2>
-      <p class="section-subtitle reveal reveal-delay-1" id="weddingDaySubtitle">An elegant afternoon and evening among the vines — here is how our celebration unfolds.</p>
+      <p class="section-label reveal">Timing</p>
+      <h2 class="wedding-day-script reveal" id="weddingDayTitle">The celebration unfolds</h2>
+      <p class="section-subtitle reveal reveal-delay-1" id="weddingDaySubtitle">An elegant afternoon and evening among the vines.</p>
 
       <div class="wedding-day-board reveal reveal-delay-2" id="weddingDayTimeline" aria-label="Wedding day schedule"></div>
     </div>
@@ -3091,11 +3132,27 @@
     </div>
   </section>
 
+  <!-- Details note on a silver tray -->
+  <section class="details-tray" id="details">
+    <div class="tray-stage reveal">
+      <div class="silver-tray">
+        <div class="tray-note">
+          <svg class="tray-clip" viewBox="0 0 28 36" fill="none" aria-hidden="true">
+            <rect x="8" y="2" width="12" height="14" rx="3" fill="#c5cdd6" stroke="#9aa5b2"/>
+            <rect x="4" y="12" width="20" height="20" rx="2" fill="#dfe4ea" stroke="#9aa5b2"/>
+          </svg>
+          <h3>A note for our guests</h3>
+          <p id="detailsNote">Kindly reply from the guest list below by <span id="detailsDeadline">January 1, 2027</span>. If you cannot find your name, write to us at <a href="mailto:gomez.wed2027@gmail.com">gomez.wed2027@gmail.com</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Attire -->
   <section class="attire-teaser" id="attire">
     <div class="container">
-      <p class="section-label reveal">Attire</p>
-      <h2 class="section-title reveal reveal-delay-1">Dress the Occasion</h2>
+      <p class="section-label reveal">Dress Code</p>
+      <h2 class="section-title reveal reveal-delay-1">What to wear</h2>
       <p class="section-subtitle reveal reveal-delay-2">Coastal calm for the celebration — see our full guide for principal sponsor looks and guest dress code inspiration.</p>
 
       <div class="attire-teaser-card reveal reveal-delay-3">
@@ -3203,8 +3260,8 @@
   <!-- RSVP -->
   <section class="rsvp" id="rsvp">
     <div class="container">
-      <p class="section-label reveal">RSVP</p>
-      <h2 class="section-title reveal reveal-delay-1">Kindly Respond</h2>
+      <p class="section-label reveal">Questionnaire</p>
+      <h2 class="section-title reveal reveal-delay-1">Guest RSVP</h2>
       <p class="section-subtitle reveal reveal-delay-2"><span id="rsvpSubtitle">Please let us know if you'll be joining us by May 1, 2027. We can't wait to celebrate with you.</span></p>
 
       <div class="rsvp-guide reveal reveal-delay-2">
@@ -3275,14 +3332,14 @@
               <input type="radio" id="attending" name="attendance" value="attending" required />
               <label class="attendance-label" for="attending">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-                Joyfully Accepts
+                Will be there
               </label>
             </div>
             <div class="attendance-option">
               <input type="radio" id="declined" name="attendance" value="declined" required />
               <label class="attendance-label" for="declined">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                Regretfully Declines
+                Cannot come
               </label>
             </div>
           </div>
@@ -3300,7 +3357,7 @@
           <textarea id="guestMessage" name="message" class="form-textarea" placeholder="Share your well wishes, dietary notes, or a fond memory..." rows="4"></textarea>
         </div>
 
-        <button type="submit" class="form-submit" id="submitBtn" disabled>Send RSVP</button>
+        <button type="submit" class="form-submit" id="submitBtn" disabled>Send</button>
         </div>
       </form>
 
@@ -3314,10 +3371,46 @@
     </div>
   </section>
 
+  <!-- Countdown -->
+  <section class="countdown-finale" id="countdown-section">
+    <div class="container">
+      <p class="countdown-kicker reveal">See you in...</p>
+      <div class="countdown reveal reveal-delay-1" id="countdown" aria-live="polite" aria-label="Countdown to wedding">
+        <div class="countdown-item">
+          <span class="countdown-value" id="cd-days">—</span>
+          <span class="countdown-label">Days</span>
+        </div>
+        <span class="countdown-sep" aria-hidden="true">:</span>
+        <div class="countdown-item">
+          <span class="countdown-value" id="cd-hours">—</span>
+          <span class="countdown-label">Hours</span>
+        </div>
+        <span class="countdown-sep" aria-hidden="true">:</span>
+        <div class="countdown-item">
+          <span class="countdown-value" id="cd-minutes">—</span>
+          <span class="countdown-label">Minutes</span>
+        </div>
+        <span class="countdown-sep" aria-hidden="true">:</span>
+        <div class="countdown-item">
+          <span class="countdown-value" id="cd-seconds">—</span>
+          <span class="countdown-label">Seconds</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Footer -->
   <footer class="footer">
+    <div class="envelope-pocket">
+      <div class="envelope-pocket-body">
+        <div class="footer-card">
+          <img id="footerPolaroid" src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80" alt="Gio Anthony and Augiela Shane" />
+          <span class="wax-seal" id="footerSeal">G&amp;A</span>
+        </div>
+      </div>
+    </div>
     <p class="footer-names" id="footerNames">Gio Anthony & Augiela Shane</p>
-    <p class="footer-date" id="footerDate">June 14, 2027</p>
+    <p class="footer-date" id="footerDate">February 18, 2027</p>
     <p class="footer-note" id="footerQuote">"And now these three remain: faith, hope, and love. But the greatest of these is love."</p>
   </footer>
 
@@ -3431,9 +3524,14 @@
         });
       }
 
+      function playHeroMotion() {
+        document.body.classList.add("hero-play");
+      }
+
       function skipIntro() {
         document.body.classList.remove("intro-locked");
         document.body.classList.add("intro-open");
+        playHeroMotion();
         var curtain = document.getElementById("pageCurtain");
         if (curtain) {
           curtain.classList.remove("is-entering", "is-leaving");
@@ -3456,6 +3554,8 @@
         sessionStorage.setItem("invitation-opened", "1");
         envelopeIntro.classList.add("opening");
         document.body.classList.add("intro-open");
+
+        setTimeout(playHeroMotion, 2800);
 
         setTimeout(function () {
           document.body.classList.remove("intro-locked");
@@ -3505,6 +3605,26 @@
 
       updateCountdown();
       setInterval(updateCountdown, 1000);
+
+      (function bindCinematicScroll() {
+        var bar = document.createElement("div");
+        bar.className = "scroll-progress";
+        bar.setAttribute("aria-hidden", "true");
+        document.body.appendChild(bar);
+        var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduce) {
+          bar.style.display = "none";
+          return;
+        }
+        function updateProgress() {
+          var y = window.scrollY || document.documentElement.scrollTop || 0;
+          var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+          bar.style.transform = "scaleX(" + Math.min(1, y / max) + ")";
+        }
+        window.addEventListener("scroll", updateProgress, { passive: true });
+        window.addEventListener("resize", updateProgress);
+        updateProgress();
+      })();
 
       const nav = document.getElementById("nav");
       const navToggle = document.getElementById("navToggle");
@@ -3647,6 +3767,7 @@
           reception: '<path d="M4 8h16"/><path d="M6 8V5a2 2 0 012-2h8a2 2 0 012 2v3"/><path d="M8 12h.01M12 12h.01M16 12h.01"/>',
           photos: '<rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l2-2h4l2 2"/>',
           sendoff: '<path d="M5 14l2-5h10l2 5"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M12 8v3"/>',
+          bird: '<path d="M3 14c4-1 6-4 7-7 1 3 4 6 8 7-3 1-5 3-6 6-1-3-4-5-9-6z"/><path d="M10 7c1-2 3-3 5-3"/>',
         };
         return icons[icon] || icons.rings;
       }
@@ -3677,6 +3798,54 @@
           '</div></article>';
       }
 
+      function renderLaceCalendar(iso) {
+        var grid = document.getElementById("calGrid");
+        if (!grid || !iso) return;
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return;
+        var year = d.getUTCFullYear();
+        var month = d.getUTCMonth();
+        var day = d.getUTCDate();
+        var monthEl = document.getElementById("calMonth");
+        var yearEl = document.getElementById("calYear");
+        if (monthEl) {
+          monthEl.textContent = new Date(Date.UTC(year, month, 1)).toLocaleDateString("en-US", {
+            month: "long",
+            timeZone: "UTC"
+          });
+        }
+        if (yearEl) yearEl.textContent = String(year);
+        var startDow = new Date(Date.UTC(year, month, 1)).getUTCDay();
+        var daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+        var html = ["S", "M", "T", "W", "T", "F", "S"].map(function (x) {
+          return '<span class="dow">' + x + "</span>";
+        }).join("");
+        var i;
+        for (i = 0; i < startDow; i++) html += "<span></span>";
+        for (i = 1; i <= daysInMonth; i++) {
+          html += i === day
+            ? '<span class="is-wedding">' + i + "</span>"
+            : "<span>" + i + "</span>";
+        }
+        grid.innerHTML = html;
+      }
+
+      function applyPolaroids(photos) {
+        var list = photos || [];
+        var first = list[0];
+        var second = list[1] || first;
+        var hero = document.getElementById("heroPolaroid");
+        var foot = document.getElementById("footerPolaroid");
+        if (first && first.src && hero) {
+          hero.src = first.src;
+          hero.alt = first.alt || first.caption || "The couple";
+        }
+        if (second && second.src && foot) {
+          foot.src = second.src;
+          foot.alt = second.alt || second.caption || "The couple";
+        }
+      }
+
       function applyContent(c) {
         if (!c) return;
         if (c.weddingDate) {
@@ -3694,6 +3863,15 @@
           '<span class="hero-name hero-name-bride">' + escapeHtml(bride) + '</span>';
         document.getElementById("heroDate").textContent = formatHeroDate(c);
         document.title = groom + " & " + bride + " — Wedding Invitation";
+        var inviteGreeting = document.getElementById("inviteGreeting");
+        var inviteBody = document.getElementById("inviteBody");
+        if (inviteGreeting && c.inviteGreeting) inviteGreeting.textContent = c.inviteGreeting;
+        if (inviteBody) {
+          inviteBody.textContent = c.inviteBody || c.storySubtitle || inviteBody.textContent;
+        }
+        renderLaceCalendar(c.weddingDate);
+        var detailsDeadline = document.getElementById("detailsDeadline");
+        if (detailsDeadline && c.rsvpDeadline) detailsDeadline.textContent = c.rsvpDeadline;
         document.getElementById("storyTitle").textContent = c.storyTitle || "";
         document.getElementById("storySubtitle").textContent = c.storySubtitle || "";
         document.getElementById("footerNames").textContent = (c.groom || "") + " & " + (c.bride || "");
@@ -3802,6 +3980,19 @@
             '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
             '<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M9 22V12h6v10"/>'
           ];
+          var featured = c.venues[0];
+          var featName = document.getElementById("venueFeaturedName");
+          var featTime = document.getElementById("venueFeaturedTime");
+          var featAddr = document.getElementById("venueFeaturedAddress");
+          var featBtn = document.getElementById("venueRouteBtn");
+          var featPhoto = document.getElementById("venueHeroPhoto");
+          if (featName) featName.textContent = featured.name || "";
+          if (featTime) featTime.textContent = featured.time || "";
+          if (featAddr) featAddr.innerHTML = escapeHtml(featured.address || "").replace(/\n/g, "<br />");
+          if (featBtn && featured.mapUrl) featBtn.href = featured.mapUrl;
+          if (featPhoto && (c.venuePhoto || featured.photo)) {
+            featPhoto.src = c.venuePhoto || featured.photo;
+          }
           document.getElementById("venueGrid").innerHTML = c.venues.map(function (v, i) {
             const delay = i ? " reveal-delay-" + Math.min(i, 2) : "";
             const addr = escapeHtml(v.address || "").replace(/\n/g, "<br />");
@@ -3818,7 +4009,7 @@
 
         const weddingDayTitle = document.getElementById("weddingDayTitle");
         const weddingDaySubtitle = document.getElementById("weddingDaySubtitle");
-        if (weddingDayTitle) weddingDayTitle.textContent = c.weddingDayTitle || "Wedding Day Timeline";
+        if (weddingDayTitle) weddingDayTitle.textContent = c.weddingDayTitle || "The celebration unfolds";
         if (weddingDaySubtitle) {
           weddingDaySubtitle.textContent = c.weddingDaySubtitle || "";
           weddingDaySubtitle.style.display = c.weddingDaySubtitle ? "" : "none";
@@ -3827,15 +4018,9 @@
         if (Array.isArray(c.weddingDayTimeline) && c.weddingDayTimeline.length) {
           const board = document.getElementById("weddingDayTimeline");
           if (board) {
-            const rows = chunkWeddingDayRows(c.weddingDayTimeline);
-            board.innerHTML = rows.map(function (rowItems, rowIdx) {
-              return '<div class="wedding-day-row" role="list">' +
-                '<div class="wedding-day-line" aria-hidden="true"></div>' +
-                rowItems.map(function (item, i) {
-                  const delay = (rowIdx + i) ? " reveal-delay-" + Math.min(rowIdx + i, 3) : "";
-                  return renderWeddingDayItem(item, delay);
-                }).join("") +
-                '</div>';
+            board.innerHTML = c.weddingDayTimeline.map(function (item, i) {
+              const delay = i ? " reveal-delay-" + Math.min(i, 3) : "";
+              return renderWeddingDayItem(item, delay);
             }).join("");
           }
         }
@@ -3850,6 +4035,8 @@
         if (envSealMono) envSealMono.textContent = groomInitial + "&" + brideInitial;
         if (envFlapNames) envFlapNames.textContent = firstNames;
         if (navLogo) navLogo.innerHTML = monogramHtml;
+        var footerSeal = document.getElementById("footerSeal");
+        if (footerSeal) footerSeal.textContent = groomInitial + "&" + brideInitial;
 
         observeReveals();
         updateCountdown();
@@ -3877,6 +4064,7 @@
         fetch("/api/gallery").then(function (r) { return r.json(); }).catch(function () { return []; })
       ]).then(function (results) {
         applyContent(results[0]);
+        applyPolaroids(results[1]);
         renderHomeGallery(results[1]);
       });
 

@@ -1,18 +1,18 @@
 /* ── Shared: ocean theme + invitation frame ── */
 :root {
-  --deep: #0d2b45;
-  --teal: #1e5a6e;
-  --seafoam: #6ba7a0;
-  --sand: #dcc8aa;
-  --sky: #b7d4e6;
+  --deep: #3a4454;
+  --teal: #6f96c4;
+  --seafoam: #8eafd4;
+  --sand: #e6d8c4;
+  --sky: #c5d4eb;
 
   /* Aliases used across pages */
   --mist: var(--sky);
-  --mist-light: #d9eaf4;
+  --mist-light: #e8eef6;
   --sage: var(--seafoam);
-  --sage-light: #9bc4bf;
-  --ivory: #eef6f8;
-  --linen: #dceef5;
+  --sage-light: #a8c0e0;
+  --ivory: #f7f3ec;
+  --linen: #eef3f9;
   --ocean-sky: #b7d4e6;
   --ocean-shallow: #6ba7a0;
   --ocean-sand: #dcc8aa;
@@ -506,7 +506,7 @@ html.is-dark-page .nav.nav-docked .nav-links a:active {
   gap: 0.55rem;
   margin: 0.35rem auto 0;
   padding: 1rem 2.25rem;
-  font-family: "Montserrat", system-ui, sans-serif;
+  font-family: "Josefin Sans", "Montserrat", system-ui, sans-serif;
   font-size: 0.72rem;
   font-weight: 500;
   letter-spacing: 0.22em;

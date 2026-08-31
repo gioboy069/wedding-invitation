@@ -4,7 +4,10 @@
   "weddingDate": "2027-02-18T06:00:00.000Z",
   "weddingDateDisplay": "February 18, 2027",
   "location": "Napa Valley, California",
-  "heroPre": "Together with their families!",
+  "heroPre": "Together with their families",
+  "inviteGreeting": "Dear friends and family!",
+  "inviteBody": "With joyful hearts we invite you to celebrate the wedding of Gio Anthony and Augiela Shane. Come share in the vows, the dinner, and the dancing as we begin our life together.",
+  "venuePhoto": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&q=80",
   "rsvpDeadline": "January 1, 2027",
   "storyTitle": "A Love Written in Time",
   "storySubtitle": "Every great love story has a beginning. Ours started with a chance encounter and grew into something extraordinary.",
@@ -111,14 +114,14 @@
     }
   ],
   "footerQuote": "\"And now these three remain: faith, hope, and love. But the greatest of these is love.\"",
-  "weddingDayTitle": "Wedding Day Timeline",
+  "weddingDayTitle": "The celebration unfolds",
   "weddingDaySubtitle": "",
   "weddingDayTimeline": [
     {
       "time": "12:00 pm",
       "title": "Ceremony doors open",
       "text": "",
-      "icon": "doors"
+      "icon": "bird"
     },
     {
       "time": "12:30 pm",
