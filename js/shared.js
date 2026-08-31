@@ -248,6 +248,11 @@
   }
 
   function injectSectionDividers() {
+    /* Invitation home already uses torn-paper sheets; extra emblems stack
+       at the top of the flex column and look like a blank page. */
+    if (document.getElementById("siteReveal") || document.querySelector(".site-reveal")) {
+      return;
+    }
     var sections = document.querySelectorAll("section");
     sections.forEach(function (section, i) {
       if (i === 0) return;

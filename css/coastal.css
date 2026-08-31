@@ -116,58 +116,61 @@ section {
 }
 
 .wave-divider {
-  display: block;
-  width: min(220px, 58vw);
-  height: 28px;
-  margin: 0 auto 1.75rem;
-  color: var(--powder);
+  display: none !important;
 }
 
-.wave-divider svg {
-  width: 100%;
-  height: 100%;
-}
-
-/* Invitation flow: cover → letter → date → countdown → story → venue → timing → attire → party → photos → note → RSVP → footer */
+/* Invitation flow follows document order. Do not use flex `order` —
+   injected siblings would otherwise jump to the top of the page. */
 .site-reveal {
   display: flex;
   flex-direction: column;
 }
 
-#hero { order: 1; --paper-z: 1; }
-#invite { order: 2; --paper-z: 2; }
-#calendar { order: 3; --paper-z: 3; }
-.countdown-finale { order: 4; --paper-z: 4; }
-#story { order: 5; --paper-z: 5; }
-#venue { order: 6; --paper-z: 6; }
-#wedding-day { order: 7; --paper-z: 7; }
-#attire { order: 8; --paper-z: 8; }
-#entourage { order: 9; --paper-z: 9; }
-#gallery { order: 10; --paper-z: 10; }
-.details-tray { order: 11; --paper-z: 11; }
-#rsvp { order: 12; --paper-z: 12; }
-.footer { order: 13; --paper-z: 13; }
-
-/* ── Hero: names + polaroid on torn paper ── */
-.hero {
-  min-height: 0;
-  padding: 5.5rem 1.15rem 0;
-  background: transparent;
+.site-reveal > .section-floral {
+  display: none !important;
 }
 
-.hero-bg {
-  background:
-    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(197, 212, 235, 0.55), transparent 60%),
-    linear-gradient(180deg, #d5e3f4 0%, #eef2f8 42%, #f7f3ec 100%);
+#hero { --paper-z: 1; }
+#invite { --paper-z: 2; }
+#calendar { --paper-z: 3; }
+.countdown-finale { --paper-z: 4; }
+#story { --paper-z: 5; }
+#venue { --paper-z: 6; }
+#wedding-day { --paper-z: 7; }
+#attire { --paper-z: 8; }
+#entourage { --paper-z: 9; }
+#gallery { --paper-z: 10; }
+.details-tray { --paper-z: 11; }
+#rsvp { --paper-z: 12; }
+.footer { --paper-z: 13; }
+
+/* ── Opening sheet: names + polaroid + letter + date + countdown ── */
+.hero,
+header.hero,
+.site-reveal > .hero {
+  min-height: 0 !important;
+  height: auto !important;
+  justify-content: flex-start !important;
+  overflow: visible !important;
+  padding: 5.25rem 1.15rem 0.35rem !important;
+  background: #f7fbfb !important;
 }
 
-.hero-ornament {
-  display: none;
+.hero-bg,
+.hero-ornament,
+.hero-wave,
+.hero-deco,
+.sand-bed,
+.hero-divider,
+.hero-scroll {
+  display: none !important;
 }
 
 .hero-content {
   max-width: 28rem;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .hero-pre {
@@ -177,7 +180,9 @@ section {
   text-transform: uppercase;
   font-weight: 500;
   color: var(--teal);
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.5rem;
+  opacity: 1 !important;
+  animation: none !important;
 }
 
 .hero-names {
@@ -187,7 +192,9 @@ section {
   letter-spacing: 0.01em;
   line-height: 1.12;
   color: var(--deep);
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.35rem;
+  opacity: 1 !important;
+  animation: none !important;
 }
 
 .hero-name {
@@ -200,7 +207,7 @@ section {
   font-weight: 400;
   font-size: clamp(1.35rem, 3.6vw, 1.85rem);
   color: var(--seafoam);
-  padding: 0.15rem 0 0.25rem;
+  padding: 0.1rem 0 0.15rem;
 }
 
 .hero-date {
@@ -210,59 +217,37 @@ section {
   text-transform: none;
   font-weight: 500;
   color: var(--teal);
-  margin-bottom: 1.5rem;
-}
-
-.hero-divider,
-.hero-scroll {
-  display: none;
+  margin-bottom: 0.85rem;
+  opacity: 1 !important;
+  animation: none !important;
 }
 
 .hero-stage {
   position: relative;
   z-index: 1;
-  width: min(420px, 100%);
-  margin: 0.5rem auto 0;
-  padding: 0 0 2.5rem;
+  width: min(280px, 72%);
+  margin: 0.15rem auto 0;
+  padding: 0;
 }
 
 .torn-sheet {
   position: relative;
-  background: #f4eee4;
-  padding: 1.35rem 1.1rem 4.5rem;
-  filter: drop-shadow(0 18px 28px rgba(58, 68, 84, 0.12));
-  clip-path: polygon(
-    0% 3%, 3% 0%, 8% 2.5%, 12% 0%, 18% 2%, 24% 0.5%, 31% 2.2%, 38% 0%,
-    46% 2.4%, 54% 0.4%, 62% 2%, 70% 0%, 78% 2.6%, 86% 0.6%, 93% 2.2%, 100% 0%,
-    100% 86%, 97% 90%, 92% 87%, 86% 92%, 79% 88%, 72% 93%, 64% 89%, 56% 94%,
-    48% 90%, 40% 94%, 32% 89%, 24% 93%, 16% 88%, 9% 92%, 3% 88%, 0% 91%
-  );
-}
-
-.sand-bed {
-  position: absolute;
-  left: -8%;
-  right: -8%;
-  bottom: -1.25rem;
-  height: 7.5rem;
-  background:
-    radial-gradient(ellipse 18px 10px at 18% 42%, rgba(232, 220, 196, 0.95), transparent 70%),
-    radial-gradient(ellipse 22px 12px at 78% 58%, rgba(203, 185, 154, 0.7), transparent 70%),
-    linear-gradient(180deg, transparent 0%, #eadfcb 28%, #e0d0b4 100%);
-  clip-path: ellipse(70% 70% at 50% 80%);
-  z-index: 0;
+  background: transparent;
+  padding: 0.15rem 0 0;
+  filter: none;
+  clip-path: none;
 }
 
 .polaroid {
   position: relative;
   z-index: 2;
-  width: min(250px, 72%);
-  margin: 0.4rem auto 0;
+  width: 100%;
+  margin: 0 auto;
   background: #fff;
-  padding: 0.7rem 0.7rem 2.35rem;
+  padding: 0.7rem 0.7rem 2.15rem;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 14px 28px rgba(58, 68, 84, 0.16);
+    0 14px 28px rgba(13, 43, 69, 0.14);
   transform: rotate(-2.4deg);
 }
 
@@ -285,56 +270,11 @@ section {
   box-shadow: inset -2px -2px 4px rgba(90, 70, 50, 0.18), 0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
-.hero-deco {
-  position: absolute;
-  z-index: 3;
-  pointer-events: none;
-}
-
-.hero-deco--shell {
-  width: 54px;
-  right: 6%;
-  bottom: 2.4rem;
-  opacity: 0.92;
-}
-
-.hero-deco--shell-left {
-  width: 42px;
-  left: 4%;
-  bottom: 3.2rem;
-  transform: scaleX(-1) rotate(-18deg);
-}
-
-.hero-deco--pearl {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, #fff, #efe8dc 55%, #cfc3b4);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
-}
-
-.hero-deco--pearl-a { left: 14%; bottom: 2.1rem; }
-.hero-deco--pearl-b { right: 22%; bottom: 1.4rem; width: 12px; height: 12px; }
-
-.hero-wave {
-  display: block;
-  width: 100%;
-  height: 54px;
-  margin-top: -8px;
-  color: #d7e4f4;
-}
-
-.hero-wave svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
 /* ── Invitation letter ── */
 .invite-letter {
   background: var(--paper);
   text-align: center;
-  padding-top: clamp(2rem, 5vw, 3rem);
+  padding-top: 1.35rem;
 }
 
 .invite-greeting {
@@ -1035,8 +975,10 @@ section {
 }
 
 @media (max-width: 640px) {
-  .hero {
-    padding-top: 6.25rem;
+  .hero,
+  header.hero,
+  .site-reveal > .hero {
+    padding-top: 5.75rem !important;
   }
 
   .hero-names {
@@ -1101,10 +1043,11 @@ section {
 }
 
 .site-reveal > .hero {
-  margin-top: 0;
+  margin-top: 0 !important;
   z-index: 1;
-  --panel: #eef6f8;
-  padding-top: clamp(5.25rem, 9vw, 6.25rem);
+  --panel: #f7fbfb;
+  padding-top: 5.25rem !important;
+  padding-bottom: 0.35rem !important;
   filter: none;
 }
 
@@ -1131,6 +1074,7 @@ section {
   display: none;
 }
 
+#hero,
 #invite,
 #calendar,
 .countdown-finale {
@@ -1138,16 +1082,27 @@ section {
   --rip-fill: #f7fbfb;
 }
 
+#invite,
+#calendar,
+.countdown-finale,
+#rsvp {
+  margin-top: 0 !important;
+  filter: none;
+}
+
 #invite {
-  padding-bottom: 1.1rem;
+  padding-top: 1.15rem !important;
+  padding-bottom: 0.85rem !important;
 }
 
 #calendar {
-  padding-bottom: 1.25rem;
+  padding-top: 1.15rem !important;
+  padding-bottom: 1rem !important;
 }
 
 .countdown-finale {
-  padding-bottom: 3.25rem;
+  padding-top: 1.15rem !important;
+  padding-bottom: 2.75rem !important;
 }
 
 .details-tray {
@@ -1162,14 +1117,7 @@ section {
   padding-bottom: 3rem;
 }
 
-#calendar,
-.countdown-finale,
-#rsvp {
-  margin-top: 0;
-  padding-top: 2rem;
-  filter: none;
-}
-
+#invite::before,
 #calendar::before,
 .countdown-finale::before,
 #rsvp::before {
@@ -1195,26 +1143,18 @@ section {
   background: var(--panel) !important;
 }
 
-.hero-bg {
-  background: transparent;
-}
-
+.hero-bg,
 .hero-wave,
 .hero-deco,
 .sand-bed {
-  display: none;
+  display: none !important;
 }
 
 .torn-sheet {
-  background: #e8f4f2;
-  padding: 1.1rem 1rem 2.75rem;
-  filter: drop-shadow(0 12px 20px rgba(13, 43, 69, 0.1));
-  clip-path: polygon(
-    0% 2%, 4% 0%, 9% 2.2%, 14% 0.4%, 21% 1.8%, 28% 0%, 36% 2%, 44% 0.3%,
-    52% 1.6%, 60% 0%, 68% 2.1%, 76% 0.5%, 84% 1.8%, 92% 0.2%, 100% 1.4%,
-    100% 88%, 96% 92%, 88% 89%, 80% 93%, 71% 90%, 62% 94%, 53% 90%,
-    44% 93%, 35% 89%, 26% 93%, 17% 90%, 8% 93%, 0% 90%
-  );
+  background: transparent !important;
+  padding: 0.15rem 0 0 !important;
+  filter: none !important;
+  clip-path: none !important;
 }
 
 #rsvp {
@@ -1293,8 +1233,7 @@ section {
 .hero-amp,
 .hero-date,
 .polaroid {
-  opacity: 1;
-  animation: none;
+  opacity: 1 !important;
 }
 
 body.hero-play .polaroid {

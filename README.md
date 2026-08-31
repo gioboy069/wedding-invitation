@@ -8,8 +8,6 @@ Coastal-chic wedding invitation with a prenup gallery, attire guide, interactive
 
 ## Quick Start
 
-## Quick Start
-
 ```bash
 npm install
 npm run dev
