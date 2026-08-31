@@ -433,6 +433,44 @@ function namesMatch(a, b) {
   return Boolean(ka && kb && ka === kb);
 }
 
+function guestSearchScore(query, guest) {
+  const q = normalizeGuestName(query);
+  if (q.length < 2) return 0;
+  const person = hydratePerson(guest);
+  const surname = normalizeGuestName(person.surname);
+  const first = normalizeGuestName(person.firstName);
+  const full = [surname, first].filter(Boolean).join(" ");
+  if (!surname && !first) return 0;
+
+  const parts = q.split(" ").filter(Boolean);
+  let score = 0;
+
+  function startsWithPart(value, part) {
+    return value === part || value.startsWith(part);
+  }
+
+  if (surname === q || first === q || full === q) score = Math.max(score, 100);
+  if (startsWithPart(surname, q)) score = Math.max(score, 92);
+  if (startsWithPart(first, q)) score = Math.max(score, 84);
+  if (full.startsWith(q)) score = Math.max(score, 88);
+
+  if (parts.length > 1) {
+    const matched = parts.every((part) => startsWithPart(surname, part) || startsWithPart(first, part));
+    if (matched) score = Math.max(score, 96);
+  }
+
+  const tokens = full.split(" ").filter(Boolean);
+  if (tokens.some((token) => startsWithPart(token, q) || parts.some((part) => startsWithPart(token, part)))) {
+    score = Math.max(score, 70);
+  }
+
+  if (q.length >= 3 && (surname.includes(q) || first.includes(q) || full.includes(q))) {
+    score = Math.max(score, 45);
+  }
+
+  return score;
+}
+
 function parseCompanion(value) {
   if (value && typeof value === "object") {
     return parsePersonName(value.name, value.firstName, value.surname);
@@ -463,6 +501,29 @@ function alreadySubmittedPayload() {
     error: "We've already received your RSVP. If you need to change names or update your response, please contact Gio and Augiela directly.",
   };
 }
+
+// Public guest name search for RSVP typeahead (does not dump the full list)
+app.get("/api/guests/search", (req, res) => {
+  const query = trimNamePart(req.query.q || req.query.name || "");
+  if (normalizeGuestName(query).length < 2) {
+    return res.json({ matches: [] });
+  }
+  const guests = readJson("guests.json", []).map(hydratePerson);
+  const matches = guests
+    .map((guest) => ({ guest, score: guestSearchScore(query, guest) }))
+    .filter((row) => row.score > 0)
+    .sort((a, b) => b.score - a.score
+      || a.guest.surname.localeCompare(b.guest.surname, undefined, { sensitivity: "base" })
+      || a.guest.firstName.localeCompare(b.guest.firstName, undefined, { sensitivity: "base" }))
+    .slice(0, 8)
+    .map(({ guest }) => ({
+      id: guest.id,
+      name: guest.name,
+      firstName: guest.firstName,
+      surname: guest.surname,
+    }));
+  res.json({ matches });
+});
 
 // Public guest lookup for RSVP form (does not expose full list)
 app.get("/api/guests/lookup", (req, res) => {

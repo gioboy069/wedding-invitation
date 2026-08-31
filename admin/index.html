@@ -501,7 +501,7 @@
 </head>
 <body>
   <div id="loginScreen" class="login-screen">
-    <form class="login-card" id="loginForm">
+    <form class="login-card" id="loginForm" method="post" action="/admin/" autocomplete="on">
       <h1>Admin</h1>
       <p>Sign in to manage your wedding invitation</p>
       <div id="loginNotice" class="login-ok hidden"></div>
@@ -514,7 +514,7 @@
       </div>
     </form>
 
-    <form class="login-card hidden" id="forgotForm">
+    <form class="login-card hidden" id="forgotForm" method="post" action="/admin/">
       <h1>Reset password</h1>
       <p>We’ll email a reset link to <strong id="adminEmailLabel">gomez.wed2027@gmail.com</strong>. Open it to choose a new password.</p>
       <div id="forgotError" class="error-msg hidden"></div>
@@ -525,7 +525,7 @@
       </div>
     </form>
 
-    <form class="login-card hidden" id="resetForm">
+    <form class="login-card hidden" id="resetForm" method="post" action="/admin/">
       <h1>New password</h1>
       <p>Choose a new password for your admin dashboard.</p>
       <div id="resetError" class="error-msg hidden"></div>
@@ -1751,7 +1751,13 @@
         return escapeHtml(s).replace(/'/g, "&#39;");
       }
 
-      const resetTokenFromUrl = new URLSearchParams(window.location.search).get("token");
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("password")) {
+        params.delete("password");
+        const next = params.toString();
+        history.replaceState({}, "", "/admin/" + (next ? "?" + next : ""));
+      }
+      const resetTokenFromUrl = params.get("token");
       if (resetTokenFromUrl) {
         showCard("reset");
       } else {

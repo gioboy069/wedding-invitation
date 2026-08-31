@@ -1721,6 +1721,57 @@
       text-align: center;
     }
 
+    .name-search {
+      position: relative;
+    }
+
+    .name-search-results {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 0.2rem);
+      z-index: 30;
+      margin: 0;
+      padding: 0.3rem 0;
+      list-style: none;
+      background: var(--white);
+      border: 1px solid rgba(107, 167, 160, 0.35);
+      box-shadow: 0 12px 28px rgba(13, 43, 69, 0.12);
+      max-height: 16rem;
+      overflow-y: auto;
+    }
+
+    .name-search-results[hidden] {
+      display: none;
+    }
+
+    .name-search-option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: 0;
+      padding: 0.78rem 1.1rem;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .name-search-option:hover,
+    .name-search-option.is-active {
+      background: rgba(183, 212, 230, 0.5);
+      color: var(--deep);
+    }
+
+    .name-search-empty {
+      padding: 0.85rem 1.1rem;
+      color: var(--text-soft);
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
     .form-group {
       margin-bottom: 1.75rem;
     }
@@ -3083,8 +3134,8 @@
       <div class="rsvp-guide reveal reveal-delay-2">
         <p class="rsvp-guide-lead">How to reply</p>
         <ol>
-          <li>Enter your surname, then your first name — just as they appear on your invitation.</li>
-          <li>When we find you on our guest list, tell us whether you will be attending.</li>
+          <li>Start typing your surname or first name — a few letters is enough.</li>
+          <li>Tap your full name when it appears, then tell us whether you will be attending.</li>
           <li>If your invitation includes others, kindly add each guest’s surname and first name.</li>
           <li>A message is optional. Then tap Send RSVP — once is enough.</li>
         </ol>
@@ -3093,19 +3144,31 @@
 
       <form class="rsvp-form reveal reveal-delay-3" id="rsvpForm" novalidate>
         <div class="form-group" id="nameGroup">
-          <p class="name-prompt" id="namePrompt">Enter your surname and first name</p>
-          <div class="form-row-2">
-            <div>
-              <label class="form-label" for="guestSurname">Your surname</label>
-              <input type="text" id="guestSurname" name="surname" class="form-input" placeholder="Enter your surname" autocomplete="family-name" required />
-            </div>
-            <div>
-              <label class="form-label" for="guestFirstName">Your first name</label>
-              <input type="text" id="guestFirstName" name="firstName" class="form-input" placeholder="Enter your first name" autocomplete="given-name" required />
-            </div>
+          <p class="name-prompt" id="namePrompt">Find your name on our guest list</p>
+          <div class="name-search" id="nameSearch">
+            <label class="form-label" for="guestNameSearch">Your name</label>
+            <input
+              type="text"
+              id="guestNameSearch"
+              name="guestNameSearch"
+              class="form-input"
+              placeholder="Start typing your surname or first name"
+              autocomplete="off"
+              autocapitalize="words"
+              spellcheck="false"
+              inputmode="search"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded="false"
+              aria-controls="guestNameResults"
+              aria-haspopup="listbox"
+            />
+            <ul class="name-search-results" id="guestNameResults" role="listbox" hidden></ul>
+            <input type="hidden" id="guestSurname" name="surname" />
+            <input type="hidden" id="guestFirstName" name="firstName" />
           </div>
           <p class="guest-match-status" id="guestMatchStatus" aria-live="polite"></p>
-          <p class="form-error">Please enter your surname and first name.</p>
+          <p class="form-error">Please select your name from the list.</p>
         </div>
 
         <div class="rsvp-already" id="rsvpAlready" role="status" hidden>
@@ -3734,6 +3797,8 @@
       const submitBtn = document.getElementById("submitBtn");
       const guestSurnameInput = document.getElementById("guestSurname");
       const guestFirstNameInput = document.getElementById("guestFirstName");
+      const guestNameSearch = document.getElementById("guestNameSearch");
+      const guestNameResults = document.getElementById("guestNameResults");
       const guestMatchStatus = document.getElementById("guestMatchStatus");
       const companionFields = document.getElementById("companionFields");
       const companionList = document.getElementById("companionList");
@@ -3742,7 +3807,10 @@
       const rsvpEntryFields = document.getElementById("rsvpEntryFields");
       let matchedGuest = null;
       let alreadySubmitted = false;
-      let lookupTimer = null;
+      let searchTimer = null;
+      let searchResults = [];
+      let activeOption = -1;
+      let selectedLabel = "";
       const COUPLE_EMAIL = "gomez.wed2027@gmail.com";
       const Names = window.WeddingNames;
 
@@ -3829,6 +3897,129 @@
         guestMatchStatus.classList.toggle("is-unmatched", state === "unmatched");
       }
 
+      function closeNameResults() {
+        guestNameResults.hidden = true;
+        guestNameResults.innerHTML = "";
+        guestNameSearch.setAttribute("aria-expanded", "false");
+        guestNameSearch.removeAttribute("aria-activedescendant");
+        activeOption = -1;
+        searchResults = [];
+      }
+
+      function setActiveOption(index) {
+        var options = guestNameResults.querySelectorAll(".name-search-option");
+        if (!options.length) {
+          activeOption = -1;
+          return;
+        }
+        if (index < 0) index = options.length - 1;
+        if (index >= options.length) index = 0;
+        activeOption = index;
+        options.forEach(function (btn, i) {
+          btn.classList.toggle("is-active", i === index);
+          btn.setAttribute("aria-selected", i === index ? "true" : "false");
+        });
+        guestNameSearch.setAttribute("aria-activedescendant", options[index].id);
+        options[index].scrollIntoView({ block: "nearest" });
+      }
+
+      function renderNameResults(matches, query) {
+        guestNameResults.innerHTML = "";
+        searchResults = matches || [];
+        if (!searchResults.length) {
+          var empty = document.createElement("li");
+          empty.className = "name-search-empty";
+          empty.textContent = "No names match “" + query + "”. Try another spelling, or write to us at " + COUPLE_EMAIL + ".";
+          guestNameResults.appendChild(empty);
+          guestNameResults.hidden = false;
+          guestNameSearch.setAttribute("aria-expanded", "true");
+          activeOption = -1;
+          return;
+        }
+        searchResults.forEach(function (guest, i) {
+          var li = document.createElement("li");
+          li.setAttribute("role", "presentation");
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "name-search-option";
+          btn.id = "guestNameOption" + i;
+          btn.setAttribute("role", "option");
+          btn.setAttribute("aria-selected", "false");
+          btn.textContent = guest.name;
+          btn.addEventListener("mousedown", function (e) {
+            e.preventDefault();
+            selectGuestName(guest);
+          });
+          li.appendChild(btn);
+          guestNameResults.appendChild(li);
+        });
+        guestNameResults.hidden = false;
+        guestNameSearch.setAttribute("aria-expanded", "true");
+        setActiveOption(0);
+      }
+
+      function clearSelectedGuest() {
+        selectedLabel = "";
+        guestSurnameInput.value = "";
+        guestFirstNameInput.value = "";
+        matchedGuest = null;
+        setAlreadySubmitted(false);
+        setMatchStatus("", "");
+        syncResponseFields();
+        updateCompanionVisibility();
+      }
+
+      function selectGuestName(guest) {
+        if (!guest) return;
+        selectedLabel = guest.name;
+        guestSurnameInput.value = guest.surname || "";
+        guestFirstNameInput.value = guest.firstName || "";
+        guestNameSearch.value = guest.name;
+        closeNameResults();
+        lookupGuestName();
+      }
+
+      function searchGuestNames() {
+        var query = guestNameSearch.value.replace(/\s+/g, " ").trim();
+        if (selectedLabel && query === selectedLabel) {
+          closeNameResults();
+          return;
+        }
+        if (selectedLabel && query !== selectedLabel) {
+          clearSelectedGuest();
+        }
+        if (query.length < 2) {
+          closeNameResults();
+          if (query.length === 1) setMatchStatus("", "Keep typing — a few letters will find your name.");
+          else setMatchStatus("", "");
+          return;
+        }
+        fetch("/api/guests/search?q=" + encodeURIComponent(query))
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (guestNameSearch.value.replace(/\s+/g, " ").trim() !== query) return;
+            var matches = (data && data.matches) || [];
+            renderNameResults(matches, query);
+            if (!matches.length) {
+              setMatchStatus(
+                "unmatched",
+                "We could not find that name on our guest list. Try another spelling, or contact Gio and Augiela at " + COUPLE_EMAIL + "."
+              );
+            } else {
+              setMatchStatus("", "Select your full name from the list.");
+            }
+          })
+          .catch(function () {
+            closeNameResults();
+            setMatchStatus("", "Name search is unavailable just now. Please try again in a moment.");
+          });
+      }
+
+      function scheduleNameSearch() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(searchGuestNames, 180);
+      }
+
       function lookupGuestName() {
         var person = currentPerson();
         if (!person.surname || !person.firstName) {
@@ -3860,7 +4051,7 @@
               matchedGuest = null;
               setMatchStatus(
                 "unmatched",
-                "This name is not on our guest list. Please enter the surname and first name as they appear on your invitation. If you need help, contact Gio and Augiela at gomez.wed2027@gmail.com."
+                "This name is not on our guest list. Please select your name as it appears on your invitation. If you need help, contact Gio and Augiela at " + COUPLE_EMAIL + "."
               );
             }
             syncResponseFields();
@@ -3875,15 +4066,25 @@
           });
       }
 
-      function scheduleLookup() {
-        clearTimeout(lookupTimer);
-        lookupTimer = setTimeout(lookupGuestName, 350);
-      }
-
-      guestSurnameInput.addEventListener("input", scheduleLookup);
-      guestFirstNameInput.addEventListener("input", scheduleLookup);
-      guestSurnameInput.addEventListener("blur", lookupGuestName);
-      guestFirstNameInput.addEventListener("blur", lookupGuestName);
+      guestNameSearch.addEventListener("input", scheduleNameSearch);
+      guestNameSearch.addEventListener("keydown", function (e) {
+        var open = !guestNameResults.hidden;
+        if (e.key === "ArrowDown" && open) {
+          e.preventDefault();
+          setActiveOption(activeOption + 1);
+        } else if (e.key === "ArrowUp" && open) {
+          e.preventDefault();
+          setActiveOption(activeOption - 1);
+        } else if (e.key === "Enter" && open && searchResults[activeOption]) {
+          e.preventDefault();
+          selectGuestName(searchResults[activeOption]);
+        } else if (e.key === "Escape") {
+          closeNameResults();
+        }
+      });
+      guestNameSearch.addEventListener("blur", function () {
+        setTimeout(closeNameResults, 120);
+      });
       attendingRadio.addEventListener("change", updateCompanionVisibility);
       declinedRadio.addEventListener("change", updateCompanionVisibility);
       syncResponseFields();
@@ -3901,7 +4102,7 @@
           nameGroup.classList.add("invalid");
           setMatchStatus(
             "unmatched",
-            "This name is not on our guest list. Please enter the surname and first name as they appear on your invitation."
+            "Please select your name from the list so we can find you on our guest list."
           );
           valid = false;
         }
