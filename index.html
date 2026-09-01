@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="You're invited to celebrate the wedding of Gio Anthony & Augiela Shane — February 18, 2027 in Napa Valley." />
+  <meta name="description" content="You're invited to celebrate the wedding of Gio Anthony & Augiela Shane — February 18, 2027 in San Luis, Tarlac City." />
   <title>Gio Anthony & Augiela Shane — Wedding Invitation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -37,10 +37,11 @@
       --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
       --intro-ease: cubic-bezier(0.33, 1, 0.68, 1);
       --intro-flap: 2.4s;
-      --intro-card: 2.2s;
-      --intro-card-delay: 1.25s;
-      --intro-exit: 2.1s;
-      --intro-exit-delay: 3.1s;
+      --intro-card: 3.6s;
+      --intro-card-delay: 1.85s;
+      --intro-card-ease: cubic-bezier(0.42, 0.08, 0.18, 1);
+      --intro-wrap: 6.4s;
+      --intro-wrap-delay: 0.85s;
       --intro-fade: 1.8s;
       --intro-site-delay: 1.8s;
       --section-pad: clamp(4.5rem, 10vw, 7.5rem);
@@ -1109,9 +1110,9 @@
 
     .attire-teaser-card {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 0;
-      max-width: 880px;
+      max-width: min(72rem, 100%);
       margin: 0 auto;
       background: var(--white);
       border: 1px solid rgba(107, 167, 160, 0.25);
@@ -1121,24 +1122,27 @@
 
     .attire-teaser-image {
       position: relative;
-      min-height: 320px;
-      background: linear-gradient(145deg, rgba(183, 212, 230, 0.28), rgba(220, 200, 170, 0.22));
+      min-height: 0;
+      background: #f3eee4;
     }
 
     .attire-teaser-image img {
       width: 100%;
-      height: 100%;
+      height: auto;
+      display: block;
       object-fit: contain;
       object-position: center;
-      position: absolute;
-      inset: 0;
+      position: static;
     }
 
     .attire-teaser-content {
-      padding: clamp(2rem, 5vw, 3rem);
+      padding: clamp(1.5rem, 4vw, 2.35rem) clamp(1.35rem, 4vw, 2.5rem) clamp(1.75rem, 4vw, 2.5rem);
       display: flex;
       flex-direction: column;
       justify-content: center;
+      text-align: center;
+      max-width: 40rem;
+      margin: 0 auto;
     }
 
     .attire-teaser-content h3 {
@@ -2362,7 +2366,7 @@
       }
 
       .attire-teaser-image {
-        min-height: 240px;
+        min-height: 0;
       }
 
       .attire-look-grid,
@@ -2463,6 +2467,8 @@
     }
 
     .envelope-scene {
+      position: relative;
+      top: clamp(1.25rem, 5.5vh, 3.5rem);
       width: min(480px, 90vw);
       text-align: center;
       animation: intro-float 5s ease-in-out infinite;
@@ -2533,7 +2539,7 @@
       justify-content: center;
       gap: 0.4rem;
       box-shadow: 0 4px 16px rgba(13, 43, 69, 0.08);
-      transition: transform var(--intro-card) var(--intro-ease) var(--intro-card-delay);
+      transition: transform var(--intro-card) var(--intro-card-ease) var(--intro-card-delay);
     }
 
     .env-card-monogram {
@@ -2563,6 +2569,9 @@
       z-index: 3;
       overflow: hidden;
       background: linear-gradient(180deg, #dceef5 0%, #b7d4e6 45%, #dcc8aa 100%);
+      /* Closed: a rectangle. Open: a V-cut so the pocket has a triangular mouth. */
+      clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0, 50% 0);
+      transition: clip-path var(--intro-flap) var(--intro-ease);
     }
 
     .env-front::before {
@@ -2678,22 +2687,42 @@
       transform: rotateX(-168deg);
     }
 
+    .envelope-intro.opening .env-front {
+      clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0, 50% 56%);
+    }
+
     .envelope-intro.opening .env-seal {
       transform: translate(-50%, 42%) scale(0.4);
       opacity: 0;
     }
 
     .envelope-intro.opening .env-card {
-      transform: translateX(-50%) translateY(-110%);
+      transform: translateX(-50%) translateY(-96%);
     }
 
     .envelope-intro.opening .envelope-wrap {
-      animation: envelope-exit var(--intro-exit) var(--intro-ease) var(--intro-exit-delay) forwards;
+      animation: envelope-drop-exit var(--intro-wrap) var(--intro-ease) var(--intro-wrap-delay) forwards;
     }
 
-    @keyframes envelope-exit {
-      to {
-        transform: scale(0.96) translateY(20px);
+    @keyframes envelope-drop-exit {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      28% {
+        transform: translateY(40px) scale(1);
+        opacity: 1;
+      }
+      55% {
+        transform: translateY(56px) scale(0.995);
+        opacity: 1;
+      }
+      72% {
+        transform: translateY(62px) scale(0.98);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(76px) scale(0.96);
         opacity: 0;
       }
     }
@@ -2761,7 +2790,7 @@
       visibility: visible;
     }
   </style>
-  <link rel="stylesheet" href="/css/coastal.css?v=footer-pad" />
+  <link rel="stylesheet" href="/css/coastal.css?v=timing-h" />
 </head>
 <body class="intro-locked">
 
@@ -2828,12 +2857,12 @@
         <span class="hero-amp">&</span>
         <span class="hero-name hero-name-bride">Augiela Shane</span>
       </h1>
-      <p class="hero-date" id="heroDate">February 18, 2027 · Napa Valley, California</p>
+      <p class="hero-date" id="heroDate">February 18, 2027 · San Luis, Tarlac City</p>
     </div>
     <div class="hero-stage">
       <div class="torn-sheet">
         <figure class="polaroid">
-          <img id="heroPolaroid" src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80" alt="Gio Anthony and Augiela Shane" />
+          <img id="heroPolaroid" src="img/couple/where-love-felt-easy.jpg" alt="Gio Anthony and Augiela Shane" />
           <span class="polaroid-pearl" aria-hidden="true"></span>
         </figure>
       </div>
@@ -3011,14 +3040,14 @@
         <p class="venue-place-kicker">Ceremony</p>
         <div class="venue-photo-wrap">
           <figure class="venue-photo-wave">
-            <img id="ceremonyHeroPhoto" src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&q=80" alt="Wedding ceremony" loading="lazy" />
+            <img id="ceremonyHeroPhoto" src="img/venues/church.jpg" alt="The church for the wedding ceremony" loading="lazy" />
           </figure>
         </div>
         <div class="venue-featured">
-          <h3 class="venue-featured-name" id="ceremonyFeaturedName">Auberge du Soleil</h3>
-          <p class="venue-featured-time" id="ceremonyFeaturedTime">Saturday · 4:00 PM</p>
-          <p class="venue-featured-address" id="ceremonyFeaturedAddress">Auberge du Soleil<br />180 Rutherford Hill Road<br />Rutherford, CA 94573</p>
-          <a id="ceremonyMapLink" class="venue-link" href="https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA" target="_blank" rel="noopener noreferrer">
+          <h3 class="venue-featured-name" id="ceremonyFeaturedName">Parroquia del Espiritu Santo</h3>
+          <p class="venue-featured-time" id="ceremonyFeaturedTime">Thursday · February 18, 2027 · 1:00 PM</p>
+          <p class="venue-featured-address" id="ceremonyFeaturedAddress">San Luis, Tarlac City</p>
+          <a id="ceremonyMapLink" class="venue-link" href="https://www.google.com/maps/place/Parroquia+del+Espiritu+Santo+-+San+Luis,+Tarlac/@15.4728101,120.5712987,17z/data=!4m6!3m5!1s0x3396c7fda12268c7:0x296e3f479fc9c693!8m2!3d15.4728101!4d120.5712987!16s%2Fg%2F11r8zlfj5v" target="_blank" rel="noopener noreferrer">
             View on Map
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
           </a>
@@ -3029,14 +3058,14 @@
         <p class="venue-place-kicker">Venue</p>
         <div class="venue-photo-wrap">
           <figure class="venue-photo-wave">
-            <img id="venueHeroPhoto" src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&q=80" alt="Wedding venue" loading="lazy" />
+            <img id="venueHeroPhoto" src="img/venues/venue.jpg" alt="The reception venue at night" loading="lazy" />
           </figure>
         </div>
         <div class="venue-featured">
-          <h3 class="venue-featured-name" id="venueFeaturedName">Auberge du Soleil</h3>
-          <p class="venue-featured-time" id="venueFeaturedTime">Saturday · 6:00 PM</p>
-          <p class="venue-featured-address" id="venueFeaturedAddress">The Estate Garden<br />180 Rutherford Hill Road<br />Rutherford, CA 94573</p>
-          <a id="venueMapLink" class="venue-link" href="https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA" target="_blank" rel="noopener noreferrer">
+          <h3 class="venue-featured-name" id="venueFeaturedName">Uma Private Villa</h3>
+          <p class="venue-featured-time" id="venueFeaturedTime">Thursday · February 18, 2027 · 4:00 PM</p>
+          <p class="venue-featured-address" id="venueFeaturedAddress">Blk. 5, Tarlac City, Tarlac, Philippines</p>
+          <a id="venueMapLink" class="venue-link" href="https://www.google.com/maps/place/Uma+Private+Villa/@15.4676217,120.5726434,17z/data=!4m6!3m5!1s0x3396c7604ca8952d:0x64040cd1b821995f!8m2!3d15.4676217!4d120.5726434!16s%2Fg%2F11j48dnb9p" target="_blank" rel="noopener noreferrer">
             View on Map
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
           </a>
@@ -3065,7 +3094,7 @@
 
       <div class="attire-teaser-card reveal reveal-delay-3">
         <div class="attire-teaser-image">
-          <img id="attirePhotoTeaser" referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1591604466377-1a63d07d9268?w=900&q=80" alt="Elegant wedding attire inspiration" loading="lazy" />
+          <img id="attirePhotoTeaser" referrerpolicy="no-referrer" src="img/attire/wedding-attire-guide.jpg" alt="Wedding attire guide: mothers, bridesmaids, maid of honor, flower maidens, bride and groom, groomsmen, attendants, parents, and principal sponsors" loading="lazy" />
         </div>
         <div class="attire-teaser-content">
           <h3>What to Wear</h3>
@@ -3509,21 +3538,21 @@
         envelopeIntro.classList.add("opening");
         document.body.classList.add("intro-open");
 
-        setTimeout(playHeroMotion, 2800);
+        setTimeout(playHeroMotion, 3800);
 
         setTimeout(function () {
           document.body.classList.remove("intro-locked");
-        }, 2000);
+        }, 2500);
 
         setTimeout(function () {
           envelopeIntro.classList.add("revealed");
           envelopeIntro.setAttribute("aria-hidden", "true");
-        }, 5200);
+        }, 7400);
 
         setTimeout(function () {
           envelopeIntro.remove();
           scrollToHashTarget();
-        }, 7600);
+        }, 9600);
       }
 
       /* Skip envelope when returning or when arriving via #rsvp / other hash */
@@ -3540,7 +3569,7 @@
         });
       }
 
-      let weddingDate = new Date("2027-02-18T06:00:00.000Z");
+      let weddingDate = new Date("2027-02-18T05:00:00.000Z");
 
       function setCountdownValue(id, value) {
         var el = document.getElementById(id);
@@ -3763,7 +3792,7 @@
 
       function chunkTimelineRows(items) {
         var width = window.innerWidth || 980;
-        var perRow = width < 700 ? items.length : (width < 980 ? 5 : 7);
+        var perRow = (width >= 700 && width < 980) ? 5 : 7;
         var rows = [];
         for (var i = 0; i < items.length; i += perRow) {
           rows.push(items.slice(i, i + perRow));
@@ -3835,15 +3864,17 @@
         grid.innerHTML = html;
       }
 
-      function applyPolaroids(photos) {
+      function applyPolaroids(photos, content) {
         var list = photos || [];
         var first = list[0];
         var second = list[1] || first;
         var hero = document.getElementById("heroPolaroid");
         var foot = document.getElementById("footerPolaroid");
-        if (first && first.src && hero) {
-          hero.src = first.src;
-          hero.alt = first.alt || first.caption || "The couple";
+        var heroSrc = (content && content.heroPhoto) || (first && first.src);
+        var heroAlt = (content && content.heroPhotoAlt) || (first && (first.alt || first.caption)) || "Gio Anthony and Augiela Shane";
+        if (heroSrc && hero) {
+          hero.src = heroSrc;
+          hero.alt = heroAlt;
         }
         if (second && second.src && foot) {
           foot.src = second.src;
@@ -3983,10 +4014,10 @@
 
         if (Array.isArray(c.venues) && c.venues.length) {
           var ceremony = c.venues.find(function (v) {
-            return /ceremony/i.test(v.name || "");
+            return /ceremony|parroquia|church/i.test(v.name || "");
           }) || c.venues[0];
           var reception = c.venues.find(function (v) {
-            return /reception/i.test(v.name || "");
+            return /reception|uma|villa/i.test(v.name || "");
           }) || c.venues[1] || ceremony;
 
           function fillPlace(prefix, place, photoUrl) {
@@ -4003,13 +4034,13 @@
           }
 
           fillPlace("ceremony", {
-            name: (ceremony.address || "").split("\n")[0] || ceremony.name,
+            name: ceremony.name || "",
             time: ceremony.time,
             address: ceremony.address,
             mapUrl: ceremony.mapUrl
           }, c.ceremonyPhoto || ceremony.photo);
           fillPlace("venue", {
-            name: c.venueName || reception.name || "Auberge du Soleil",
+            name: c.venueName || reception.name || "Uma Private Villa",
             time: c.venueTime || reception.time || "",
             address: c.venueAddress || reception.address || "",
             mapUrl: c.venueMapUrl || reception.mapUrl || ceremony.mapUrl
@@ -4068,7 +4099,7 @@
         fetch("/api/gallery").then(function (r) { return r.json(); }).catch(function () { return []; })
       ]).then(function (results) {
         applyContent(results[0]);
-        applyPolaroids(results[1]);
+        applyPolaroids(results[1], results[0]);
         renderHomeGallery(results[1]);
       });
 
@@ -4538,7 +4569,7 @@
             var categoryNote = matchedGuest && guestCategoryLabel(matchedGuest)
               ? " You are listed as " + guestCategoryLabel(matchedGuest) + "."
               : "";
-            successMessage.textContent = "Thank you, " + data.firstName + "! We're thrilled you'll be joining us." + partyNote + categoryNote + " Your RSVP has been received — see you in Napa Valley.";
+            successMessage.textContent = "Thank you, " + data.firstName + "! We're thrilled you'll be joining us." + partyNote + categoryNote + " Your RSVP has been received — see you in San Luis, Tarlac City.";
           }
           successEl.scrollIntoView({ behavior: "smooth", block: "center" });
         }

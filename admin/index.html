@@ -103,6 +103,44 @@
       margin-bottom: 1rem;
     }
 
+    .password-field {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .password-field input {
+      margin-bottom: 0;
+      padding-right: 4.4rem;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 0.4rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--sea);
+      font-family: var(--font-sans);
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0.35rem 0.4rem;
+      line-height: 1;
+    }
+
+    .password-toggle:hover,
+    .password-toggle:focus-visible {
+      color: var(--sea-deep);
+    }
+
+    .password-toggle:focus-visible {
+      outline: 2px solid var(--sage);
+      outline-offset: 2px;
+    }
+
     /* Layout */
     .shell {
       display: grid;
@@ -651,7 +689,10 @@
       <div id="loginNotice" class="login-ok hidden"></div>
       <div id="loginError" class="error-msg hidden"></div>
       <label for="password">Password</label>
-      <input type="password" id="password" name="password" autocomplete="current-password" required />
+      <div class="password-field">
+        <input type="password" id="password" name="password" autocomplete="current-password" required />
+        <button type="button" class="password-toggle" id="togglePassword" aria-controls="password" aria-pressed="false">Show</button>
+      </div>
       <div class="login-actions">
         <button type="submit" class="btn btn-primary" style="width:100%">Sign In</button>
         <button type="button" class="login-link" id="showForgot">Forgot password?</button>
@@ -1173,6 +1214,18 @@
           err.classList.remove("hidden");
         }
       });
+
+      (function bindPasswordToggle() {
+        var input = document.getElementById("password");
+        var btn = document.getElementById("togglePassword");
+        if (!input || !btn) return;
+        btn.addEventListener("click", function () {
+          var hidden = input.type === "password";
+          input.type = hidden ? "text" : "password";
+          btn.textContent = hidden ? "Hide" : "Show";
+          btn.setAttribute("aria-pressed", hidden ? "true" : "false");
+        });
+      })();
 
       document.getElementById("loginForm").addEventListener("submit", async (e) => {
         e.preventDefault();

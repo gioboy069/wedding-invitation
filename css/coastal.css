@@ -1448,6 +1448,11 @@ header.hero,
 
 .env-front {
   background: linear-gradient(180deg, #eef6f8 0%, #b7d4e6 50%, #6ba7a0 100%) !important;
+  clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0, 50% 0);
+}
+
+.envelope-intro.opening .env-front {
+  clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0, 50% 56%);
 }
 
 .env-flap-face {
@@ -1611,69 +1616,83 @@ body.hero-play .polaroid {
 
 @media (max-width: 699px) {
   .wedding-day-board {
-    gap: 0;
-    max-width: 24rem;
+    gap: 1.7rem;
+    max-width: 100%;
   }
 
   .wedding-day-track {
-    --node: 2.2rem;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
+    --time-h: 1.55rem;
+    --node: 1.9rem;
+    --row-gap: 0.28rem;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.06rem;
   }
 
   .wedding-day-rail {
-    left: calc(var(--node) / 2);
-    right: auto;
-    top: calc(var(--node) / 2);
-    bottom: calc(var(--node) / 2);
-    width: 2px;
-    height: auto;
-    background: linear-gradient(
-      180deg,
-      transparent,
-      color-mix(in srgb, var(--teal) 58%, var(--deep) 18%) 8%,
-      color-mix(in srgb, var(--teal) 58%, var(--deep) 18%) 92%,
-      transparent
-    );
+    left: calc(100% / (2 * var(--count)));
+    right: calc(100% / (2 * var(--count)));
+    top: var(--rail-y);
+    bottom: auto;
+    width: auto;
+    height: 2px;
+    background: color-mix(in srgb, var(--teal) 72%, var(--deep));
   }
 
-  .wedding-day-item {
+  .wedding-day-item,
+  #wedding-day .wedding-day-item.reveal {
     display: grid;
-    grid-template-columns: var(--node) minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    column-gap: 0.95rem;
-    row-gap: 0.12rem;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: var(--time-h) var(--node) auto;
+    column-gap: 0;
+    row-gap: var(--row-gap);
+    justify-items: center;
     align-items: center;
-    text-align: left;
-    padding: 0.7rem 0;
-    flex: none;
+    text-align: center;
+    padding: 0 0.05rem;
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .wedding-day-node {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-    box-shadow: 0 0 0 5px var(--cream);
+    grid-column: auto;
+    grid-row: auto;
+    box-shadow: 0 0 0 4px var(--cream);
+  }
+
+  .wedding-day-node svg {
+    width: 0.92rem;
+    height: 0.92rem;
   }
 
   .wedding-day-time {
-    grid-column: 2;
-    grid-row: 1;
-    white-space: nowrap;
-    line-height: 1.2;
-    letter-spacing: 0.1em;
+    grid-column: auto;
+    grid-row: auto;
+    white-space: normal;
+    line-height: 1.15;
+    letter-spacing: 0.03em;
+    font-size: 0.54rem;
   }
 
   .wedding-day-label {
-    grid-column: 2;
-    grid-row: 2;
+    grid-column: auto;
+    grid-row: auto;
     max-width: none;
-    text-align: left;
-    padding-top: 0;
+    width: 100%;
+    text-align: center;
+    padding-top: 0.02rem;
   }
 
   .wedding-day-title {
-    font-size: 1rem;
+    font-size: 0.66rem;
+    line-height: 1.25;
+  }
+
+  .wedding-day-text {
+    font-size: 0.58rem;
+    margin-top: 0.16rem;
   }
 }
 

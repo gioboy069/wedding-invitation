@@ -1,18 +1,20 @@
 {
   "bride": "Augiela Shane",
   "groom": "Gio Anthony",
-  "weddingDate": "2027-02-18T06:00:00.000Z",
+  "weddingDate": "2027-02-18T05:00:00.000Z",
   "weddingDateDisplay": "February 18, 2027",
-  "location": "Napa Valley, California",
+  "location": "San Luis, Tarlac City",
   "heroPre": "Together with their families",
+  "heroPhoto": "img/couple/where-love-felt-easy.jpg",
+  "heroPhotoAlt": "Gio Anthony and Augiela Shane",
   "inviteGreeting": "Dear friends and family!",
   "inviteBody": "With joyful hearts we invite you to celebrate the wedding of Gio Anthony and Augiela Shane. Come share in the vows, the dinner, and the dancing as we begin our life together.",
-  "ceremonyPhoto": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&q=80",
-  "venuePhoto": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&q=80",
-  "venueName": "Auberge du Soleil",
-  "venueTime": "Saturday · 6:00 PM",
-  "venueAddress": "The Estate Garden\n180 Rutherford Hill Road\nRutherford, CA 94573",
-  "venueMapUrl": "https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA",
+  "ceremonyPhoto": "img/venues/church.jpg",
+  "venuePhoto": "img/venues/venue.jpg",
+  "venueName": "Uma Private Villa",
+  "venueTime": "Thursday · February 18, 2027 · 4:00 PM",
+  "venueAddress": "Blk. 5, Tarlac City, Tarlac, Philippines",
+  "venueMapUrl": "https://www.google.com/maps/place/Uma+Private+Villa/@15.4676217,120.5726434,17z/data=!4m6!3m5!1s0x3396c7604ca8952d:0x64040cd1b821995f!8m2!3d15.4676217!4d120.5726434!16s%2Fg%2F11j48dnb9p",
   "rsvpDeadline": "January 1, 2027",
   "storyTitle": "A Love Written in Time",
   "storySubtitle": "Every great love story has a beginning. Ours started with a chance encounter and grew into something extraordinary.",
@@ -48,17 +50,18 @@
   ],
   "venues": [
     {
-      "name": "Ceremony",
-      "time": "Saturday · 4:00 PM",
-      "address": "Auberge du Soleil\n180 Rutherford Hill Road\nRutherford, CA 94573",
-      "mapUrl": "https://maps.google.com/?q=Auberge+du+Soleil+Rutherford+CA",
-      "photo": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&q=80"
+      "name": "Parroquia del Espiritu Santo",
+      "time": "Thursday · February 18, 2027 · 1:00 PM",
+      "address": "San Luis, Tarlac City",
+      "mapUrl": "https://www.google.com/maps/place/Parroquia+del+Espiritu+Santo+-+San+Luis,+Tarlac/@15.4728101,120.5712987,17z/data=!4m6!3m5!1s0x3396c7fda12268c7:0x296e3f479fc9c693!8m2!3d15.4728101!4d120.5712987!16s%2Fg%2F11r8zlfj5v",
+      "photo": "img/venues/church.jpg"
     },
     {
-      "name": "Reception",
-      "time": "Saturday · 6:00 PM",
-      "address": "The Estate Garden\n180 Rutherford Hill Road\nRutherford, CA 94573",
-      "mapUrl": "https://maps.google.com/?q=180+Rutherford+Hill+Road+Rutherford+CA"
+      "name": "Uma Private Villa",
+      "time": "Thursday · February 18, 2027 · 4:00 PM",
+      "address": "Blk. 5, Tarlac City, Tarlac, Philippines",
+      "mapUrl": "https://www.google.com/maps/place/Uma+Private+Villa/@15.4676217,120.5726434,17z/data=!4m6!3m5!1s0x3396c7604ca8952d:0x64040cd1b821995f!8m2!3d15.4676217!4d120.5726434!16s%2Fg%2F11j48dnb9p",
+      "photo": "img/venues/venue.jpg"
     },
     {
       "name": "Brunch",
@@ -70,8 +73,8 @@
   "attireSummary": "We've curated a detailed attire guide with principal sponsor looks and guest dress code inspiration — all in our coastal ocean palette.",
   "attirePhotos": {
     "teaser": {
-      "photo": "https://images.unsplash.com/photo-1591604466377-1a63d07d9268?w=900&q=80",
-      "photoAlt": "Elegant wedding attire inspiration"
+      "photo": "img/attire/wedding-attire-guide.jpg",
+      "photoAlt": "Wedding attire guide: mothers, bridesmaids, maid of honor, flower maidens, bride and groom, groomsmen, attendants, parents, and principal sponsors"
     },
     "sponsors": {
       "photo": "img/attire/principal-sponsors-attire.jpg",
@@ -124,13 +127,13 @@
   "weddingDaySubtitle": "",
   "weddingDayTimeline": [
     {
-      "time": "12:00 pm",
+      "time": "12:30 pm",
       "title": "Ceremony doors open",
       "text": "",
       "icon": "bird"
     },
     {
-      "time": "12:30 pm",
+      "time": "1:00 pm",
       "title": "Wedding Ceremony",
       "text": "",
       "icon": "rings"
