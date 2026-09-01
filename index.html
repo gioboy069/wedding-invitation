@@ -2328,10 +2328,6 @@
         width: clamp(1.75rem, 8vw, 2.75rem);
       }
 
-      .attendance-group {
-        grid-template-columns: 1fr;
-      }
-
       .gallery-grid {
         grid-template-columns: 1fr 1fr;
       }
@@ -2760,7 +2756,7 @@
       visibility: visible;
     }
   </style>
-  <link rel="stylesheet" href="/css/coastal.css?v=ceremony-venue" />
+  <link rel="stylesheet" href="/css/coastal.css?v=polish-1" />
 </head>
 <body class="intro-locked">
 
@@ -2860,14 +2856,6 @@
       </div>
     </div>
   </section>
-
-  <div class="silk-ribbon silk-ribbon--pause" aria-hidden="true">
-    <div class="silk-ribbon-band">
-      <span class="silk-ribbon-tail silk-ribbon-tail--left"></span>
-      <span class="silk-ribbon-face">18 · February · 2027</span>
-      <span class="silk-ribbon-tail silk-ribbon-tail--right"></span>
-    </div>
-  </div>
 
   <!-- Countdown -->
   <section class="countdown-finale" id="countdown-section">
@@ -3289,13 +3277,6 @@
   <!-- RSVP -->
   <section class="rsvp" id="rsvp">
     <div class="container">
-      <div class="silk-ribbon silk-ribbon--rsvp reveal" aria-hidden="true">
-        <div class="silk-ribbon-band">
-          <span class="silk-ribbon-tail silk-ribbon-tail--left"></span>
-          <span class="silk-ribbon-face">Kindly reply</span>
-          <span class="silk-ribbon-tail silk-ribbon-tail--right"></span>
-        </div>
-      </div>
       <p class="section-label reveal">Questionnaire</p>
       <h2 class="section-title reveal reveal-delay-1">Guest RSVP</h2>
       <p class="section-subtitle reveal reveal-delay-2"><span id="rsvpSubtitle">Please let us know if you'll be joining us by May 1, 2027. We can't wait to celebrate with you.</span></p>
@@ -3304,7 +3285,7 @@
         <p class="rsvp-guide-lead">How to reply</p>
         <ol>
           <li>Start typing your surname or first name — a few letters is enough.</li>
-          <li>Tap your full name when it appears. You’ll see your category and table, then tell us whether you will be attending.</li>
+          <li>Tap your full name when it appears. You’ll see your category, then tell us whether you will be attending.</li>
           <li>If your invitation includes others, kindly add each guest’s surname and first name.</li>
           <li>A message is optional. Then tap Send RSVP — once is enough.</li>
         </ol>
@@ -3367,15 +3348,25 @@
             <div class="attendance-option">
               <input type="radio" id="attending" name="attendance" value="attending" required />
               <label class="attendance-label" for="attending">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-                Will be there
+                <span class="attendance-mark" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 6L9 17l-5-5"/></svg>
+                </span>
+                <span class="attendance-copy">
+                  <em>Joyfully attending</em>
+                  <small>I will celebrate with you</small>
+                </span>
               </label>
             </div>
             <div class="attendance-option">
               <input type="radio" id="declined" name="attendance" value="declined" required />
               <label class="attendance-label" for="declined">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                Cannot come
+                <span class="attendance-mark" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </span>
+                <span class="attendance-copy">
+                  <em>With regret</em>
+                  <small>I am unable to attend</small>
+                </span>
               </label>
             </div>
           </div>
@@ -3599,21 +3590,26 @@
         });
       }
 
-      let weddingDate = new Date("2027-06-14T16:00:00-07:00");
+      let weddingDate = new Date("2027-02-18T06:00:00.000Z");
+
+      function setCountdownValue(id, value) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = value;
+      }
 
       function updateCountdown() {
         const now = new Date();
         const diff = weddingDate - now;
         if (diff <= 0) {
           ["cd-days", "cd-hours", "cd-minutes", "cd-seconds"].forEach(function (id) {
-            document.getElementById(id).textContent = "0";
+            setCountdownValue(id, "0");
           });
           return;
         }
-        document.getElementById("cd-days").textContent = Math.floor(diff / (1000 * 60 * 60 * 24));
-        document.getElementById("cd-hours").textContent = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, "0");
-        document.getElementById("cd-minutes").textContent = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, "0");
-        document.getElementById("cd-seconds").textContent = String(Math.floor((diff / 1000) % 60)).padStart(2, "0");
+        setCountdownValue("cd-days", String(Math.floor(diff / (1000 * 60 * 60 * 24))));
+        setCountdownValue("cd-hours", String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, "0"));
+        setCountdownValue("cd-minutes", String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, "0"));
+        setCountdownValue("cd-seconds", String(Math.floor((diff / 1000) % 60)).padStart(2, "0"));
       }
 
       (function stackTornSheets() {
@@ -3762,20 +3758,20 @@
       }
 
       function formatHeroDate(c) {
+        if (c.weddingDateDisplay) {
+          return c.weddingDateDisplay + (c.location ? " · " + c.location : "");
+        }
         const d = c.weddingDate ? new Date(c.weddingDate) : null;
         if (d && !isNaN(d.getTime())) {
           const datePart = d.toLocaleDateString("en-US", {
             year: "numeric",
             month: "long",
             day: "numeric",
+            timeZone: "UTC"
           });
-          const timePart = d.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-          });
-          return datePart + " · " + timePart + (c.location ? " · " + c.location : "");
+          return datePart + (c.location ? " · " + c.location : "");
         }
-        return (c.weddingDateDisplay || "") + (c.location ? " · " + c.location : "");
+        return c.location || "";
       }
 
       function weddingDayIconSvg(icon) {
@@ -3803,27 +3799,13 @@
         return icons[icon] || icons.rings;
       }
 
-      function chunkWeddingDayRows(items) {
-        if (!items.length) return [];
-        var perRow = items.length <= 7 ? Math.ceil(items.length / 2) : 7;
-        if (window.innerWidth < 640 && items.length > 4) {
-          perRow = Math.ceil(items.length / 3);
-        }
-        var rows = [];
-        for (var i = 0; i < items.length; i += perRow) {
-          rows.push(items.slice(i, i + perRow));
-        }
-        return rows;
-      }
-
       function renderWeddingDayItem(item, delay) {
         return '<article class="wedding-day-item reveal' + delay + '" role="listitem">' +
+          '<p class="wedding-day-time">' + escapeHtml(item.time || "") + '</p>' +
           '<div class="wedding-day-icon" aria-hidden="true">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">' +
           weddingDayIconSvg(item.icon) + '</svg></div>' +
-          '<div class="wedding-day-tick" aria-hidden="true"></div>' +
           '<div class="wedding-day-label">' +
-          '<p class="wedding-day-time">' + escapeHtml(item.time || "") + '</p>' +
           '<p class="wedding-day-title">' + escapeHtml(item.title || "") + '</p>' +
           (item.text ? '<p class="wedding-day-text">' + escapeHtml(item.text) + '</p>' : '') +
           '</div></article>';
@@ -3907,9 +3889,11 @@
         document.getElementById("storySubtitle").textContent = c.storySubtitle || "";
         document.getElementById("footerNames").textContent = (c.groom || "") + " & " + (c.bride || "");
         const footerD = c.weddingDate ? new Date(c.weddingDate) : null;
-        document.getElementById("footerDate").textContent = footerD && !isNaN(footerD.getTime())
-          ? footerD.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
-          : (c.weddingDateDisplay || "");
+        document.getElementById("footerDate").textContent = c.weddingDateDisplay || (
+          footerD && !isNaN(footerD.getTime())
+            ? footerD.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" })
+            : ""
+        );
         document.getElementById("footerQuote").textContent = c.footerQuote || "";
         const attire = document.getElementById("attireSummary");
         if (attire && c.attireSummary) attire.textContent = c.attireSummary;
@@ -4069,15 +4053,10 @@
         if (Array.isArray(c.weddingDayTimeline) && c.weddingDayTimeline.length) {
           const board = document.getElementById("weddingDayTimeline");
           if (board) {
-            const rows = chunkWeddingDayRows(c.weddingDayTimeline);
-            board.innerHTML = rows.map(function (rowItems, rowIdx) {
-              return '<div class="wedding-day-row" role="list">' +
-                '<div class="wedding-day-line" aria-hidden="true"></div>' +
-                rowItems.map(function (item, i) {
-                  const delay = (rowIdx + i) ? " reveal-delay-" + Math.min(rowIdx + i, 3) : "";
-                  return renderWeddingDayItem(item, delay);
-                }).join("") +
-                '</div>';
+            board.setAttribute("role", "list");
+            board.innerHTML = c.weddingDayTimeline.map(function (item, i) {
+              const delay = i ? " reveal-delay-" + Math.min(i, 3) : "";
+              return renderWeddingDayItem(item, delay);
             }).join("");
           }
         }
@@ -4167,12 +4146,20 @@
         updateCompanionVisibility();
       }
 
+      function guestCategoryLabel(guest) {
+        var raw = Names.trimGuestField(guest && guest.category, 80);
+        return raw
+          .replace(/\s*[·|,]\s*table\b.*$/i, "")
+          .replace(/\btable\s*\d+\b/ig, "")
+          .replace(/\s{2,}/g, " ")
+          .trim();
+      }
+
       function seatingFromGuest(guest) {
         guest = guest || {};
         return {
           name: guest.name || "",
-          category: Names.trimGuestField(guest.category, 80),
-          tableLabel: guest.tableLabel || Names.formatTableLabel(guest.tableNumber),
+          category: guestCategoryLabel(guest),
         };
       }
 
@@ -4189,28 +4176,18 @@
         document.getElementById("guestSeatName").textContent = seating.name;
         document.getElementById("guestSeatCategory").textContent = seating.category;
         document.getElementById("guestSeatCategory").hidden = !seating.category;
-        document.getElementById("guestSeatTable").textContent = seating.tableLabel;
-        document.getElementById("guestSeatTable").hidden = !seating.tableLabel;
-        document.getElementById("guestSeatTableNote").hidden = !seating.tableLabel;
-        document.getElementById("guestSeatKicker").textContent = seating.tableLabel ? "Your table" : "Your place";
-        const pending = document.getElementById("guestSeatPending");
-        if (!seating.tableLabel) {
-          pending.textContent = seating.category
-            ? "Your table will be shared as seating is finalized."
-            : "Your seating details will be shared as they are finalized.";
-          pending.hidden = false;
-        } else {
-          pending.hidden = true;
-        }
+        document.getElementById("guestSeatTable").hidden = true;
+        document.getElementById("guestSeatTableNote").hidden = true;
+        document.getElementById("guestSeatKicker").textContent = seating.category ? "Your place" : "Your invitation";
+        document.getElementById("guestSeatPending").hidden = true;
         card.hidden = alreadySubmitted;
 
-        document.getElementById("alreadySeatTable").textContent = seating.tableLabel;
-        document.getElementById("alreadySeatTable").hidden = !seating.tableLabel;
+        document.getElementById("alreadySeatTable").hidden = true;
         document.getElementById("alreadySeatCategory").textContent = seating.category
           ? (seating.name ? seating.name + " · " + seating.category : seating.category)
           : seating.name;
         document.getElementById("alreadySeatCategory").hidden = !(seating.category || seating.name);
-        document.getElementById("alreadySeatPending").hidden = !!seating.tableLabel;
+        document.getElementById("alreadySeatPending").hidden = true;
         alreadyCard.hidden = !alreadySubmitted;
       }
 
@@ -4366,8 +4343,8 @@
           nameEl.textContent = guest.name;
           btn.appendChild(nameEl);
           var metaBits = [];
-          if (guest.category) metaBits.push(guest.category);
-          if (guest.tableLabel || guest.tableNumber) metaBits.push(guest.tableLabel || Names.formatTableLabel(guest.tableNumber));
+          var category = guestCategoryLabel(guest);
+          if (category) metaBits.push(category);
           if (metaBits.length) {
             var metaEl = document.createElement("span");
             metaEl.className = "option-meta";
@@ -4590,13 +4567,10 @@
             var partyNote = data.companions.length
               ? " We've noted your party of " + (1 + data.companions.length) + "."
               : "";
-            var tableNote = matchedGuest && Names.formatTableLabel(matchedGuest.tableNumber)
-              ? " You will be seated at " + Names.formatTableLabel(matchedGuest.tableNumber) + "."
+            var categoryNote = matchedGuest && guestCategoryLabel(matchedGuest)
+              ? " You are listed as " + guestCategoryLabel(matchedGuest) + "."
               : "";
-            var categoryNote = matchedGuest && matchedGuest.category
-              ? " You are listed as " + matchedGuest.category + "."
-              : "";
-            successMessage.textContent = "Thank you, " + data.firstName + "! We're thrilled you'll be joining us." + partyNote + categoryNote + tableNote + " Your RSVP has been received — see you in Napa Valley.";
+            successMessage.textContent = "Thank you, " + data.firstName + "! We're thrilled you'll be joining us." + partyNote + categoryNote + " Your RSVP has been received — see you in Napa Valley.";
           }
           successEl.scrollIntoView({ behavior: "smooth", block: "center" });
         }

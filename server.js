@@ -13,7 +13,7 @@ const DATA_DIR = join(ROOT, "data");
 const UPLOAD_DIR = join(ROOT, "uploads");
 const PORT = Number(process.env.PORT || 4317);
 const HOST = process.env.HOST || "0.0.0.0";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "augiela-gio-2027";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "gomeZ120822@";
 const RSVP_EMAIL = process.env.RSVP_EMAIL || "gomez.wed2027@gmail.com";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || RSVP_EMAIL;
 
@@ -541,6 +541,13 @@ function publicGuestPayload(guest) {
   };
 }
 
+function publicGuestFacingPayload(guest) {
+  const payload = publicGuestPayload(guest);
+  delete payload.tableNumber;
+  delete payload.tableLabel;
+  return payload;
+}
+
 function sortGuestsBySurname(guests) {
   return guests.sort((a, b) => {
     const pa = hydratePerson(a);
@@ -579,7 +586,7 @@ app.get("/api/guests/search", (req, res) => {
       || a.guest.surname.localeCompare(b.guest.surname, undefined, { sensitivity: "base" })
       || a.guest.firstName.localeCompare(b.guest.firstName, undefined, { sensitivity: "base" }))
     .slice(0, 8)
-    .map(({ guest }) => publicGuestPayload(guest));
+    .map(({ guest }) => publicGuestFacingPayload(guest));
   res.json({ matches });
 });
 
@@ -598,15 +605,9 @@ app.get("/api/guests/lookup", (req, res) => {
   const guest = guests.find((g) => namesMatch(g, person)) || null;
   const existing = findExistingRsvp(rsvps, person, guest?.id);
   if (existing) {
-    const payload = guest ? publicGuestPayload(guest) : null;
-    if (payload) {
-      if (!payload.tableNumber && existing.tableNumber) {
-        payload.tableNumber = trimGuestField(existing.tableNumber, 40);
-        payload.tableLabel = formatTableLabel(payload.tableNumber);
-      }
-      if (!payload.category && existing.category) {
-        payload.category = trimGuestField(existing.category, 80);
-      }
+    const payload = guest ? publicGuestFacingPayload(guest) : null;
+    if (payload && !payload.category && existing.category) {
+      payload.category = trimGuestField(existing.category, 80);
     }
     return res.json({
       matched: !!guest,
@@ -617,8 +618,6 @@ app.get("/api/guests/lookup", (req, res) => {
         firstName: existing.firstName,
         surname: existing.surname,
         category: trimGuestField(existing.category, 80),
-        tableNumber: trimGuestField(existing.tableNumber, 40),
-        tableLabel: formatTableLabel(existing.tableNumber),
       },
     });
   }
@@ -626,7 +625,7 @@ app.get("/api/guests/lookup", (req, res) => {
   res.json({
     matched: true,
     alreadySubmitted: false,
-    guest: publicGuestPayload(guest),
+    guest: publicGuestFacingPayload(guest),
   });
 });
 
