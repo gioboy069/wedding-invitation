@@ -541,10 +541,12 @@ header.hero,
   margin-bottom: 0.35rem;
 }
 
+#wedding-day .wedding-day-board,
 .wedding-day-board {
-  display: flex;
-  flex-direction: column;
-  gap: 2.15rem;
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-columns: none !important;
+  gap: 2.35rem;
   margin-top: 2.15rem;
   max-width: min(72rem, 100%);
   margin-left: auto;
@@ -560,12 +562,13 @@ header.hero,
 
 .wedding-day-track {
   --time-h: 1.3rem;
-  --node: 2.45rem;
-  --row-gap: 0.42rem;
+  --node: 2.55rem;
+  --row-gap: 0.48rem;
   --count: 7;
   --rail-y: calc(var(--time-h) + var(--row-gap) + (var(--node) / 2));
   position: relative;
-  display: flex;
+  display: flex !important;
+  flex-wrap: nowrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.2rem;
@@ -576,19 +579,15 @@ header.hero,
   left: calc(100% / (2 * var(--count)));
   right: calc(100% / (2 * var(--count)));
   top: var(--rail-y);
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--teal) 58%, var(--ocean-deep, var(--deep)) 18%) 6%,
-    color-mix(in srgb, var(--teal) 58%, var(--ocean-deep, var(--deep)) 18%) 94%,
-    transparent
-  );
+  height: 3px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--teal) 72%, var(--deep));
   pointer-events: none;
   z-index: 0;
 }
 
-.wedding-day-item {
+.wedding-day-item,
+#wedding-day .wedding-day-item.reveal {
   position: relative;
   z-index: 1;
   flex: 1 1 0;
@@ -601,6 +600,8 @@ header.hero,
   row-gap: var(--row-gap);
   text-align: center;
   padding: 0 0.2rem;
+  opacity: 1;
+  transform: none;
 }
 
 .wedding-day-time {
@@ -726,6 +727,25 @@ header.hero,
   max-width: 28rem;
 }
 
+.attire-swatches-guest {
+  max-width: min(54rem, 100%);
+  width: 100%;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  gap: 0.45rem 0.55rem;
+}
+
+.attire-swatches-guest .attire-swatch {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+}
+
+.attire-swatches-guest .attire-swatch strong {
+  font-size: 0.52rem;
+  letter-spacing: 0.03em;
+}
+
 .attire-swatch i {
   width: 42px;
   height: 42px;
@@ -746,6 +766,20 @@ header.hero,
 
 .attire-expand-btn {
   color: var(--powder-deep);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  line-height: 1;
+  margin: 1.7rem auto 0;
+  padding: 0.8rem 1.75rem 0.9rem;
+}
+
+.attire-expand-btn svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 /* ── RSVP questionnaire ── */
@@ -966,7 +1000,12 @@ header.hero,
   font-size: clamp(1.6rem, 4.5vw, 2.15rem);
   font-weight: 500;
   color: var(--deep);
-  margin-bottom: 1.1rem;
+  margin: 0.15rem 0 0.7rem;
+}
+
+.countdown-kicker.reveal,
+.countdown-kicker.reveal.visible {
+  transform: none;
 }
 
 .countdown-finale .countdown {
@@ -1124,6 +1163,18 @@ header.hero,
     grid-template-columns: 1fr;
   }
 
+  .attire-swatches-guest {
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 22rem;
+    gap: 0.85rem 0.65rem;
+  }
+
+  .attire-swatches-guest .attire-swatch {
+    flex: 0 0 calc(33.333% - 0.5rem);
+    max-width: 6.5rem;
+  }
+
   .attendance-label {
     min-height: 0;
   }
@@ -1272,13 +1323,13 @@ header.hero,
 
 #calendar {
   padding-top: 1.15rem !important;
-  padding-bottom: 0.35rem !important;
+  padding-bottom: 0 !important;
 }
 
 .countdown-finale,
 #countdown-section {
-  padding-top: 0.85rem !important;
-  padding-bottom: 2.75rem !important;
+  padding-top: 0.2rem !important;
+  padding-bottom: 5.15rem !important;
 }
 
 .details-tray {
@@ -1626,8 +1677,33 @@ body.hero-play .polaroid {
   }
 }
 
+.site-reveal > #story {
+  padding-bottom: 3.45rem !important;
+}
+
+.site-reveal > #venue {
+  padding-bottom: 3.85rem !important;
+}
+
 .site-reveal > #wedding-day {
-  padding-bottom: clamp(1.7rem, 4vw, 2.55rem);
+  padding-bottom: 5.65rem !important;
+}
+
+.site-reveal > #attire {
+  padding-bottom: 4.85rem !important;
+}
+
+.site-reveal > #entourage {
+  padding-bottom: 3.25rem !important;
+}
+
+.site-reveal > #gallery {
+  padding-bottom: 3.1rem !important;
+}
+
+.gallery .gallery-more {
+  margin-top: 1.65rem;
+  text-align: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
