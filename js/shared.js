@@ -82,7 +82,6 @@
 
   function injectShoreDecor() {
     injectShoreSandBand();
-    injectShoreStones();
   }
 
   function isGuestPage() {

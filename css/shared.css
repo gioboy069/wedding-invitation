@@ -66,25 +66,8 @@ html::after {
     linear-gradient(to top, rgba(220, 200, 170, 0.52) 0%, rgba(220, 200, 170, 0.22) 38%, transparent 100%);
 }
 
-/* CSS pebble hints in all four corners */
 body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    radial-gradient(ellipse 26px 16px at 4.5% 97%, rgba(138, 125, 110, 0.42), transparent 72%),
-    radial-gradient(ellipse 18px 11px at 8% 94%, rgba(196, 184, 168, 0.48), transparent 70%),
-    radial-gradient(ellipse 32px 18px at 12% 96.5%, rgba(107, 120, 115, 0.36), transparent 72%),
-    radial-gradient(ellipse 16px 10px at 2.5% 91%, rgba(220, 200, 170, 0.52), transparent 68%),
-    radial-gradient(ellipse 28px 17px at 95.5% 97%, rgba(138, 125, 110, 0.4), transparent 72%),
-    radial-gradient(ellipse 20px 12px at 91% 93.5%, rgba(196, 184, 168, 0.46), transparent 70%),
-    radial-gradient(ellipse 34px 19px at 87% 96%, rgba(107, 120, 115, 0.34), transparent 72%),
-    radial-gradient(ellipse 14px 9px at 97.5% 90.5%, rgba(220, 200, 170, 0.5), transparent 68%),
-    radial-gradient(ellipse 18px 11px at 4% 6%, rgba(196, 184, 168, 0.28), transparent 72%),
-    radial-gradient(ellipse 14px 9px at 96% 5.5%, rgba(180, 168, 152, 0.26), transparent 72%);
-  background-repeat: no-repeat;
+  content: none;
 }
 
 /* Sand drift band along the bottom (inside frame margin) */
@@ -107,13 +90,9 @@ body::before {
   -webkit-mask-image: linear-gradient(to top, #000 0%, #000 55%, transparent 100%);
 }
 
-/* SVG pebble clusters (injected on every page) */
-.shore-stones {
-  position: fixed;
-  inset: 0;
-  z-index: 85;
-  pointer-events: none;
-  overflow: hidden;
+.shore-stones,
+.shore-stone {
+  display: none !important;
 }
 
 .shore-stone {
@@ -141,20 +120,7 @@ body::before {
 }
 
 body.page-dark::before {
-  background-image:
-    radial-gradient(ellipse 22px 14px at 4.5% 97%, rgba(183, 212, 230, 0.22), transparent 72%),
-    radial-gradient(ellipse 16px 10px at 7.5% 94.5%, rgba(220, 200, 170, 0.28), transparent 70%),
-    radial-gradient(ellipse 28px 16px at 11% 96%, rgba(107, 167, 160, 0.2), transparent 72%),
-    radial-gradient(ellipse 14px 9px at 2.5% 92%, rgba(196, 184, 168, 0.24), transparent 68%),
-    radial-gradient(ellipse 24px 15px at 95.5% 97%, rgba(183, 212, 230, 0.2), transparent 72%),
-    radial-gradient(ellipse 18px 11px at 92% 94%, rgba(220, 200, 170, 0.26), transparent 70%),
-    radial-gradient(ellipse 30px 17px at 88% 96.5%, rgba(107, 167, 160, 0.18), transparent 72%),
-    radial-gradient(ellipse 12px 8px at 97.5% 91.5%, rgba(196, 184, 168, 0.22), transparent 68%);
-}
-
-body.page-dark .shore-stone {
-  opacity: 0.62;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.28));
+  content: none;
 }
 
 body.page-dark .shore-sand-band {
@@ -366,7 +332,7 @@ html:has(body.page-dark)::before {
 /* Nav — floating below floral frame; collapses to the right on scroll */
 .nav {
   z-index: 230 !important;
-  top: clamp(4.25rem, 7.5vw, 5.5rem) !important;
+  top: calc(var(--frame-inset) + 0.45rem) !important;
   left: 0 !important;
   right: 0 !important;
   width: max-content;
@@ -480,7 +446,7 @@ html.is-dark-page .nav.nav-docked .nav-links a:active {
 
 @media (max-width: 768px) {
   .nav {
-    top: clamp(2.35rem, 5vw, 3rem) !important;
+    top: calc(var(--frame-inset) + 0.35rem) !important;
     padding: 0.4rem 0.7rem !important;
     gap: 0.55rem !important;
     max-width: calc(100vw - 1.75rem) !important;

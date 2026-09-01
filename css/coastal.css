@@ -159,7 +159,7 @@ header.hero,
   display: block !important;
   justify-content: flex-start !important;
   overflow: visible !important;
-  padding: 5rem 1.15rem 0.2rem !important;
+  padding: calc(var(--frame-inset) + 5.75rem) 1.15rem 0.2rem !important;
   background: #f7fbfb !important;
 }
 
@@ -187,7 +187,7 @@ header.hero,
   text-transform: uppercase;
   font-weight: 500;
   color: var(--teal);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.55rem;
   opacity: 1 !important;
   animation: none !important;
 }
@@ -403,21 +403,45 @@ header.hero,
   background: var(--paper);
 }
 
+.venue-place {
+  max-width: 34rem;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 2.75rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.venue-photo-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .venue-photo-wave {
   position: relative;
-  max-width: 520px;
-  margin: 0 auto 1.5rem;
+  display: block;
+  width: min(26rem, 100%);
+  margin: 0 0 1.5rem;
   overflow: hidden;
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 480' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 36c40-18 80 18 120 8 42-10 70-28 120-16 48 12 72 28 120 16 46-12 78-8 120 6 44 14 80-18 120-8 42 10 70 24 100 8V444c-40 18-80-18-120-8-42 10-70 28-120 16-48-12-72-28-120-16-46 12-78 8-120-6-44-14-80 18-120 8-42-10-70-24-100-8V36z'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 480' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 36c40-18 80 18 120 8 42-10 70-28 120-16 48 12 72 28 120 16 46-12 78-8 120 6 44 14 80-18 120-8 42 10 70 24 100 8V444c-40 18-80-18-120-8-42 10-70 28-120 16-48-12-72-28-120-16-46 12-78 8-120-6-44-14-80 18-120 8-42-10-70-24-100-8V36z'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 480' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 40C133 0 267 80 400 40 533 0 667 80 800 40v400C667 480 533 400 400 440 267 480 133 400 0 440z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 480' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 40C133 0 267 80 400 40 533 0 667 80 800 40v400C667 480 533 400 400 440 267 480 133 400 0 440z'/%3E%3C/svg%3E");
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
 }
 
 .venue-photo-wave img {
   width: 100%;
   aspect-ratio: 16 / 10;
   object-fit: cover;
+  object-position: center center;
   display: block;
 }
 
@@ -455,12 +479,6 @@ header.hero,
   display: none !important;
 }
 
-.venue-place {
-  max-width: 34rem;
-  margin: 0 auto 2.75rem;
-  text-align: center;
-}
-
 .venue-place:last-of-type {
   margin-bottom: 2rem;
 }
@@ -484,7 +502,7 @@ header.hero,
 }
 
 .venue-grid {
-  gap: 1.1rem;
+  display: none !important;
 }
 
 .venue-card {
@@ -504,9 +522,10 @@ header.hero,
   border-bottom-color: var(--powder-soft);
 }
 
-/* ── Wedding day: even grid, then a quiet list on small screens ── */
+/* ── Wedding day: horizontal line from ceremony through good night ── */
 .wedding-day {
   background: var(--paper);
+  padding-bottom: clamp(2.1rem, 4.5vw, 3rem);
 }
 
 .wedding-day-script {
@@ -523,70 +542,117 @@ header.hero,
 }
 
 .wedding-day-board {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.15rem;
   margin-top: 2.15rem;
-  max-width: 980px;
+  max-width: min(72rem, 100%);
   margin-left: auto;
   margin-right: auto;
 }
 
 .wedding-day-row,
 .wedding-day-line,
-.wedding-day-tick {
+.wedding-day-tick,
+.wedding-day-icon {
   display: none;
 }
 
-.wedding-day-item {
-  min-width: 0;
+.wedding-day-track {
+  --time-h: 1.3rem;
+  --node: 2.45rem;
+  --row-gap: 0.42rem;
+  --count: 7;
+  --rail-y: calc(var(--time-h) + var(--row-gap) + (var(--node) / 2));
+  position: relative;
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.2rem;
+}
+
+.wedding-day-rail {
+  position: absolute;
+  left: calc(100% / (2 * var(--count)));
+  right: calc(100% / (2 * var(--count)));
+  top: var(--rail-y);
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--teal) 58%, var(--ocean-deep, var(--deep)) 18%) 6%,
+    color-mix(in srgb, var(--teal) 58%, var(--ocean-deep, var(--deep)) 18%) 94%,
+    transparent
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wedding-day-item {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: var(--time-h) var(--node) auto;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
   align-items: center;
+  row-gap: var(--row-gap);
   text-align: center;
-  padding: 0 0.25rem;
-}
-
-.wedding-day-icon {
-  width: 2.15rem;
-  height: 2.15rem;
-  color: var(--teal);
-  margin: 0 0 0.45rem;
-  order: 1;
-}
-
-.wedding-day-icon svg {
-  width: 100%;
-  height: 100%;
-  display: block;
+  padding: 0 0.2rem;
 }
 
 .wedding-day-time {
-  order: 2;
+  margin: 0;
   font-family: var(--font-sans);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--teal);
-  margin: 0 0 0.35rem;
+  white-space: nowrap;
+  line-height: var(--time-h);
+}
+
+.wedding-day-node {
+  display: grid;
+  place-items: center;
+  width: var(--node);
+  height: var(--node);
+  border-radius: 50%;
+  background: var(--cream);
+  border: 2px solid color-mix(in srgb, var(--teal) 72%, var(--deep));
+  box-shadow: 0 0 0 5px var(--cream);
+  color: var(--deep);
+}
+
+.wedding-day-node svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  display: block;
 }
 
 .wedding-day-label {
-  order: 3;
+  min-width: 0;
   max-width: 9.5rem;
+  padding-top: 0.08rem;
 }
 
 .wedding-day-title {
   font-family: var(--font-serif);
-  font-size: 0.98rem;
+  font-size: 0.92rem;
   font-weight: 500;
-  line-height: 1.35;
+  line-height: 1.3;
   margin: 0;
+  color: var(--deep);
 }
 
 .wedding-day-text {
-  margin-top: 0.3rem;
+  margin-top: 0.28rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
 }
 
 /* ── Details tray ── */
@@ -1034,55 +1100,11 @@ header.hero,
   header.hero,
   .site-reveal > .hero,
   #hero {
-    padding-top: 5.75rem !important;
+    padding-top: calc(var(--frame-inset) + 5.35rem) !important;
   }
 
   .hero-names {
     font-size: clamp(1.85rem, 8.5vw, 2.6rem);
-  }
-
-  .wedding-day-board {
-    grid-template-columns: 1fr;
-    gap: 0;
-    max-width: 22rem;
-  }
-
-  .wedding-day-item {
-    display: grid;
-    grid-template-columns: 5.4rem 1.7rem 1fr;
-    align-items: center;
-    column-gap: 0.7rem;
-    text-align: left;
-    padding: 0.78rem 0;
-    border-bottom: 1px solid rgba(30, 90, 110, 0.12);
-  }
-
-  .wedding-day-item:last-child {
-    border-bottom: 0;
-  }
-
-  .wedding-day-time {
-    order: 1;
-    margin: 0;
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-  }
-
-  .wedding-day-icon {
-    order: 2;
-    width: 1.45rem;
-    height: 1.45rem;
-    margin: 0;
-  }
-
-  .wedding-day-label {
-    order: 3;
-    max-width: none;
-    text-align: left;
-  }
-
-  .wedding-day-title {
-    font-size: 1rem;
   }
 
   .countdown-finale .countdown-value {
@@ -1152,7 +1174,7 @@ header.hero,
   margin-top: 0 !important;
   z-index: 1;
   --panel: #f7fbfb;
-  padding-top: 5.25rem !important;
+  padding-top: calc(var(--frame-inset) + 5.75rem) !important;
   padding-bottom: 0.35rem !important;
   filter: none;
 }
@@ -1235,10 +1257,12 @@ header.hero,
 
 #invite,
 #calendar,
+#countdown-section,
 .countdown-finale,
 #rsvp {
   margin-top: 0 !important;
-  filter: none;
+  filter: none !important;
+  box-shadow: none;
 }
 
 #invite {
@@ -1248,11 +1272,12 @@ header.hero,
 
 #calendar {
   padding-top: 1.15rem !important;
-  padding-bottom: 1.15rem !important;
+  padding-bottom: 0.35rem !important;
 }
 
-.countdown-finale {
-  padding-top: 1.35rem !important;
+.countdown-finale,
+#countdown-section {
+  padding-top: 0.85rem !important;
   padding-bottom: 2.75rem !important;
 }
 
@@ -1286,11 +1311,14 @@ header.hero,
 #invite::after,
 #calendar::before,
 #calendar::after,
+#countdown-section::before,
+#countdown-section::after,
 .countdown-finale::before,
 .countdown-finale::after,
 #rsvp::before,
 #rsvp::after {
-  display: none;
+  content: none !important;
+  display: none !important;
 }
 
 #story { --panel: #e8f4f2; --rip-fill: #e8f4f2; }
@@ -1329,7 +1357,7 @@ header.hero,
 #rsvp {
   z-index: 24;
   overflow: visible;
-  padding-bottom: calc(var(--frame-clearance, 11rem) + 7rem) !important;
+  padding-bottom: clamp(1.35rem, 3.2vw, 2.1rem) !important;
 }
 
 #rsvp .name-search {
@@ -1343,6 +1371,8 @@ header.hero,
 
 .site-reveal > .footer {
   z-index: 8;
+  padding-top: clamp(2.15rem, 4.5vw, 3rem);
+  padding-bottom: calc(var(--frame-clearance) + env(safe-area-inset-bottom)) !important;
 }
 
 .section-title {
@@ -1514,10 +1544,90 @@ body.hero-play .polaroid {
   transform: translateY(0);
 }
 
-@media (max-width: 900px) and (min-width: 641px) {
+@media (max-width: 979px) and (min-width: 700px) {
   .wedding-day-board {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.85rem;
   }
+
+  .wedding-day-label {
+    max-width: 8.25rem;
+  }
+
+  .wedding-day-title {
+    font-size: 0.86rem;
+  }
+}
+
+@media (max-width: 699px) {
+  .wedding-day-board {
+    gap: 0;
+    max-width: 24rem;
+  }
+
+  .wedding-day-track {
+    --node: 2.2rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .wedding-day-rail {
+    left: calc(var(--node) / 2);
+    right: auto;
+    top: calc(var(--node) / 2);
+    bottom: calc(var(--node) / 2);
+    width: 2px;
+    height: auto;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      color-mix(in srgb, var(--teal) 58%, var(--deep) 18%) 8%,
+      color-mix(in srgb, var(--teal) 58%, var(--deep) 18%) 92%,
+      transparent
+    );
+  }
+
+  .wedding-day-item {
+    display: grid;
+    grid-template-columns: var(--node) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 0.95rem;
+    row-gap: 0.12rem;
+    align-items: center;
+    text-align: left;
+    padding: 0.7rem 0;
+    flex: none;
+  }
+
+  .wedding-day-node {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    box-shadow: 0 0 0 5px var(--cream);
+  }
+
+  .wedding-day-time {
+    grid-column: 2;
+    grid-row: 1;
+    white-space: nowrap;
+    line-height: 1.2;
+    letter-spacing: 0.1em;
+  }
+
+  .wedding-day-label {
+    grid-column: 2;
+    grid-row: 2;
+    max-width: none;
+    text-align: left;
+    padding-top: 0;
+  }
+
+  .wedding-day-title {
+    font-size: 1rem;
+  }
+}
+
+.site-reveal > #wedding-day {
+  padding-bottom: clamp(1.7rem, 4vw, 2.55rem);
 }
 
 @media (prefers-reduced-motion: reduce) {
