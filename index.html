@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/shared.css?v=nav-clear" />
+  <link rel="stylesheet" href="/css/shared.css?v=footer-pad" />
   <script src="/js/shared.js?v=no-stones" defer></script>
   <style>
     :root {
@@ -556,7 +556,7 @@
     }
 
     .timeline-item:last-child {
-      margin-bottom: 0;
+      margin-bottom: 0.35rem;
     }
 
     .timeline-marker {
@@ -2171,7 +2171,7 @@
       padding:
         clamp(2.75rem, 6vw, 4rem)
         1.5rem
-        calc(var(--frame-clearance, 11rem) + env(safe-area-inset-bottom));
+        calc(var(--frame-inset) + 4rem + env(safe-area-inset-bottom, 0px));
       border-top: 1px solid rgba(201, 169, 98, 0.15);
     }
 
@@ -2761,7 +2761,7 @@
       visibility: visible;
     }
   </style>
-  <link rel="stylesheet" href="/css/coastal.css?v=swatch-row" />
+  <link rel="stylesheet" href="/css/coastal.css?v=footer-pad" />
 </head>
 <body class="intro-locked">
 

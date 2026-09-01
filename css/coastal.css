@@ -1216,7 +1216,7 @@ header.hero,
   z-index: var(--paper-z, 1);
   margin-top: -28px;
   padding-top: clamp(3.75rem, 8vw, 5.25rem);
-  padding-bottom: clamp(3rem, 7vw, 4.5rem);
+  padding-bottom: 6.5rem;
   filter: drop-shadow(0 -6px 12px rgba(13, 43, 69, 0.08));
   --rip-fill: var(--panel, #eef6f8);
 }
@@ -1329,7 +1329,7 @@ header.hero,
 .countdown-finale,
 #countdown-section {
   padding-top: 0.2rem !important;
-  padding-bottom: 5.15rem !important;
+  padding-bottom: 6.25rem !important;
 }
 
 .details-tray {
@@ -1423,7 +1423,7 @@ header.hero,
 .site-reveal > .footer {
   z-index: 8;
   padding-top: clamp(2.15rem, 4.5vw, 3rem);
-  padding-bottom: calc(var(--frame-clearance) + env(safe-area-inset-bottom)) !important;
+  padding-bottom: calc(var(--frame-inset) + 4rem + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 .section-title {
@@ -1678,27 +1678,27 @@ body.hero-play .polaroid {
 }
 
 .site-reveal > #story {
-  padding-bottom: 3.45rem !important;
+  padding-bottom: 7.35rem !important;
 }
 
 .site-reveal > #venue {
-  padding-bottom: 3.85rem !important;
+  padding-bottom: 6.5rem !important;
 }
 
 .site-reveal > #wedding-day {
-  padding-bottom: 5.65rem !important;
+  padding-bottom: 6.75rem !important;
 }
 
 .site-reveal > #attire {
-  padding-bottom: 4.85rem !important;
+  padding-bottom: 6.25rem !important;
 }
 
 .site-reveal > #entourage {
-  padding-bottom: 3.25rem !important;
+  padding-bottom: 6.75rem !important;
 }
 
 .site-reveal > #gallery {
-  padding-bottom: 3.1rem !important;
+  padding-bottom: 6.5rem !important;
 }
 
 .gallery .gallery-more {

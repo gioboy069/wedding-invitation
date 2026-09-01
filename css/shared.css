@@ -18,7 +18,7 @@
   --ocean-sand: #dcc8aa;
   --ocean-foam: #e8f4f2;
   --frame-inset: clamp(12px, 2.8vw, 28px);
-  --frame-clearance: calc(var(--frame-inset) + clamp(8.5rem, 24vw, 13rem));
+  --frame-clearance: calc(var(--frame-inset) + clamp(3.25rem, 8vw, 4.5rem));
   --page-ease: cubic-bezier(0.33, 1, 0.68, 1);
   --page-dur: 0.7s;
 }
