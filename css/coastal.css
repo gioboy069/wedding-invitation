@@ -156,9 +156,9 @@ header.hero,
   justify-content: flex-start !important;
   overflow: visible !important;
   padding: calc(var(--frame-inset) + 5.75rem) 1.15rem 0.2rem !important;
-  background-color: #f7fbfb !important;
-  background-image: var(--paper-sheet-bg) !important;
-  background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100%;
+  background-color: transparent !important;
+  background-image: var(--paper-sheet-blend), var(--paper-sheet-bg) !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 120px 120px, 100% 100%;
 }
 
 .hero-bg,
@@ -277,7 +277,9 @@ header.hero,
 
 /* ── Invitation letter ── */
 .invite-letter {
-  background: var(--paper);
+  background-color: transparent;
+  background-image: var(--paper-sheet-blend), var(--paper-sheet-bg);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 120px 120px, 100% 100%;
   text-align: center;
   padding-top: 1.35rem;
 }
@@ -303,7 +305,9 @@ header.hero,
 
 /* ── Lace calendar ── */
 .lace-calendar {
-  background: var(--paper);
+  background-color: transparent;
+  background-image: var(--paper-sheet-blend), var(--paper-sheet-bg);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 120px 120px, 100% 100%;
   text-align: center;
 }
 
@@ -812,23 +816,7 @@ header.hero,
   position: relative;
 }
 
-.rsvp-form::before {
-  content: "";
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  width: 42px;
-  height: 28px;
-  transform: translateX(-50%);
-  background:
-    linear-gradient(180deg, #6f96c4 0 38%, transparent 38%),
-    linear-gradient(#8eafd4, #8eafd4);
-  background-repeat: no-repeat;
-  background-size: 18px 28px, 42px 14px;
-  background-position: 50% 0, 0 10px;
-  border-radius: 3px 3px 2px 2px;
-  box-shadow: 0 2px 4px rgba(58, 68, 84, 0.16);
-}
+/* RSVP form chrome — see css/modern-vintage.css */
 
 .rsvp-guide {
   background: transparent;
@@ -1002,9 +990,9 @@ header.hero,
 
 /* ── Countdown finale ── */
 .countdown-finale {
-  background-color: var(--paper);
-  background-image: var(--paper-sheet-bg);
-  background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100%;
+  background-color: transparent;
+  background-image: var(--paper-sheet-blend), var(--paper-sheet-bg);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 120px 120px, 100% 100%;
   text-align: center;
 }
 
@@ -1320,10 +1308,10 @@ header.hero,
 .site-reveal > .footer {
   position: relative;
   z-index: var(--paper-z, 1);
-  margin-top: -28px;
+  margin-top: -18px;
   padding-top: clamp(3.75rem, 8vw, 5.25rem);
   padding-bottom: 6.5rem;
-  filter: drop-shadow(0 -6px 12px rgba(13, 43, 69, 0.08));
+  filter: none;
   --rip-fill: var(--panel, #eef6f8);
 }
 
@@ -1347,27 +1335,51 @@ header.hero,
   pointer-events: none;
 }
 
-/* White paper pulp just behind the colored tear */
+/* Soft deckle pulp — feathered, blends into page wash */
 .site-reveal > section::after,
 .site-reveal > .footer::after {
-  height: 52px;
-  top: -48px;
+  height: 62px;
+  top: -56px;
   z-index: 2;
-  background: #fffef8;
-  -webkit-mask: var(--rip-mask, url("/css/torn-edge-a.svg")) center / 100% 100% no-repeat;
-  mask: var(--rip-mask, url("/css/torn-edge-a.svg")) center / 100% 100% no-repeat;
-  filter: drop-shadow(0 6px 10px rgba(13, 43, 69, 0.16));
+  background: linear-gradient(
+    to bottom,
+    rgba(238, 246, 248, 0.05) 0%,
+    var(--paper-pulp, rgba(247, 251, 251, 0.72)) 42%,
+    rgba(247, 251, 251, 0.88) 100%
+  );
+  -webkit-mask:
+    linear-gradient(to bottom, transparent 0%, #000 38%, #000 100%),
+    var(--rip-mask, url("/css/torn-edge-soft-a.svg")) center / 100% 100% no-repeat;
+  mask:
+    linear-gradient(to bottom, transparent 0%, #000 38%, #000 100%),
+    var(--rip-mask, url("/css/torn-edge-soft-a.svg")) center / 100% 100% no-repeat;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  filter: blur(0.85px);
+  opacity: 0.92;
 }
 
-/* Colored sheet overlapping the section below */
+/* Colored sheet edge — gentle fade into the section */
 .site-reveal > section::before,
 .site-reveal > .footer::before {
-  height: 48px;
-  top: -44px;
+  height: 56px;
+  top: -50px;
   z-index: 3;
-  background: var(--rip-fill);
-  -webkit-mask: var(--rip-mask, url("/css/torn-edge-a.svg")) center / 100% 100% no-repeat;
-  mask: var(--rip-mask, url("/css/torn-edge-a.svg")) center / 100% 100% no-repeat;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--rip-fill) 42%, var(--paper-page-tone, #eef6f8)) 0%,
+    color-mix(in srgb, var(--rip-fill) 78%, var(--paper-page-tone, #eef6f8)) 55%,
+    var(--rip-fill) 100%
+  );
+  -webkit-mask:
+    linear-gradient(to bottom, transparent 0%, #000 32%, #000 100%),
+    var(--rip-mask, url("/css/torn-edge-soft-a.svg")) center / 100% 100% no-repeat;
+  mask:
+    linear-gradient(to bottom, transparent 0%, #000 32%, #000 100%),
+    var(--rip-mask, url("/css/torn-edge-soft-a.svg")) center / 100% 100% no-repeat;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  filter: blur(0.35px);
 }
 
 .site-reveal > .hero::before,
@@ -1376,15 +1388,15 @@ header.hero,
   display: none;
 }
 
-/* Alternate tear drawings and direction so each sheet feels hand-torn */
-#story { --rip-mask: url("/css/torn-edge-a.svg"); }
-#venue { --rip-mask: url("/css/torn-edge-b.svg"); }
-#wedding-day { --rip-mask: url("/css/torn-edge-c.svg"); }
-#attire { --rip-mask: url("/css/torn-edge-a.svg"); }
-#entourage { --rip-mask: url("/css/torn-edge-b.svg"); }
-#gallery { --rip-mask: url("/css/torn-edge-c.svg"); }
-.details-tray { --rip-mask: url("/css/torn-edge-a.svg"); }
-.footer { --rip-mask: url("/css/torn-edge-b.svg"); }
+/* Alternate soft deckle drawings */
+#story { --rip-mask: url("/css/torn-edge-soft-a.svg"); }
+#venue { --rip-mask: url("/css/torn-edge-soft-b.svg"); }
+#wedding-day { --rip-mask: url("/css/torn-edge-soft-c.svg"); }
+#attire { --rip-mask: url("/css/torn-edge-soft-a.svg"); }
+#entourage { --rip-mask: url("/css/torn-edge-soft-b.svg"); }
+#gallery { --rip-mask: url("/css/torn-edge-soft-c.svg"); }
+.details-tray { --rip-mask: url("/css/torn-edge-soft-a.svg"); }
+.footer { --rip-mask: url("/css/torn-edge-soft-b.svg"); }
 
 #venue::before,
 #venue::after,
@@ -1442,24 +1454,6 @@ header.hero,
   padding-bottom: 1.25rem;
 }
 
-.rsvp-form::before {
-  content: "";
-  position: absolute;
-  left: -2%;
-  width: 104%;
-  height: 42px;
-  top: -28px;
-  transform: none;
-  border-radius: 0;
-  background: #fffef8;
-  background-image: none;
-  -webkit-mask: url("/css/torn-edge-c.svg") center / 100% 100% no-repeat;
-  mask: url("/css/torn-edge-c.svg") center / 100% 100% no-repeat;
-  filter: drop-shadow(0 4px 7px rgba(13, 43, 69, 0.12));
-  pointer-events: none;
-  box-shadow: none;
-}
-
 .rsvp-form {
   padding-bottom: 2.4rem;
 }
@@ -1478,30 +1472,62 @@ header.hero,
   display: none !important;
 }
 
-#story { --panel: #e8f4f2; --rip-fill: #e8f4f2; }
+#story { --panel: #f0f7f6; --rip-fill: #f0f7f6; }
 #venue { --panel: #f7fbfb; --rip-fill: #f7fbfb; }
-#wedding-day { --panel: #eef6f8; --rip-fill: #eef6f8; }
+#wedding-day { --panel: #f3f9fa; --rip-fill: #f3f9fa; }
 #attire { --panel: #f7fbfb; --rip-fill: #f7fbfb; }
-#entourage { --panel: #e8f4f2; --rip-fill: #e8f4f2; }
-#gallery { --panel: #0d2b45; --rip-fill: #0d2b45; }
+#entourage { --panel: #f0f7f6; --rip-fill: #f0f7f6; }
+#gallery {
+  --panel: #0d2b45;
+  --rip-fill: #0d2b45;
+  --paper-pulp: rgba(14, 36, 58, 0.55);
+}
 .details-tray,
 #rsvp {
   --panel: #f7fbfb;
   --rip-fill: #f7fbfb;
 }
-.footer { --panel: #eef6f8; --rip-fill: #eef6f8; }
+.footer { --panel: #f3f9fa; --rip-fill: #f3f9fa; }
 
 .site-reveal > .hero,
 .site-reveal > section,
 .site-reveal > .footer {
-  background-color: var(--panel) !important;
-  background-image: var(--paper-sheet-bg) !important;
-  background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100%;
+  background-color: transparent !important;
+  background-image:
+    var(--paper-sheet-blend),
+    var(--paper-sheet-bg) !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 120px 120px, 100% 100%;
 }
 
 #gallery {
-  background-image: var(--paper-sheet-bg-dark) !important;
-  background-size: 100% 100%, 120px 120px, 100% 100%;
+  --paper-sheet-blend: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--panel) 72%, #1a3a52) 0%,
+    color-mix(in srgb, var(--panel) 88%, #1a3a52) 8%,
+    var(--panel) 20%
+  );
+  background-image:
+    var(--paper-sheet-blend),
+    var(--paper-sheet-bg-dark) !important;
+  background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100%;
+}
+
+#gallery::before {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--rip-fill) 38%, #1a3a52) 0%,
+    color-mix(in srgb, var(--rip-fill) 72%, #1a3a52) 55%,
+    var(--rip-fill) 100%
+  );
+}
+
+#gallery::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(13, 43, 69, 0.08) 0%,
+    var(--paper-pulp, rgba(14, 36, 58, 0.55)) 45%,
+    rgba(14, 36, 58, 0.72) 100%
+  );
 }
 
 .hero-bg,

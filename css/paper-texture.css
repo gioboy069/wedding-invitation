@@ -28,11 +28,21 @@
     var(--paper-weave-a),
     var(--paper-weave-b),
     var(--paper-noise-sheet),
-    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255, 255, 255, 0.42), transparent 70%);
+    radial-gradient(ellipse 90% 50% at 50% -8%, rgba(255, 255, 255, 0.16), transparent 62%),
+    linear-gradient(to bottom, rgba(238, 246, 248, 0.28) 0%, transparent 14%);
   --paper-sheet-bg-dark:
     var(--paper-weave-a),
     var(--paper-noise-sheet),
-    radial-gradient(ellipse 50% 35% at 50% 0%, rgba(107, 167, 160, 0.14), transparent 70%);
+    radial-gradient(ellipse 70% 45% at 50% -5%, rgba(107, 167, 160, 0.1), transparent 65%),
+    linear-gradient(to bottom, rgba(13, 43, 69, 0.35) 0%, transparent 16%);
+  --paper-sheet-blend: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--panel, #f7fbfb) 78%, #eef6f8) 0%,
+    color-mix(in srgb, var(--panel, #f7fbfb) 92%, #eef6f8) 6%,
+    var(--panel, #f7fbfb) 18%
+  );
+  --paper-page-tone: #eef6f8;
+  --paper-pulp: rgba(247, 251, 251, 0.72);
 }
 
 html {
@@ -46,7 +56,7 @@ html::before {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.46;
+  opacity: 0.38;
   background-image:
     var(--paper-linen-h),
     var(--paper-linen-v),
