@@ -42,7 +42,7 @@
     var(--panel, #f7fbfb) 18%
   );
   --paper-page-tone: #eef6f8;
-  --paper-pulp: rgba(247, 251, 251, 0.72);
+  --paper-pulp: rgba(255, 254, 248, 0.88);
 }
 
 html {

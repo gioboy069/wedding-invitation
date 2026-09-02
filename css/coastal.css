@@ -1308,7 +1308,7 @@ header.hero,
 .site-reveal > .footer {
   position: relative;
   z-index: var(--paper-z, 1);
-  margin-top: -18px;
+  margin-top: -22px;
   padding-top: clamp(3.75rem, 8vw, 5.25rem);
   padding-bottom: 6.5rem;
   filter: none;
@@ -1335,51 +1335,51 @@ header.hero,
   pointer-events: none;
 }
 
-/* Soft deckle pulp — feathered, blends into page wash */
+/* Natural deckle pulp — visible tear, lightly softened */
 .site-reveal > section::after,
 .site-reveal > .footer::after {
-  height: 62px;
-  top: -56px;
+  height: 68px;
+  top: -62px;
   z-index: 2;
   background: linear-gradient(
     to bottom,
-    rgba(238, 246, 248, 0.05) 0%,
-    var(--paper-pulp, rgba(247, 251, 251, 0.72)) 42%,
-    rgba(247, 251, 251, 0.88) 100%
+    rgba(238, 246, 248, 0.18) 0%,
+    var(--paper-pulp, rgba(255, 254, 248, 0.88)) 38%,
+    rgba(255, 254, 248, 0.96) 100%
   );
   -webkit-mask:
-    linear-gradient(to bottom, transparent 0%, #000 38%, #000 100%),
-    var(--rip-mask, url("/css/torn-edge-soft-a.svg")) center / 100% 100% no-repeat;
+    linear-gradient(to bottom, transparent 0%, #000 20%, #000 100%),
+    var(--rip-mask, url("/css/torn-edge-natural-a.svg")) center / 100% 100% no-repeat;
   mask:
-    linear-gradient(to bottom, transparent 0%, #000 38%, #000 100%),
-    var(--rip-mask, url("/css/torn-edge-soft-a.svg")) center / 100% 100% no-repeat;
+    linear-gradient(to bottom, transparent 0%, #000 20%, #000 100%),
+    var(--rip-mask, url("/css/torn-edge-natural-a.svg")) center / 100% 100% no-repeat;
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
-  filter: blur(0.85px);
-  opacity: 0.92;
+  filter: blur(0.45px) drop-shadow(0 3px 7px rgba(13, 43, 69, 0.09));
+  opacity: 0.98;
 }
 
-/* Colored sheet edge — gentle fade into the section */
+/* Colored sheet edge — readable tear line, soft blend at top only */
 .site-reveal > section::before,
 .site-reveal > .footer::before {
-  height: 56px;
-  top: -50px;
+  height: 62px;
+  top: -56px;
   z-index: 3;
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--rip-fill) 42%, var(--paper-page-tone, #eef6f8)) 0%,
-    color-mix(in srgb, var(--rip-fill) 78%, var(--paper-page-tone, #eef6f8)) 55%,
+    color-mix(in srgb, var(--rip-fill) 58%, var(--paper-page-tone, #eef6f8)) 0%,
+    color-mix(in srgb, var(--rip-fill) 86%, var(--paper-page-tone, #eef6f8)) 42%,
     var(--rip-fill) 100%
   );
   -webkit-mask:
-    linear-gradient(to bottom, transparent 0%, #000 32%, #000 100%),
-    var(--rip-mask, url("/css/torn-edge-soft-a.svg")) center / 100% 100% no-repeat;
+    linear-gradient(to bottom, transparent 0%, #000 16%, #000 100%),
+    var(--rip-mask, url("/css/torn-edge-natural-a.svg")) center / 100% 100% no-repeat;
   mask:
-    linear-gradient(to bottom, transparent 0%, #000 32%, #000 100%),
-    var(--rip-mask, url("/css/torn-edge-soft-a.svg")) center / 100% 100% no-repeat;
+    linear-gradient(to bottom, transparent 0%, #000 16%, #000 100%),
+    var(--rip-mask, url("/css/torn-edge-natural-a.svg")) center / 100% 100% no-repeat;
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
-  filter: blur(0.35px);
+  filter: blur(0.2px);
 }
 
 .site-reveal > .hero::before,
@@ -1388,15 +1388,15 @@ header.hero,
   display: none;
 }
 
-/* Alternate soft deckle drawings */
-#story { --rip-mask: url("/css/torn-edge-soft-a.svg"); }
-#venue { --rip-mask: url("/css/torn-edge-soft-b.svg"); }
-#wedding-day { --rip-mask: url("/css/torn-edge-soft-c.svg"); }
-#attire { --rip-mask: url("/css/torn-edge-soft-a.svg"); }
-#entourage { --rip-mask: url("/css/torn-edge-soft-b.svg"); }
-#gallery { --rip-mask: url("/css/torn-edge-soft-c.svg"); }
-.details-tray { --rip-mask: url("/css/torn-edge-soft-a.svg"); }
-.footer { --rip-mask: url("/css/torn-edge-soft-b.svg"); }
+/* Alternate natural deckle drawings */
+#story { --rip-mask: url("/css/torn-edge-natural-a.svg"); }
+#venue { --rip-mask: url("/css/torn-edge-natural-b.svg"); }
+#wedding-day { --rip-mask: url("/css/torn-edge-natural-c.svg"); }
+#attire { --rip-mask: url("/css/torn-edge-natural-a.svg"); }
+#entourage { --rip-mask: url("/css/torn-edge-natural-b.svg"); }
+#gallery { --rip-mask: url("/css/torn-edge-natural-c.svg"); }
+.details-tray { --rip-mask: url("/css/torn-edge-natural-a.svg"); }
+.footer { --rip-mask: url("/css/torn-edge-natural-b.svg"); }
 
 #venue::before,
 #venue::after,
@@ -1480,7 +1480,7 @@ header.hero,
 #gallery {
   --panel: #0d2b45;
   --rip-fill: #0d2b45;
-  --paper-pulp: rgba(14, 36, 58, 0.55);
+  --paper-pulp: rgba(18, 40, 62, 0.62);
 }
 .details-tray,
 #rsvp {
