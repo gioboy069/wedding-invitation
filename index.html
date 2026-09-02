@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/shared.css?v=footer-pad" />
+  <link rel="stylesheet" href="/css/shared.css?v=paper-linen-b" />
   <script src="/js/shared.js?v=no-stones" defer></script>
   <style>
     :root {
@@ -62,7 +62,6 @@
       font-family: var(--font-sans);
       font-weight: 400;
       color: var(--text);
-      background-color: var(--bg);
       line-height: 1.7;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
@@ -2581,10 +2580,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background:
-        radial-gradient(ellipse 85% 55% at 50% 12%, rgba(255, 255, 255, 0.5), transparent 55%),
-        radial-gradient(ellipse 75% 50% at 50% 95%, rgba(107, 167, 160, 0.32), transparent 58%),
-        linear-gradient(180deg, #b7d4e6 0%, #dceef5 28%, #eef6f8 58%, #dcc8aa 100%);
       transition: opacity var(--intro-fade) var(--intro-ease), visibility var(--intro-fade);
     }
 
@@ -2657,7 +2652,11 @@
       width: 82%;
       height: 76%;
       transform: translateX(-50%);
-      background: #f7f5f1;
+      background-color: #f7f5f1;
+      background-image: var(--paper-sheet-bg);
+      background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100%;
+      background-image: var(--paper-sheet-bg);
+      background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100%;
       border: 1px solid rgba(30, 90, 110, 0.12);
       border-radius: 2px;
       z-index: 2;
@@ -2918,7 +2917,7 @@
       visibility: visible;
     }
   </style>
-  <link rel="stylesheet" href="/css/coastal.css?v=countdown-rsvp-now" />
+  <link rel="stylesheet" href="/css/coastal.css?v=paper-linen-b" />
 </head>
 <body class="intro-locked">
 

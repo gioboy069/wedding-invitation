@@ -44,10 +44,6 @@ html {
 
 body {
   color: var(--ink);
-  background-color: #dceef5 !important;
-  background-image:
-    radial-gradient(ellipse 90% 50% at 50% -8%, rgba(183, 212, 230, 0.7), transparent 58%),
-    linear-gradient(180deg, #b7d4e6 0%, #dceef5 18%, #eef6f8 48%, #e8f4f2 78%, #dcc8aa 100%) !important;
 }
 
 ::selection {
@@ -160,7 +156,9 @@ header.hero,
   justify-content: flex-start !important;
   overflow: visible !important;
   padding: calc(var(--frame-inset) + 5.75rem) 1.15rem 0.2rem !important;
-  background: #f7fbfb !important;
+  background-color: #f7fbfb !important;
+  background-image: var(--paper-sheet-bg) !important;
+  background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100%;
 }
 
 .hero-bg,
@@ -1004,7 +1002,9 @@ header.hero,
 
 /* ── Countdown finale ── */
 .countdown-finale {
-  background: var(--paper);
+  background-color: var(--paper);
+  background-image: var(--paper-sheet-bg);
+  background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100%;
   text-align: center;
 }
 
@@ -1356,7 +1356,7 @@ header.hero,
   background: #fffef8;
   -webkit-mask: var(--rip-mask, url("/css/torn-edge-a.svg")) center / 100% 100% no-repeat;
   mask: var(--rip-mask, url("/css/torn-edge-a.svg")) center / 100% 100% no-repeat;
-  filter: drop-shadow(0 5px 8px rgba(13, 43, 69, 0.16));
+  filter: drop-shadow(0 6px 10px rgba(13, 43, 69, 0.16));
 }
 
 /* Colored sheet overlapping the section below */
@@ -1494,7 +1494,14 @@ header.hero,
 .site-reveal > .hero,
 .site-reveal > section,
 .site-reveal > .footer {
-  background: var(--panel) !important;
+  background-color: var(--panel) !important;
+  background-image: var(--paper-sheet-bg) !important;
+  background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100%;
+}
+
+#gallery {
+  background-image: var(--paper-sheet-bg-dark) !important;
+  background-size: 100% 100%, 120px 120px, 100% 100%;
 }
 
 .hero-bg,
@@ -1539,9 +1546,9 @@ header.hero,
 }
 
 .envelope-intro {
-  background:
-    radial-gradient(ellipse 60% 40% at 50% 45%, rgba(107, 167, 160, 0.22), transparent 70%),
-    #0d2b45 !important;
+  background-color: #dceef5 !important;
+  background-image: var(--paper-envelope-bg) !important;
+  background-size: 100% 100%, 100% 100%, 160px 160px, 100% 100%, 100% 100%, 100% 100%;
 }
 
 .envelope-intro.revealed {

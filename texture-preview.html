@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Torn Paper Texture — 3 Options</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --deep: #0d2b45;
+      --teal: #1e5a6e;
+      --seafoam: #6ba7a0;
+      --sand: #dcc8aa;
+      --sky: #b7d4e6;
+      --font-serif: "Cormorant Garamond", Georgia, serif;
+      --font-sans: "Source Sans 3", system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--deep);
+      background: #c8dde8;
+      min-height: 100vh;
+      padding: clamp(1.25rem, 4vw, 2.5rem);
+    }
+
+    .page-head {
+      max-width: 1100px;
+      margin: 0 auto 2rem;
+      text-align: center;
+    }
+
+    .page-head h1 {
+      font-family: var(--font-serif);
+      font-weight: 500;
+      font-size: clamp(1.75rem, 4vw, 2.35rem);
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-head p {
+      font-size: 0.95rem;
+      color: var(--teal);
+      max-width: 36rem;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    .examples {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: clamp(1.25rem, 3vw, 2rem);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .example-card {
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 18px 48px rgba(13, 43, 69, 0.14);
+      border: 1px solid rgba(13, 43, 69, 0.08);
+      background: #fff;
+    }
+
+    .example-label {
+      padding: 0.85rem 1rem 0.65rem;
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid rgba(13, 43, 69, 0.06);
+    }
+
+    .example-label .tag {
+      display: inline-block;
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--seafoam);
+      margin-bottom: 0.25rem;
+    }
+
+    .example-label h2 {
+      font-family: var(--font-serif);
+      font-size: 1.35rem;
+      font-weight: 500;
+      margin-bottom: 0.2rem;
+    }
+
+    .example-label p {
+      font-size: 0.78rem;
+      color: var(--teal);
+      line-height: 1.5;
+    }
+
+    /* Shared mock structure */
+    .mock {
+      position: relative;
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mock-envelope {
+      position: relative;
+      flex: 0 0 38%;
+      min-height: 190px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .mock-envelope::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    .mock-envelope-inner {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .mock-envelope-inner .env-icon {
+      width: 88px;
+      height: 58px;
+      margin: 0 auto 0.65rem;
+      border-radius: 3px;
+      background: linear-gradient(165deg, #6ba7a0, #1e5a6e);
+      box-shadow: 0 12px 28px rgba(13, 43, 69, 0.18);
+      position: relative;
+    }
+
+    .mock-envelope-inner .env-icon::before {
+      content: "";
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      bottom: 18%;
+      height: 62%;
+      background: #f7f5f1;
+      border: 1px solid rgba(30, 90, 110, 0.1);
+      border-radius: 1px;
+    }
+
+    .mock-envelope-inner p {
+      font-size: 0.58rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      opacity: 0.75;
+    }
+
+    .mock-sheet {
+      position: relative;
+      flex: 1;
+      padding: 2.75rem 1.25rem 1.5rem;
+      margin-top: -22px;
+    }
+
+    .mock-sheet::before,
+    .mock-sheet::after {
+      content: "";
+      position: absolute;
+      left: -3%;
+      width: 106%;
+      pointer-events: none;
+    }
+
+    .mock-sheet::after {
+      height: 44px;
+      top: -40px;
+      z-index: 2;
+      background: #fffef8;
+      -webkit-mask: url("/css/torn-edge-a.svg") center / 100% 100% no-repeat;
+      mask: url("/css/torn-edge-a.svg") center / 100% 100% no-repeat;
+      filter: drop-shadow(0 4px 6px rgba(13, 43, 69, 0.12));
+    }
+
+    .mock-sheet::before {
+      height: 40px;
+      top: -36px;
+      z-index: 3;
+      -webkit-mask: url("/css/torn-edge-a.svg") center / 100% 100% no-repeat;
+      mask: url("/css/torn-edge-a.svg") center / 100% 100% no-repeat;
+    }
+
+    .mock-sheet .grain-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      mix-blend-mode: multiply;
+      opacity: 0.35;
+    }
+
+    .mock-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .mock-content .names {
+      font-family: var(--font-serif);
+      font-size: 1.45rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.35rem;
+    }
+
+    .mock-content .names span { color: var(--seafoam); font-style: italic; }
+
+    .mock-content .date {
+      font-size: 0.62rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 1.1rem;
+    }
+
+    .mock-content .line {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.92rem;
+      color: var(--teal);
+      max-width: 14rem;
+      margin: 0 auto;
+      line-height: 1.55;
+    }
+
+    .mock-content .countdown {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+    }
+
+    .mock-content .countdown small {
+      display: block;
+      font-family: var(--font-sans);
+      font-size: 0.45rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--seafoam);
+      margin-top: 0.15rem;
+    }
+
+    .pick-hint {
+      max-width: 1100px;
+      margin: 2rem auto 0;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--deep);
+      padding: 1rem 1.25rem;
+      background: rgba(255, 255, 255, 0.72);
+      border-radius: 12px;
+      border: 1px dashed rgba(30, 90, 110, 0.25);
+    }
+
+    .pick-hint strong { font-weight: 600; }
+
+    /* ── Example A: Warm Cotton Rag ── */
+    .tex-a .mock-envelope {
+      background-color: #e8ddd0;
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E"),
+        radial-gradient(ellipse 80% 60% at 50% 20%, rgba(255, 252, 246, 0.9), transparent 60%),
+        radial-gradient(ellipse 70% 50% at 80% 90%, rgba(220, 200, 170, 0.35), transparent 55%),
+        linear-gradient(180deg, #dcc8aa 0%, #ebe3d4 35%, #f4efe6 70%, #dcc8aa 100%);
+      background-size: 180px 180px, 100% 100%, 100% 100%, 100% 100%;
+    }
+
+    .tex-a .mock-envelope::after {
+      background: repeating-linear-gradient(
+        92deg,
+        transparent,
+        transparent 3px,
+        rgba(180, 160, 130, 0.04) 3px,
+        rgba(180, 160, 130, 0.04) 4px
+      );
+    }
+
+    .tex-a .mock-sheet {
+      background-color: #f4efe6;
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.4'/%3E%3C/svg%3E"),
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.55), transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(220, 200, 170, 0.2), transparent 40%),
+        linear-gradient(180deg, #f7f3ec 0%, #f4efe6 100%);
+      background-size: 140px 140px, 100% 100%, 100% 100%, 100% 100%;
+    }
+
+    .tex-a .mock-sheet::before {
+      background: #f4efe6;
+    }
+
+    /* ── Example B: Cool Linen Deckle ── */
+    .tex-b .mock-envelope {
+      background-color: #dceef5;
+      background-image:
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 4px),
+        repeating-linear-gradient(90deg, rgba(13,43,69,0.025) 0 1px, transparent 1px 5px),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.35' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E"),
+        radial-gradient(ellipse 90% 55% at 50% 8%, rgba(255, 255, 255, 0.75), transparent 58%),
+        linear-gradient(180deg, #b7d4e6 0%, #dceef5 30%, #eef6f8 65%, #6ba7a0 100%);
+      background-size: 100% 100%, 100% 100%, 160px 160px, 100% 100%, 100% 100%;
+    }
+
+    .tex-b .mock-envelope::after {
+      background: radial-gradient(circle at 30% 40%, rgba(183, 212, 230, 0.15), transparent 50%);
+    }
+
+    .tex-b .mock-sheet {
+      background-color: #f7fbfb;
+      background-image:
+        repeating-linear-gradient(45deg, rgba(13,43,69,0.018) 0 1px, transparent 1px 6px),
+        repeating-linear-gradient(-45deg, rgba(107,167,160,0.02) 0 1px, transparent 1px 7px),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.6' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.28'/%3E%3C/svg%3E"),
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,255,255,0.7), transparent 70%),
+        linear-gradient(180deg, #eef6f8 0%, #f7fbfb 100%);
+      background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100%, 100% 100%;
+    }
+
+    .tex-b .mock-sheet::before {
+      background: #f7fbfb;
+    }
+
+    .tex-b .mock-sheet::after {
+      filter: drop-shadow(0 6px 10px rgba(13, 43, 69, 0.16));
+    }
+
+    /* ── Example C: Vintage Parchment ── */
+    .tex-c .mock-envelope {
+      background-color: #ddd2bc;
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.65' numOctaves='5'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E"),
+        radial-gradient(circle at 15% 20%, rgba(90, 70, 45, 0.08), transparent 35%),
+        radial-gradient(circle at 88% 72%, rgba(90, 70, 45, 0.1), transparent 38%),
+        radial-gradient(circle at 50% 50%, rgba(255, 248, 235, 0.35), transparent 55%),
+        linear-gradient(180deg, #c4b095 0%, #ddd2bc 25%, #ebe4d4 60%, #dcc8aa 100%);
+      background-size: 200px 200px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    }
+
+    .tex-c .mock-envelope::after {
+      background:
+        radial-gradient(ellipse 100% 80% at 50% 100%, rgba(60, 45, 30, 0.06), transparent 50%),
+        repeating-conic-gradient(from 0deg at 50% 50%, rgba(120, 95, 65, 0.03) 0deg 2deg, transparent 2deg 8deg);
+      opacity: 0.8;
+    }
+
+    .tex-c .mock-sheet {
+      background-color: #ebe4d4;
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.72' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.45'/%3E%3C/svg%3E"),
+        radial-gradient(circle at 70% 15%, rgba(255, 250, 240, 0.5), transparent 42%),
+        radial-gradient(circle at 25% 85%, rgba(140, 110, 75, 0.07), transparent 40%),
+        radial-gradient(circle at 90% 60%, rgba(140, 110, 75, 0.05), transparent 35%),
+        linear-gradient(180deg, #e5dcc8 0%, #ebe4d4 50%, #f0ead8 100%);
+      background-size: 170px 170px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    }
+
+    .tex-c .mock-sheet::before {
+      background: #ebe4d4;
+    }
+
+    .tex-c .mock-sheet::after {
+      background: #faf8f2;
+      filter: drop-shadow(0 5px 12px rgba(60, 45, 30, 0.14));
+    }
+  </style>
+</head>
+<body>
+  <header class="page-head">
+    <h1>Torn paper texture options</h1>
+    <p>Three rough, hand-torn paper backgrounds — from the envelope opening through every page. Pick <strong>A</strong>, <strong>B</strong>, or <strong>C</strong> and I’ll apply it across the full invitation.</p>
+  </header>
+
+  <div class="examples">
+    <article class="example-card tex-a">
+      <div class="example-label">
+        <span class="tag">Option A</span>
+        <h2>Warm Cotton Rag</h2>
+        <p>Soft cream fibers, warm sand undertones, gentle deckle tears. Feels like fine wedding stationery.</p>
+      </div>
+      <div class="mock">
+        <div class="mock-envelope">
+          <div class="mock-envelope-inner">
+            <div class="env-icon" aria-hidden="true"></div>
+            <p>Tap to open</p>
+          </div>
+        </div>
+        <div class="mock-sheet">
+          <div class="mock-content">
+            <p class="names">Gio Anthony <span>&</span> Augiela Shane</p>
+            <p class="date">February 18, 2027</p>
+            <p class="line">With joyful hearts we invite you to celebrate with us.</p>
+            <div class="countdown">
+              <div>142<small>Days</small></div>
+              <div>:</div>
+              <div>08<small>Hours</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="example-card tex-b">
+      <div class="example-label">
+        <span class="tag">Option B</span>
+        <h2>Cool Linen Deckle</h2>
+        <p>Coastal powder-blue wash with visible linen weave and crisp white pulp tears. Closest to your current palette.</p>
+      </div>
+      <div class="mock">
+        <div class="mock-envelope">
+          <div class="mock-envelope-inner">
+            <div class="env-icon" aria-hidden="true"></div>
+            <p>Tap to open</p>
+          </div>
+        </div>
+        <div class="mock-sheet">
+          <div class="mock-content">
+            <p class="names">Gio Anthony <span>&</span> Augiela Shane</p>
+            <p class="date">February 18, 2027</p>
+            <p class="line">With joyful hearts we invite you to celebrate with us.</p>
+            <div class="countdown">
+              <div>142<small>Days</small></div>
+              <div>:</div>
+              <div>08<small>Hours</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="example-card tex-c">
+      <div class="example-label">
+        <span class="tag">Option C</span>
+        <h2>Vintage Parchment</h2>
+        <p>Aged parchment with heavier speckle, darker fiber flecks, and deeper rough tears. Rustic and timeless.</p>
+      </div>
+      <div class="mock">
+        <div class="mock-envelope">
+          <div class="mock-envelope-inner">
+            <div class="env-icon" aria-hidden="true"></div>
+            <p>Tap to open</p>
+          </div>
+        </div>
+        <div class="mock-sheet">
+          <div class="mock-content">
+            <p class="names">Gio Anthony <span>&</span> Augiela Shane</p>
+            <p class="date">February 18, 2027</p>
+            <p class="line">With joyful hearts we invite you to celebrate with us.</p>
+            <div class="countdown">
+              <div>142<small>Days</small></div>
+              <div>:</div>
+              <div>08<small>Hours</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <p class="pick-hint">Reply with <strong>A</strong>, <strong>B</strong>, or <strong>C</strong> — or mix ideas (e.g. “B but warmer”). Nothing is applied to the live invitation yet.</p>
+</body>
+</html>
