@@ -523,6 +523,126 @@
       background: rgba(255, 255, 255, 0.72);
     }
 
+    .story-expand-btn {
+      display: flex;
+      width: max-content;
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1.35rem;
+      padding: 0.8rem 1.75rem 0.9rem;
+      line-height: 1;
+      font-family: var(--font-sans);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--sea);
+      background: var(--white);
+      border: 1px solid rgba(107, 167, 160, 0.35);
+      cursor: pointer;
+      transition: color 0.3s, border-color 0.3s, background 0.3s, transform 0.25s ease;
+    }
+
+    .story-expand-btn:hover {
+      color: var(--deep);
+      border-color: var(--seafoam);
+      background: rgba(183, 212, 230, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .story-expand-btn svg {
+      width: 14px;
+      height: 14px;
+      transition: transform 0.35s var(--ease-out);
+    }
+
+    .story-expand-btn[aria-expanded="true"] svg {
+      transform: rotate(180deg);
+    }
+
+    .story-details {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      margin-top: 0;
+      transition: max-height 0.75s var(--ease-out), opacity 0.45s ease, margin-top 0.45s ease;
+    }
+
+    .story-details.is-open {
+      max-height: none;
+      opacity: 1;
+      margin-top: clamp(2rem, 4.5vw, 3rem);
+      overflow: visible;
+    }
+
+    .story-details .section-subtitle {
+      margin-bottom: clamp(2.25rem, 5vw, 3.25rem);
+    }
+
+    .entourage-expand-btn {
+      display: flex;
+      width: max-content;
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1.35rem;
+      padding: 0.8rem 1.75rem 0.9rem;
+      line-height: 1;
+      font-family: var(--font-sans);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--sea);
+      background: var(--white);
+      border: 1px solid rgba(107, 167, 160, 0.35);
+      cursor: pointer;
+      transition: color 0.3s, border-color 0.3s, background 0.3s, transform 0.25s ease;
+    }
+
+    .entourage-expand-btn:hover {
+      color: var(--deep);
+      border-color: var(--seafoam);
+      background: rgba(183, 212, 230, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .entourage-expand-btn svg {
+      width: 14px;
+      height: 14px;
+      transition: transform 0.35s var(--ease-out);
+    }
+
+    .entourage-expand-btn[aria-expanded="true"] svg {
+      transform: rotate(180deg);
+    }
+
+    .entourage-details {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      margin-top: 0;
+      transition: max-height 0.75s var(--ease-out), opacity 0.45s ease, margin-top 0.45s ease;
+    }
+
+    .entourage-details.is-open {
+      max-height: none;
+      opacity: 1;
+      margin-top: clamp(2rem, 4.5vw, 3rem);
+      overflow: visible;
+    }
+
+    .entourage-details .section-subtitle {
+      margin-bottom: clamp(2rem, 4.5vw, 3rem);
+    }
+
     .timeline {
       position: relative;
       max-width: 820px;
@@ -2435,6 +2555,14 @@
         transition: none;
       }
 
+      .story-details {
+        transition: none;
+      }
+
+      .entourage-details {
+        transition: none;
+      }
+
       .envelope-intro { display: none !important; }
       body.intro-locked { overflow: auto !important; }
     }
@@ -2790,7 +2918,7 @@
       visibility: visible;
     }
   </style>
-  <link rel="stylesheet" href="/css/coastal.css?v=timing-h" />
+  <link rel="stylesheet" href="/css/coastal.css?v=countdown-rsvp-now" />
 </head>
 <body class="intro-locked">
 
@@ -2916,6 +3044,12 @@
           <span class="countdown-label">Seconds</span>
         </div>
       </div>
+      <div class="countdown-rsvp-wrap reveal reveal-delay-2">
+        <div class="countdown-rsvp-inner">
+          <a href="#rsvp" class="countdown-rsvp-btn">RSVP Now</a>
+          <p class="countdown-rsvp-note">We hope you can join us.</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -2924,9 +3058,16 @@
     <div class="container">
       <p class="section-label reveal">Our Story</p>
       <h2 class="section-title reveal reveal-delay-1" id="storyTitle">A Love Written in Time</h2>
-      <p class="section-subtitle reveal reveal-delay-2" id="storySubtitle">Every great love story has a beginning. Ours started with a chance encounter and grew into something extraordinary.</p>
 
-      <div class="timeline" id="timeline">
+      <button type="button" class="story-expand-btn reveal reveal-delay-2" id="storyExpandBtn" aria-expanded="false" aria-controls="storyDetails">
+        <span id="storyExpandLabel">View full Story</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+
+      <div class="story-details" id="storyDetails" aria-hidden="true">
+        <p class="section-subtitle" id="storySubtitle">Every great love story has a beginning. Ours started with a chance encounter and grew into something extraordinary.</p>
+
+        <div class="timeline" id="timeline">
         <article class="timeline-item reveal">
           <div class="timeline-text-side">
             <p class="timeline-year">2018</p>
@@ -3026,6 +3167,7 @@
             </div>
           </div>
         </article>
+      </div>
       </div>
     </div>
   </section>
@@ -3199,23 +3341,31 @@
     <div class="container">
       <p class="section-label reveal">Wedding Party</p>
       <h2 class="section-title reveal reveal-delay-1" id="entourageTitle">Our Entourage</h2>
-      <p class="section-subtitle reveal reveal-delay-2" id="entourageSubtitle">With grateful hearts, we honor the family and friends who walk beside us.</p>
 
-      <div class="entourage-sponsors-text reveal reveal-delay-3">
-        <p class="attire-look-label" id="principalSponsorsTitle">Principal Sponsors</p>
-        <div class="entourage-sponsors-columns">
-          <div class="entourage-sponsor-col">
-            <p class="entourage-group-role">Ninong</p>
-            <div class="entourage-sponsor-names" id="ninongNames"></div>
-          </div>
-          <div class="entourage-sponsor-col">
-            <p class="entourage-group-role">Ninang</p>
-            <div class="entourage-sponsor-names" id="ninangNames"></div>
+      <button type="button" class="entourage-expand-btn reveal reveal-delay-2" id="entourageExpandBtn" aria-expanded="false" aria-controls="entourageDetails">
+        <span id="entourageExpandLabel">View full Our Entourage</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+
+      <div class="entourage-details" id="entourageDetails" aria-hidden="true">
+        <p class="section-subtitle" id="entourageSubtitle">With grateful hearts, we honor the family and friends who walk beside us.</p>
+
+        <div class="entourage-sponsors-text">
+          <p class="attire-look-label" id="principalSponsorsTitle">Principal Sponsors</p>
+          <div class="entourage-sponsors-columns">
+            <div class="entourage-sponsor-col">
+              <p class="entourage-group-role">Ninong</p>
+              <div class="entourage-sponsor-names" id="ninongNames"></div>
+            </div>
+            <div class="entourage-sponsor-col">
+              <p class="entourage-group-role">Ninang</p>
+              <div class="entourage-sponsor-names" id="ninangNames"></div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="entourage-groups reveal reveal-delay-3" id="entourageGroups" aria-label="Wedding entourage"></div>
+        <div class="entourage-groups" id="entourageGroups" aria-label="Wedding entourage"></div>
+      </div>
     </div>
   </section>
 
@@ -3419,6 +3569,50 @@
       const attireExpandBtn = document.getElementById("attireExpandBtn");
       const attireDetails = document.getElementById("attireDetails");
       const attireExpandLabel = document.getElementById("attireExpandLabel");
+      const storyExpandBtn = document.getElementById("storyExpandBtn");
+      const storyDetails = document.getElementById("storyDetails");
+      const storyExpandLabel = document.getElementById("storyExpandLabel");
+      const entourageExpandBtn = document.getElementById("entourageExpandBtn");
+      const entourageDetails = document.getElementById("entourageDetails");
+      const entourageExpandLabel = document.getElementById("entourageExpandLabel");
+
+      function setEntourageExpanded(open, scrollToSection) {
+        if (!entourageDetails || !entourageExpandBtn) return;
+        entourageDetails.classList.toggle("is-open", open);
+        entourageDetails.setAttribute("aria-hidden", open ? "false" : "true");
+        entourageExpandBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        if (entourageExpandLabel) {
+          entourageExpandLabel.textContent = open ? "Show Less" : "View full Our Entourage";
+        }
+        if (open) {
+          observeReveals();
+          if (scrollToSection) {
+            requestAnimationFrame(function () {
+              var section = document.getElementById("entourage");
+              if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+            });
+          }
+        }
+      }
+
+      function setStoryExpanded(open, scrollToSection) {
+        if (!storyDetails || !storyExpandBtn) return;
+        storyDetails.classList.toggle("is-open", open);
+        storyDetails.setAttribute("aria-hidden", open ? "false" : "true");
+        storyExpandBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        if (storyExpandLabel) {
+          storyExpandLabel.textContent = open ? "Show Less" : "View full Story";
+        }
+        if (open) {
+          observeReveals();
+          if (scrollToSection) {
+            requestAnimationFrame(function () {
+              var section = document.getElementById("story");
+              if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+            });
+          }
+        }
+      }
 
       function setAttireExpanded(open, scrollToSection) {
         if (!attireDetails || !attireExpandBtn) return;
@@ -3434,6 +3628,20 @@
             if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
           });
         }
+      }
+
+      if (entourageExpandBtn) {
+        entourageExpandBtn.addEventListener("click", function () {
+          var willOpen = !entourageDetails.classList.contains("is-open");
+          setEntourageExpanded(willOpen, false);
+        });
+      }
+
+      if (storyExpandBtn) {
+        storyExpandBtn.addEventListener("click", function () {
+          var willOpen = !storyDetails.classList.contains("is-open");
+          setStoryExpanded(willOpen, false);
+        });
       }
 
       if (attireExpandBtn) {

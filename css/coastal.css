@@ -764,7 +764,9 @@ header.hero,
   border: 1px solid rgba(142, 175, 212, 0.25);
 }
 
-.attire-expand-btn {
+.attire-expand-btn,
+.story-expand-btn,
+.entourage-expand-btn {
   color: var(--powder-deep);
   display: inline-flex;
   align-items: center;
@@ -775,7 +777,19 @@ header.hero,
   padding: 0.8rem 1.75rem 0.9rem;
 }
 
-.attire-expand-btn svg {
+.story-expand-btn,
+.entourage-expand-btn {
+  display: flex;
+  width: max-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 1.35rem;
+}
+
+.attire-expand-btn svg,
+.story-expand-btn svg,
+.entourage-expand-btn svg {
   display: block;
   width: 14px;
   height: 14px;
@@ -1041,6 +1055,98 @@ header.hero,
   color: var(--powder);
   align-self: flex-start;
   margin-top: 0.2rem;
+}
+
+.countdown-rsvp-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(1.85rem, 4.5vw, 2.65rem);
+}
+
+.countdown-rsvp-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.countdown-rsvp-note {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(0.95rem, 2.4vw, 1.12rem);
+  font-weight: 500;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  max-width: 20rem;
+  text-align: center;
+}
+
+.countdown-rsvp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  padding: 0.92rem 2.35rem;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--deep);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(247, 251, 251, 0.98) 100%);
+  border: 1px solid rgba(30, 90, 110, 0.32);
+  border-radius: 999px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.92) inset,
+    0 10px 28px rgba(13, 43, 69, 0.09);
+  transition:
+    color 0.3s ease,
+    background 0.3s ease,
+    border-color 0.3s ease,
+    transform 0.25s ease,
+    box-shadow 0.3s ease;
+}
+
+.countdown-rsvp-btn::before,
+.countdown-rsvp-btn::after {
+  content: "";
+  width: clamp(1.25rem, 4vw, 1.75rem);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(107, 167, 160, 0.85));
+  flex-shrink: 0;
+}
+
+.countdown-rsvp-btn::after {
+  background: linear-gradient(90deg, rgba(107, 167, 160, 0.85), transparent);
+}
+
+.countdown-rsvp-btn:hover {
+  color: #fff;
+  background: linear-gradient(180deg, var(--teal) 0%, var(--deep) 100%);
+  border-color: var(--deep);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 12px 32px rgba(13, 43, 69, 0.18);
+  transform: translateY(-2px);
+}
+
+.countdown-rsvp-btn:hover::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55));
+}
+
+.countdown-rsvp-btn:hover::after {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.55), transparent);
+}
+
+.countdown-rsvp-btn:active {
+  transform: translateY(0);
+}
+
+.countdown-rsvp-btn:focus-visible {
+  outline: 2px solid var(--seafoam);
+  outline-offset: 3px;
 }
 
 /* ── Gallery (keep, restyle light) ── */
