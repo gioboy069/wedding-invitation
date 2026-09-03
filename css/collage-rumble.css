@@ -1,0 +1,528 @@
+/* Continuous torn-paper collage flow + scroll color rumble */
+
+:root {
+  --rumble-t: 0;
+  --rumble-x: 0px;
+  --rumble-y: 0px;
+  --rumble-rot: 0deg;
+  --rumble-ivory: #f3eee4;
+  --rumble-teal: #2a8a8a;
+  --rumble-sage: #8fa88a;
+  --rumble-wash: #c5d6d4;
+  --rumble-sheet: #d7e0db;
+  --rumble-deep: #1e5a6e;
+  --rumble-shift: 0%;
+}
+
+/* Fixed atmosphere is a soft tint only — the continuous scroll collage is the main design */
+.collage-rumble {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: var(--rumble-wash);
+  opacity: 0.35;
+}
+
+.collage-rumble__photo,
+.collage-rumble__layer {
+  display: none;
+}
+
+.collage-rumble__veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--rumble-ivory) 40%, transparent) 0%,
+    color-mix(in srgb, var(--rumble-teal) 12%, transparent) 45%,
+    color-mix(in srgb, var(--rumble-deep) 18%, transparent) 100%
+  );
+}
+
+/* One continuous collage that spans the full invitation height */
+.site-reveal {
+  position: relative;
+  isolation: isolate;
+}
+
+.collage-flow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.collage-flow__canvas {
+  position: absolute;
+  inset: 0;
+  background:
+    url("/img/collage/continuous-flow.webp") center top / 100% 100% no-repeat;
+  transform: translate3d(var(--rumble-x), var(--rumble-y), 0) rotate(var(--rumble-rot));
+  will-change: transform;
+}
+
+.collage-flow__tint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--rumble-ivory) 28%, transparent) 0%,
+    color-mix(in srgb, var(--rumble-teal) 10%, transparent) 40%,
+    color-mix(in srgb, var(--rumble-sage) 14%, transparent) 70%,
+    color-mix(in srgb, var(--rumble-deep) 22%, transparent) 100%
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0.85;
+}
+
+.site-reveal > .hero,
+.site-reveal > section,
+.site-reveal > .footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* Keep site content above the fixed wash.
+   Envelope stays a full-screen fixed overlay above everything. */
+.envelope-intro {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1000 !important;
+}
+
+.nav,
+.site-reveal,
+.scroll-progress {
+  position: relative;
+  z-index: 1;
+}
+
+.nav { z-index: 300; }
+.scroll-progress { z-index: 400; }
+
+/* Envelope keeps collage world */
+.envelope-intro {
+  background-color: var(--rumble-wash, #c5d6d4) !important;
+  background-image:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--rumble-ivory, #f3eee4) 45%, transparent) 0%,
+      transparent 32%,
+      color-mix(in srgb, var(--rumble-teal, #2a8a8a) 22%, transparent) 62%,
+      color-mix(in srgb, var(--rumble-sage, #8fa88a) 30%, transparent) 100%
+    ),
+    url("/img/collage/continuous-flow.webp") !important;
+  background-size: cover !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+}
+
+.envelope-intro::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 70% 50% at 50% 40%,
+    color-mix(in srgb, var(--rumble-ivory, #f3eee4) 28%, transparent),
+    transparent 72%
+  );
+}
+
+/* No separate top color band — collage background already provides the edge */
+.envelope-intro::after {
+  content: none !important;
+  display: none !important;
+}
+
+.envelope-scene { z-index: 2; }
+
+.env-back {
+  background:
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--rumble-sage, #8fa88a) 55%, var(--rumble-teal, #2a8a8a)) 0%,
+      color-mix(in srgb, var(--rumble-teal, #2a8a8a) 70%, var(--rumble-deep, #1e5a6e)) 100%
+    ) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 252, 246, 0.18);
+}
+
+.env-front {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--rumble-sheet, #d7e0db) 55%, var(--rumble-ivory, #f3eee4)) 0%,
+    color-mix(in srgb, var(--rumble-teal, #2a8a8a) 45%, var(--rumble-sage, #8fa88a)) 52%,
+    color-mix(in srgb, var(--rumble-deep, #1e5a6e) 60%, var(--rumble-teal, #2a8a8a)) 100%
+  ) !important;
+}
+
+.env-flap-face {
+  background: linear-gradient(
+    175deg,
+    color-mix(in srgb, var(--rumble-ivory, #f3eee4) 35%, var(--rumble-sheet, #d7e0db)) 0%,
+    color-mix(in srgb, var(--rumble-teal, #2a8a8a) 50%, var(--rumble-sage, #8fa88a)) 55%,
+    color-mix(in srgb, var(--rumble-sage, #8fa88a) 40%, var(--rumble-deep, #1e5a6e)) 100%
+  ) !important;
+}
+
+.env-card {
+  background-color: color-mix(
+    in srgb,
+    var(--rumble-ivory, #f3eee4) 88%,
+    var(--rumble-sheet, #d7e0db)
+  ) !important;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--rumble-ivory, #f3eee4) 70%, transparent),
+    transparent 40%
+  ) !important;
+}
+
+.env-flap-kicker,
+.env-flap-names,
+.envelope-hint {
+  color: color-mix(in srgb, var(--rumble-deep, #1e5a6e) 75%, #0d2b45) !important;
+}
+
+/* Sheets are translucent so the continuous collage flows through */
+.site-reveal > .hero,
+.site-reveal > section,
+.site-reveal > .footer {
+  --panel: color-mix(in srgb, var(--rumble-sheet) 35%, transparent) !important;
+  --rip-fill: color-mix(in srgb, var(--rumble-ivory) 55%, var(--rumble-sheet)) !important;
+  background-color: transparent !important;
+  background-image:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--rumble-ivory) 22%, transparent) 0%,
+      transparent 18%,
+      transparent 82%,
+      color-mix(in srgb, var(--rumble-sheet) 16%, transparent) 100%
+    ) !important;
+}
+
+#gallery {
+  --rip-fill: color-mix(in srgb, var(--rumble-deep) 30%, transparent) !important;
+  background-image: none !important;
+  background-color: transparent !important;
+}
+
+/* Hide separate hero photo collage — continuous flow is the background */
+.hero-bg {
+  display: none !important;
+}
+
+.hero-content {
+  border-radius: 1.25rem;
+  position: relative;
+  z-index: 2;
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 1.1rem 1.2rem 1.2rem !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 252, 246, 0.3) 0%,
+    rgba(247, 242, 232, 0.2) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 10px 28px rgba(13, 43, 69, 0.06);
+  backdrop-filter: blur(18px) saturate(1.05);
+  -webkit-backdrop-filter: blur(18px) saturate(1.05);
+}
+
+/* High-contrast readable type on transparent glass */
+.hero-pre,
+.hero-names,
+.hero-name,
+.hero-date {
+  color: #04151f !important;
+  text-shadow:
+    0 1px 0 rgba(255, 252, 246, 1),
+    0 0 12px rgba(255, 252, 246, 0.95),
+    0 0 24px rgba(255, 252, 246, 0.85);
+}
+
+.hero-names,
+.hero-name {
+  font-weight: 500 !important;
+}
+
+.hero-amp {
+  color: #0d3a4a !important;
+  text-shadow:
+    0 1px 0 rgba(255, 252, 246, 1),
+    0 0 12px rgba(255, 252, 246, 0.9);
+}
+
+.site-reveal > section > .container,
+.site-reveal > .footer > .container {
+  border-radius: 1.35rem;
+  position: relative;
+  z-index: 2;
+  max-width: 44rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1.35rem 1.35rem 1.55rem;
+  color: #04151f;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 252, 246, 0.3) 0%,
+    rgba(247, 242, 232, 0.2) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 10px 28px rgba(13, 43, 69, 0.06);
+  backdrop-filter: blur(22px) saturate(1.1);
+  -webkit-backdrop-filter: blur(22px) saturate(1.1);
+}
+
+.site-reveal > section .section-label {
+  color: #0a3d4d !important;
+  font-weight: 700 !important;
+  text-shadow:
+    0 1px 0 rgba(255, 252, 246, 1),
+    0 0 10px rgba(255, 252, 246, 0.9);
+}
+
+.site-reveal > section .section-title,
+.site-reveal > section .invite-greeting,
+.site-reveal > .footer .footer-names,
+.site-reveal > .footer .footer-date {
+  color: #04151f !important;
+  text-shadow:
+    0 1px 0 rgba(255, 252, 246, 1),
+    0 0 14px rgba(255, 252, 246, 0.95),
+    0 0 26px rgba(255, 252, 246, 0.8);
+}
+
+.site-reveal > section .section-subtitle,
+.site-reveal > section .invite-body,
+.site-reveal > section p,
+.site-reveal > section li,
+.site-reveal > section .timeline-text,
+.site-reveal > section .venue-copy,
+.site-reveal > section .detail-copy,
+.site-reveal > .footer .footer-note {
+  color: #0b2433 !important;
+  text-shadow:
+    0 1px 0 rgba(255, 252, 246, 0.95),
+    0 0 12px rgba(255, 252, 246, 0.8);
+}
+
+#gallery > .container {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 252, 246, 0.32) 0%,
+    rgba(236, 244, 246, 0.22) 100%
+  );
+}
+
+.rsvp-form,
+.rsvp-guide {
+  background-color: rgba(255, 252, 246, 0.34) !important;
+  color: #04151f !important;
+  backdrop-filter: blur(20px) saturate(1.08);
+  -webkit-backdrop-filter: blur(20px) saturate(1.08);
+}
+
+#rsvp > .container {
+  border-radius: 1.5rem;
+  max-width: 40rem !important;
+  padding: 1.65rem 1.45rem 1.85rem !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 253, 248, 0.34) 0%,
+    rgba(244, 248, 247, 0.24) 100%
+  ) !important;
+  border: 1px solid rgba(30, 90, 110, 0.36) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 0 0 1px rgba(255, 252, 246, 0.35),
+    0 18px 42px rgba(13, 43, 69, 0.1) !important;
+  backdrop-filter: blur(22px) saturate(1.1);
+  -webkit-backdrop-filter: blur(22px) saturate(1.1);
+}
+
+#rsvp .section-label {
+  color: #0a4f4f !important;
+  letter-spacing: 0.36em !important;
+  font-weight: 700 !important;
+  text-shadow:
+    0 1px 0 rgba(255, 252, 246, 1),
+    0 0 10px rgba(255, 252, 246, 0.9);
+}
+
+#rsvp .section-title {
+  color: #04151f !important;
+  font-size: clamp(1.85rem, 4.8vw, 2.55rem) !important;
+  text-shadow:
+    0 1px 0 rgba(255, 252, 246, 1),
+    0 0 14px rgba(255, 252, 246, 0.95),
+    0 0 26px rgba(255, 252, 246, 0.8);
+}
+
+#rsvp .section-subtitle,
+#rsvp .rsvp-guide,
+#rsvp .rsvp-guide-lead,
+#rsvp .rsvp-guide li,
+#rsvp .rsvp-guide-note,
+#rsvp .rsvp-guide-note a {
+  color: #0b2433 !important;
+  text-shadow: 0 1px 0 rgba(255, 252, 246, 0.95);
+}
+
+#rsvp .rsvp-guide-note a {
+  color: #0d3a4a !important;
+  font-weight: 700 !important;
+  border-bottom-color: rgba(13, 58, 74, 0.45) !important;
+}
+
+#rsvp .rsvp-guide {
+  border-radius: 1.15rem;
+  max-width: 100% !important;
+  margin-bottom: 1.65rem !important;
+  padding: 1.55rem 1.6rem 1.5rem 1.9rem !important;
+  border: 1px solid rgba(30, 90, 110, 0.34) !important;
+  background: rgba(236, 247, 246, 0.36) !important;
+  box-shadow: 0 8px 22px rgba(13, 43, 69, 0.06) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+#rsvp .rsvp-form {
+  max-width: 100% !important;
+  margin-top: 0.35rem !important;
+  padding: 2.15rem 1.75rem 2.25rem !important;
+  border: 2px solid #0d4a4a !important;
+  border-radius: 1.35rem !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(247, 251, 251, 0.42) 100%
+  ) !important;
+  background-image: none !important;
+  box-shadow:
+    0 0 0 6px rgba(42, 138, 138, 0.16),
+    0 16px 36px rgba(13, 43, 69, 0.14) !important;
+  backdrop-filter: blur(22px) saturate(1.12);
+  -webkit-backdrop-filter: blur(22px) saturate(1.12);
+}
+
+#rsvp .rsvp-form::before,
+#rsvp .rsvp-form::after {
+  content: none !important;
+  display: none !important;
+}
+
+#rsvp .name-prompt,
+#rsvp .form-label {
+  color: #04151f !important;
+  font-weight: 800 !important;
+  text-shadow: 0 1px 0 rgba(255, 252, 246, 1);
+}
+
+#rsvp .name-search input,
+#rsvp input[type="text"],
+#rsvp input[type="email"],
+#rsvp textarea,
+#rsvp select {
+  border: 1.5px solid rgba(13, 43, 69, 0.5) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: #04151f !important;
+  box-shadow: inset 0 1px 2px rgba(13, 43, 69, 0.05);
+  min-height: 3rem;
+  border-radius: 0.85rem !important;
+}
+
+#rsvp .name-search input::placeholder,
+#rsvp input::placeholder,
+#rsvp textarea::placeholder {
+  color: rgba(11, 36, 51, 0.55) !important;
+}
+
+#rsvp .name-search input:focus,
+#rsvp input:focus,
+#rsvp textarea:focus,
+#rsvp select:focus {
+  border-color: #0d4a4a !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(42, 138, 138, 0.25) !important;
+  background: #fff !important;
+}
+
+#rsvp .btn,
+#rsvp button[type="submit"],
+#rsvp .rsvp-submit {
+  background: #0d2b45 !important;
+  color: #fffef9 !important;
+  border: none !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700 !important;
+  padding: 0.95rem 1.4rem !important;
+  box-shadow: 0 10px 22px rgba(13, 43, 69, 0.22) !important;
+}
+
+.site-reveal > .footer .footer-names,
+.site-reveal > .footer .footer-date,
+.site-reveal > .footer .footer-note {
+  border-radius: 0.85rem;
+  position: relative;
+  z-index: 2;
+  max-width: 36rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0.65rem 1.1rem;
+  background: rgba(255, 252, 246, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  color: #04151f !important;
+  text-shadow:
+    0 1px 0 rgba(255, 252, 246, 1),
+    0 0 12px rgba(255, 252, 246, 0.9);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.site-reveal > .footer .footer-names { margin-top: 1rem; padding-top: 0.9rem; }
+.site-reveal > .footer .footer-note {
+  margin-bottom: 1rem;
+  padding-bottom: 0.95rem;
+  color: #0b2433 !important;
+}
+
+.site-reveal .expand-btn,
+.site-reveal .gallery-more a,
+.site-reveal .attire-more,
+.site-reveal .countdown-label,
+.site-reveal .timing-label,
+.site-reveal .detail-label,
+.site-reveal .story-expand-btn,
+.site-reveal .entourage-expand-btn {
+  color: #0a3d4d !important;
+  text-shadow: 0 1px 0 rgba(255, 252, 246, 0.95);
+}
+
+@media (max-width: 720px) {
+  .site-reveal > section > .container,
+  .site-reveal > .footer > .container {
+    padding: 1.15rem 1rem 1.35rem;
+    max-width: 100%;
+  }
+
+  .hero-content {
+    padding: 1rem 0.95rem 1.1rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collage-flow__canvas {
+    transform: none !important;
+  }
+}

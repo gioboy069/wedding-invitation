@@ -8,8 +8,8 @@
   --mv-shadow-card: 0 22px 48px rgba(13, 43, 69, 0.09);
   --mv-line: rgba(30, 90, 110, 0.14);
   --mv-line-strong: rgba(30, 90, 110, 0.22);
-  --mv-cream: rgba(255, 255, 255, 0.62);
-  --mv-paper: #fafcfc;
+  --mv-cream: rgba(165, 184, 192, 0.92);
+  --mv-paper: #adc4ca;
 }
 
 /* ── Global: cleaner modern type, vintage serif accents ── */
@@ -142,18 +142,19 @@
   border-color: var(--seafoam);
 }
 
-/* Form card — modern rounded paper, vintage texture */
+/* Form card — rough torn paper sheet, coastal motif */
 .rsvp-form {
   max-width: 520px !important;
-  margin: 0 auto !important;
+  margin: 2.5rem auto 0 !important;
   padding: 2.35rem 1.85rem 2.15rem !important;
-  border-radius: var(--mv-radius-lg) !important;
+  border-radius: 0 0 var(--mv-radius-lg) var(--mv-radius-lg) !important;
   border: 1px solid var(--mv-line) !important;
+  border-top: 0 !important;
   background-color: var(--mv-paper) !important;
   background-image:
     var(--paper-sheet-bg),
     linear-gradient(165deg, rgba(255, 255, 255, 0.88) 0%, rgba(247, 251, 251, 0.98) 100%) !important;
-  background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100% !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 120px 120px, 120px 120px, 100% 100% !important;
   box-shadow:
     var(--mv-shadow-card),
     inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
@@ -161,40 +162,66 @@
   position: relative;
 }
 
-/* Replace ribbon clip + harsh tear with soft vintage top rule */
+/* Photo-matched shallow torn edge — same family as coastal sheets */
 .rsvp-form::before {
   content: "" !important;
   position: absolute !important;
-  left: 12% !important;
-  right: 12% !important;
-  width: auto !important;
-  height: 1px !important;
-  top: 0 !important;
+  left: -3% !important;
+  right: auto !important;
+  width: 106% !important;
+  height: 48px !important;
+  top: -42px !important;
   transform: none !important;
   border-radius: 0 !important;
   background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(107, 167, 160, 0.55) 20%,
-    rgba(30, 90, 110, 0.35) 50%,
-    rgba(107, 167, 160, 0.55) 80%,
-    transparent
+    to bottom,
+    color-mix(in srgb, #adc4ca 72%, #a0bcc4) 0%,
+    color-mix(in srgb, #adc4ca 92%, #a0bcc4) 42%,
+    #adc4ca 100%
   ) !important;
-  -webkit-mask: none !important;
-  mask: none !important;
-  filter: none !important;
+  -webkit-mask:
+    linear-gradient(to bottom, transparent 0%, #000 8%, #000 100%),
+    url("/css/torn-edge-hand-c.svg") center / 100% 100% no-repeat !important;
+  mask:
+    linear-gradient(to bottom, transparent 0%, #000 4%, #000 100%),
+    url("/css/torn-edge-hand-c.svg") center / 100% 100% no-repeat !important;
+  -webkit-mask-composite: source-in !important;
+  mask-composite: intersect !important;
+  filter: blur(0.15px) drop-shadow(0 5px 12px rgba(13, 43, 69, 0.12)) !important;
   pointer-events: none;
   box-shadow: none !important;
+  z-index: 1;
 }
 
 .rsvp-form::after {
   content: "";
   position: absolute;
-  inset: 10px;
-  border-radius: calc(var(--mv-radius-lg) - 6px);
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  left: -3%;
+  width: 106%;
+  height: 52px;
+  top: -46px;
+  z-index: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.65) 0%,
+    var(--paper-fiber, rgba(255, 255, 255, 0.92)) 28%,
+    var(--paper-pulp, rgba(255, 253, 246, 0.96)) 100%
+  );
+  -webkit-mask:
+    linear-gradient(to bottom, transparent 0%, #000 10%, #000 100%),
+    url("/css/torn-edge-hand-c.svg") center / 100% 100% no-repeat;
+  mask:
+    linear-gradient(to bottom, transparent 0%, #000 8%, #000 100%),
+    url("/css/torn-edge-hand-c.svg") center / 100% 100% no-repeat;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  filter:
+    blur(1.05px)
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.7))
+    drop-shadow(0 3px 6px rgba(255, 252, 246, 0.5));
+  transform: translateY(-1px);
   pointer-events: none;
-  opacity: 0.7;
+  opacity: 1;
 }
 
 .name-prompt {
@@ -512,4 +539,16 @@
   .form-submit:hover:not(:disabled) {
     transform: none !important;
   }
+}
+
+/* Continuous flow: no torn lip on RSVP card; emphasis comes from border/glow */
+.rsvp-form::before,
+.rsvp-form::after {
+  content: none !important;
+  display: none !important;
+}
+
+.rsvp-form {
+  border-top: 1px solid var(--mv-line) !important;
+  border-radius: var(--mv-radius-lg) !important;
 }

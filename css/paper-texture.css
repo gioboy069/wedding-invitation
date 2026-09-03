@@ -4,7 +4,8 @@
 
 :root {
   --paper-noise-envelope: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.35' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
-  --paper-noise-sheet: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.6' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.28'/%3E%3C/svg%3E");
+  --paper-noise-sheet: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.05' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.34'/%3E%3C/svg%3E");
+  --paper-fiber-speckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='%23c4b8a8' opacity='0.22'%3E%3Ccircle cx='12' cy='18' r='0.55'/%3E%3Ccircle cx='38' cy='8' r='0.45'/%3E%3Ccircle cx='62' cy='24' r='0.5'/%3E%3Ccircle cx='88' cy='14' r='0.4'/%3E%3Ccircle cx='22' cy='44' r='0.48'/%3E%3Ccircle cx='54' cy='36' r='0.42'/%3E%3Ccircle cx='78' cy='52' r='0.5'/%3E%3Ccircle cx='104' cy='40' r='0.38'/%3E%3Ccircle cx='16' cy='72' r='0.46'/%3E%3Ccircle cx='46' cy='66' r='0.44'/%3E%3Ccircle cx='72' cy='78' r='0.5'/%3E%3Ccircle cx='98' cy='68' r='0.42'/%3E%3Ccircle cx='30' cy='96' r='0.48'/%3E%3Ccircle cx='58' cy='88' r='0.4'/%3E%3Ccircle cx='86' cy='102' r='0.46'/%3E%3C/g%3E%3C/svg%3E");
   --paper-linen-h: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 4px);
   --paper-linen-v: repeating-linear-gradient(90deg, rgba(13, 43, 69, 0.025) 0 1px, transparent 1px 5px);
   --paper-weave-a: repeating-linear-gradient(45deg, rgba(13, 43, 69, 0.018) 0 1px, transparent 1px 6px);
@@ -13,23 +14,24 @@
     var(--paper-linen-h),
     var(--paper-linen-v),
     var(--paper-noise-envelope),
-    radial-gradient(ellipse 90% 55% at 50% 8%, rgba(255, 255, 255, 0.75), transparent 58%),
-    radial-gradient(ellipse 75% 50% at 50% 95%, rgba(107, 167, 160, 0.28), transparent 58%),
-    linear-gradient(180deg, #b7d4e6 0%, #dceef5 28%, #eef6f8 58%, #e8f4f2 78%, #6ba7a0 100%);
+    radial-gradient(ellipse 90% 55% at 50% 8%, rgba(255, 255, 255, 0.18), transparent 58%),
+    radial-gradient(ellipse 75% 50% at 50% 95%, rgba(107, 167, 160, 0.52), transparent 58%),
+    linear-gradient(180deg, #5f8498 0%, #7da4ae 28%, #a0bcc4 58%, #96b4bc 78%, #325a55 100%);
   --paper-page-bg:
     var(--paper-linen-h),
     var(--paper-linen-v),
     var(--paper-noise-envelope),
-    radial-gradient(ellipse 90% 55% at 50% 8%, rgba(255, 255, 255, 0.65), transparent 58%),
-    radial-gradient(ellipse 70% 45% at 8% 95%, rgba(107, 167, 160, 0.18), transparent 52%),
-    radial-gradient(ellipse 65% 40% at 95% 75%, rgba(30, 90, 110, 0.1), transparent 50%),
-    linear-gradient(180deg, #b7d4e6 0%, #dceef5 22%, #eef6f8 52%, #e8f4f2 78%, #6ba7a0 100%);
+    radial-gradient(ellipse 90% 55% at 50% 8%, rgba(255, 255, 255, 0.14), transparent 58%),
+    radial-gradient(ellipse 70% 45% at 8% 95%, rgba(107, 167, 160, 0.42), transparent 52%),
+    radial-gradient(ellipse 65% 40% at 95% 75%, rgba(30, 90, 110, 0.26), transparent 50%),
+    linear-gradient(180deg, #5f8498 0%, #7da4ae 22%, #a0bcc4 52%, #96b4bc 78%, #325a55 100%);
   --paper-sheet-bg:
+    var(--paper-fiber-speckle),
     var(--paper-weave-a),
     var(--paper-weave-b),
     var(--paper-noise-sheet),
-    radial-gradient(ellipse 90% 50% at 50% -8%, rgba(255, 255, 255, 0.16), transparent 62%),
-    linear-gradient(to bottom, rgba(238, 246, 248, 0.28) 0%, transparent 14%);
+    radial-gradient(ellipse 90% 50% at 50% -8%, rgba(255, 255, 255, 0.2), transparent 62%),
+    linear-gradient(to bottom, rgba(160, 188, 196, 0.46) 0%, transparent 12%);
   --paper-sheet-bg-dark:
     var(--paper-weave-a),
     var(--paper-noise-sheet),
@@ -37,16 +39,17 @@
     linear-gradient(to bottom, rgba(13, 43, 69, 0.35) 0%, transparent 16%);
   --paper-sheet-blend: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--panel, #f7fbfb) 78%, #eef6f8) 0%,
-    color-mix(in srgb, var(--panel, #f7fbfb) 92%, #eef6f8) 6%,
-    var(--panel, #f7fbfb) 18%
+    color-mix(in srgb, var(--panel, #adc4ca) 78%, #a0bcc4) 0%,
+    color-mix(in srgb, var(--panel, #adc4ca) 92%, #a0bcc4) 6%,
+    var(--panel, #adc4ca) 18%
   );
-  --paper-page-tone: #eef6f8;
-  --paper-pulp: rgba(255, 254, 248, 0.88);
+  --paper-page-tone: #a0bcc4;
+  --paper-pulp: rgba(216, 224, 218, 0.88);
+  --paper-fiber: rgba(200, 216, 220, 0.84);
 }
 
 html {
-  background: #dceef5;
+  background: var(--rumble-wash, #c5d6d4);
 }
 
 /* Linen grain overlay (replaces sand speckle) */
@@ -56,7 +59,7 @@ html::before {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.38;
+  opacity: 0.35;
   background-image:
     var(--paper-linen-h),
     var(--paper-linen-v),
@@ -82,9 +85,8 @@ html::after {
 }
 
 body {
-  background-color: #dceef5;
-  background-image: var(--paper-page-bg);
-  background-size: 100% 100%, 100% 100%, 160px 160px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  background-color: transparent;
+  background-image: none;
   background-attachment: fixed;
 }
 

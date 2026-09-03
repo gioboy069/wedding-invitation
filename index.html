@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/shared.css?v=paper-soft-blend" />
+  <link rel="stylesheet" href="/css/shared.css?v=motif-darker-4" />
   <script src="/js/shared.js?v=no-stones" defer></script>
   <style>
     :root {
@@ -17,8 +17,8 @@
       --seafoam: #6ba7a0;
       --sand: #dcc8aa;
       --sky: #b7d4e6;
-      --bg: #eef6f8;
-      --bg-alt: #dceef5;
+      --bg: #a5b8c0;
+      --bg-alt: #86a8b2;
       --sage: #6ba7a0;
       --sage-muted: #8fbbb5;
       --sage-light: #9bc4bf;
@@ -291,7 +291,7 @@
         radial-gradient(ellipse 90% 55% at 50% 8%, rgba(255, 255, 255, 0.55), transparent 55%),
         radial-gradient(ellipse 70% 45% at 50% 100%, rgba(107, 167, 160, 0.28), transparent 58%),
         radial-gradient(ellipse 50% 35% at 15% 85%, rgba(220, 200, 170, 0.35), transparent 55%),
-        linear-gradient(180deg, #b7d4e6 0%, #dceef5 25%, #eef6f8 55%, #e8dfd0 82%, #dcc8aa 100%);
+        linear-gradient(180deg, #5f8498 0%, #7da4ae 25%, #a0bcc4 55%, #9a9088 82%, #dcc8aa 100%);
       z-index: 0;
     }
 
@@ -2695,7 +2695,7 @@
       border-radius: 4px;
       z-index: 3;
       overflow: hidden;
-      background: linear-gradient(180deg, #dceef5 0%, #b7d4e6 45%, #dcc8aa 100%);
+      background: linear-gradient(180deg, #7da4ae 0%, #638a9f 45%, #dcc8aa 100%);
       /* Closed: a rectangle. Open: a V-cut so the pocket has a triangular mouth. */
       clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0, 50% 0);
       transition: clip-path var(--intro-flap) var(--intro-ease);
@@ -2721,7 +2721,7 @@
     .env-flap-face {
       position: absolute;
       inset: 0;
-      background: linear-gradient(175deg, #eef6f8 0%, #b7d4e6 40%, #6ba7a0 100%);
+      background: linear-gradient(175deg, #a0bcc4 0%, #638a9f 40%, #325a55 100%);
       clip-path: polygon(0 0, 100% 0, 50% 100%);
       z-index: 1;
       filter: drop-shadow(0 2px 4px rgba(13, 43, 69, 0.1));
@@ -2917,10 +2917,19 @@
       visibility: visible;
     }
   </style>
-  <link rel="stylesheet" href="/css/coastal.css?v=torn-natural" />
-  <link rel="stylesheet" href="/css/modern-vintage.css?v=1" />
+  <link rel="stylesheet" href="/css/coastal.css?v=no-seams-2" />
+  <link rel="stylesheet" href="/css/modern-vintage.css?v=12" />
+  <link rel="stylesheet" href="/css/collage-rumble.css?v=15" />
 </head>
 <body class="intro-locked">
+
+  <div class="collage-rumble" id="collageRumble" aria-hidden="true">
+    <div class="collage-rumble__photo"></div>
+    <div class="collage-rumble__layer collage-rumble__layer--top"></div>
+    <div class="collage-rumble__layer collage-rumble__layer--mid"></div>
+    <div class="collage-rumble__layer collage-rumble__layer--low"></div>
+    <div class="collage-rumble__veil"></div>
+  </div>
 
   <!-- Envelope intro -->
   <div class="envelope-intro" id="envelopeIntro" aria-hidden="false">
@@ -2975,6 +2984,10 @@
   <div class="nav-overlay" id="navOverlay"></div>
 
   <div class="site-reveal" id="siteReveal">
+  <div class="collage-flow" aria-hidden="true">
+    <div class="collage-flow__canvas"></div>
+    <div class="collage-flow__tint"></div>
+  </div>
 
   <!-- Hero -->
   <header class="hero" id="hero">
@@ -3528,20 +3541,6 @@
   </section>
 
   <!-- Footer -->
-  <footer class="footer">
-    <div class="envelope-pocket">
-      <div class="envelope-pocket-body">
-        <div class="footer-card">
-          <img id="footerPolaroid" src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80" alt="Gio Anthony and Augiela Shane" />
-          <span class="wax-seal" id="footerSeal">G&amp;A</span>
-        </div>
-      </div>
-    </div>
-    <p class="footer-names" id="footerNames">Gio Anthony & Augiela Shane</p>
-    <p class="footer-date" id="footerDate">February 18, 2027</p>
-    <p class="footer-note" id="footerQuote">"And now these three remain: faith, hope, and love. But the greatest of these is love."</p>
-  </footer>
-
   </div><!-- /.site-reveal -->
 
   <div class="attire-lightbox" id="attireLightbox" role="dialog" aria-modal="true" aria-labelledby="attireLightboxLabel" hidden>
@@ -3825,18 +3824,130 @@
         bar.className = "scroll-progress";
         bar.setAttribute("aria-hidden", "true");
         document.body.appendChild(bar);
+        var root = document.documentElement;
         var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         if (reduce) {
           bar.style.display = "none";
-          return;
         }
+
+        function hexToRgb(hex) {
+          var h = hex.replace("#", "");
+          if (h.length === 3) {
+            h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+          }
+          return {
+            r: parseInt(h.slice(0, 2), 16),
+            g: parseInt(h.slice(2, 4), 16),
+            b: parseInt(h.slice(4, 6), 16)
+          };
+        }
+
+        function rgbToHex(c) {
+          function ch(n) {
+            var s = Math.max(0, Math.min(255, Math.round(n))).toString(16);
+            return s.length === 1 ? "0" + s : s;
+          }
+          return "#" + ch(c.r) + ch(c.g) + ch(c.b);
+        }
+
+        function mix(a, b, t) {
+          return {
+            r: a.r + (b.r - a.r) * t,
+            g: a.g + (b.g - a.g) * t,
+            b: a.b + (b.b - a.b) * t
+          };
+        }
+
+        function mixStops(stops, t) {
+          if (t <= 0) return stops[0].c;
+          if (t >= 1) return stops[stops.length - 1].c;
+          for (var i = 0; i < stops.length - 1; i++) {
+            var a = stops[i];
+            var b = stops[i + 1];
+            if (t >= a.t && t <= b.t) {
+              var local = (t - a.t) / Math.max(0.0001, b.t - a.t);
+              return mix(a.c, b.c, local);
+            }
+          }
+          return stops[stops.length - 1].c;
+        }
+
+        var ivory = [
+          { t: 0, c: hexToRgb("#f3eee4") },
+          { t: 0.35, c: hexToRgb("#efe6d8") },
+          { t: 0.65, c: hexToRgb("#e4ddd2") },
+          { t: 1, c: hexToRgb("#d9d2c6") }
+        ];
+        var teal = [
+          { t: 0, c: hexToRgb("#2a8a8a") },
+          { t: 0.35, c: hexToRgb("#3a9a96") },
+          { t: 0.65, c: hexToRgb("#1e6e78") },
+          { t: 1, c: hexToRgb("#0d2b45") }
+        ];
+        var sage = [
+          { t: 0, c: hexToRgb("#8fa88a") },
+          { t: 0.35, c: hexToRgb("#7eb09a") },
+          { t: 0.65, c: hexToRgb("#6ba7a0") },
+          { t: 1, c: hexToRgb("#4f7f78") }
+        ];
+        var wash = [
+          { t: 0, c: hexToRgb("#c5d6d4") },
+          { t: 0.35, c: hexToRgb("#b7d0cb") },
+          { t: 0.65, c: hexToRgb("#8fb0b4") },
+          { t: 1, c: hexToRgb("#5f8498") }
+        ];
+        var sheet = [
+          { t: 0, c: hexToRgb("#d7e0db") },
+          { t: 0.35, c: hexToRgb("#c9d8d5") },
+          { t: 0.65, c: hexToRgb("#adc4ca") },
+          { t: 1, c: hexToRgb("#8eacb4") }
+        ];
+        var deep = [
+          { t: 0, c: hexToRgb("#1e5a6e") },
+          { t: 0.45, c: hexToRgb("#174a5c") },
+          { t: 1, c: hexToRgb("#0d2b45") }
+        ];
+
+        var ticking = false;
         function updateProgress() {
           var y = window.scrollY || document.documentElement.scrollTop || 0;
           var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-          bar.style.transform = "scaleX(" + Math.min(1, y / max) + ")";
+          var t = Math.min(1, Math.max(0, y / max));
+          if (!reduce) {
+            bar.style.transform = "scaleX(" + t + ")";
+          }
+
+          root.style.setProperty("--rumble-t", String(t.toFixed(4)));
+          root.style.setProperty("--rumble-ivory", rgbToHex(mixStops(ivory, t)));
+          root.style.setProperty("--rumble-teal", rgbToHex(mixStops(teal, t)));
+          root.style.setProperty("--rumble-sage", rgbToHex(mixStops(sage, t)));
+          root.style.setProperty("--rumble-wash", rgbToHex(mixStops(wash, t)));
+          root.style.setProperty("--rumble-sheet", rgbToHex(mixStops(sheet, t)));
+          root.style.setProperty("--rumble-deep", rgbToHex(mixStops(deep, t)));
+
+          if (!reduce) {
+            var wave = t * Math.PI * 2;
+            var x = Math.sin(wave * 3.1) * 10 + Math.sin(wave * 7.2) * 3;
+            var yy = Math.cos(wave * 2.4) * 8 + Math.sin(wave * 5.5) * 2.5;
+            var rot = Math.sin(wave * 2.1) * 0.55;
+            root.style.setProperty("--rumble-x", x.toFixed(2) + "px");
+            root.style.setProperty("--rumble-y", yy.toFixed(2) + "px");
+            root.style.setProperty("--rumble-rot", rot.toFixed(3) + "deg");
+            root.style.setProperty("--rumble-shift", (t * -4).toFixed(2) + "%");
+          }
+
+          document.body.style.backgroundColor = rgbToHex(mixStops(wash, t));
+          ticking = false;
         }
-        window.addEventListener("scroll", updateProgress, { passive: true });
-        window.addEventListener("resize", updateProgress);
+
+        function onScroll() {
+          if (ticking) return;
+          ticking = true;
+          window.requestAnimationFrame(updateProgress);
+        }
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll);
         updateProgress();
       })();
 
@@ -4118,14 +4229,19 @@
         if (detailsDeadline && c.rsvpDeadline) detailsDeadline.textContent = c.rsvpDeadline;
         document.getElementById("storyTitle").textContent = c.storyTitle || "";
         document.getElementById("storySubtitle").textContent = c.storySubtitle || "";
-        document.getElementById("footerNames").textContent = (c.groom || "") + " & " + (c.bride || "");
+        var footerNames = document.getElementById("footerNames");
+        var footerDate = document.getElementById("footerDate");
+        var footerQuote = document.getElementById("footerQuote");
+        if (footerNames) footerNames.textContent = (c.groom || "") + " & " + (c.bride || "");
         const footerD = c.weddingDate ? new Date(c.weddingDate) : null;
-        document.getElementById("footerDate").textContent = c.weddingDateDisplay || (
-          footerD && !isNaN(footerD.getTime())
-            ? footerD.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" })
-            : ""
-        );
-        document.getElementById("footerQuote").textContent = c.footerQuote || "";
+        if (footerDate) {
+          footerDate.textContent = c.weddingDateDisplay || (
+            footerD && !isNaN(footerD.getTime())
+              ? footerD.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" })
+              : ""
+          );
+        }
+        if (footerQuote) footerQuote.textContent = c.footerQuote || "";
         const attire = document.getElementById("attireSummary");
         if (attire && c.attireSummary) attire.textContent = c.attireSummary;
 
