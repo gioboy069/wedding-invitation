@@ -59,7 +59,7 @@
   position: absolute;
   inset: 0;
   background:
-    url("/img/bg/torn-stitched-scroll.webp") center top / 100% 100% no-repeat;
+    url("/img/design-options/torn-stitched-scroll.webp") center top / 100% 100% no-repeat;
   transform: translate3d(var(--rumble-x), var(--rumble-y), 0) rotate(var(--rumble-rot));
   will-change: transform;
 }
@@ -94,7 +94,7 @@
   inset: 0 !important;
   z-index: 1000 !important;
   background-color: #f3eee4 !important;
-  background-image: url("/img/bg/torn-stitched-scroll.webp") !important;
+  background-image: url("/img/design-options/torn-stitched-scroll.webp") !important;
   background-size: cover !important;
   background-position: center top !important;
   background-repeat: no-repeat !important;

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Torn-paper backgrounds — choose one</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0d2b45;
+      --muted: #355064;
+      --teal: #1e5a6e;
+      --seafoam: #6ba7a0;
+      --font-serif: "Cormorant Garamond", Georgia, serif;
+      --font-sans: "Source Sans 3", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      color: var(--ink);
+      background: #f3eee6;
+    }
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 2rem 1.15rem 5rem;
+    }
+    .head { text-align: center; margin-bottom: 1.75rem; }
+    .head .kicker {
+      margin: 0 0 0.5rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--teal);
+    }
+    .head h1 {
+      margin: 0 0 0.7rem;
+      font-family: var(--font-serif);
+      font-weight: 500;
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+    }
+    .head .lead {
+      margin: 0 auto;
+      max-width: 38rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .grid { display: grid; gap: 1.5rem; }
+    .card {
+      background: #fffefb;
+      border: 1px solid rgba(13, 43, 69, 0.1);
+      border-radius: 1.2rem;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(13, 43, 69, 0.07);
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.8rem 1rem;
+      padding: 1.05rem 1.2rem;
+      border-bottom: 1px solid rgba(13, 43, 69, 0.08);
+    }
+    .meta h2 {
+      margin: 0 0 0.25rem;
+      font-family: var(--font-serif);
+      font-weight: 500;
+      font-size: 1.4rem;
+    }
+    .badge {
+      display: inline-flex;
+      width: 1.55rem;
+      height: 1.55rem;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-right: 0.35rem;
+    }
+    .meta p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+      max-width: 34rem;
+    }
+    .pick {
+      border: 0;
+      background: var(--teal);
+      color: #fffef9;
+      font: 700 0.74rem/1 var(--font-sans);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.8rem 1.1rem;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .pick:hover { background: var(--ink); }
+    .pick.selected {
+      background: #2a8a8a;
+      box-shadow: 0 0 0 3px rgba(42, 138, 138, 0.22);
+    }
+    .preview {
+      position: relative;
+      min-height: clamp(260px, 48vw, 420px);
+      background: #e8ece8 center / cover no-repeat;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem 1rem;
+    }
+    .preview::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: inherit;
+      background-size: cover;
+      background-position: center;
+    }
+    .readable {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 28rem);
+      text-align: center;
+      padding: 1.25rem 1.3rem 1.35rem;
+      border-radius: 1.1rem;
+      background: rgba(255, 252, 246, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 10px 28px rgba(13, 43, 69, 0.08);
+      backdrop-filter: blur(8px);
+    }
+    .readable .label {
+      margin: 0 0 0.45rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--teal);
+    }
+    .readable .names {
+      margin: 0 0 0.4rem;
+      font-family: var(--font-serif);
+      font-weight: 500;
+      font-size: clamp(1.55rem, 4vw, 2.15rem);
+      line-height: 1.12;
+      color: var(--ink);
+    }
+    .readable .date {
+      margin: 0 0 0.65rem;
+      font-size: 0.9rem;
+      color: #243c4d;
+    }
+    .readable .body {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 1.02rem;
+      line-height: 1.5;
+      color: #2a4458;
+    }
+    .note {
+      text-align: center;
+      margin-top: 1.75rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .banner {
+      position: sticky;
+      bottom: 0;
+      display: none;
+      text-align: center;
+      padding: 0.9rem 1rem;
+      background: rgba(255, 252, 246, 0.96);
+      border-top: 1px solid rgba(13, 43, 69, 0.1);
+      backdrop-filter: blur(10px);
+    }
+    .banner.show { display: block; }
+    .banner strong { color: var(--teal); }
+
+    .p-a { background-image: url("/img/design-options/torn-a-single-edge.webp"); }
+    .p-b { background-image: url("/img/design-options/torn-b-side-rails.webp"); }
+    .p-c { background-image: url("/img/design-options/torn-c-soft-frame.webp"); }
+    .p-d { background-image: url("/img/design-options/torn-d-bottom-band.webp"); }
+    .p-e { background-image: url("/img/design-options/torn-e-two-sheet.webp"); }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <p class="kicker">Same motif · quieter torn paper</p>
+      <h1>5 minimalist torn-paper backgrounds</h1>
+      <p class="lead">
+        Coastal ivory, teal, and seafoam — still hand-torn, but much less crowded,
+        with a clear open center so every line of text stays readable.
+        Choose one and I’ll apply it across the invitation.
+      </p>
+    </header>
+
+    <div class="grid">
+      <article class="card" data-option="A" data-name="Single Top Edge">
+        <div class="meta">
+          <div>
+            <h2><span class="badge">A</span> Single Top Edge</h2>
+            <p>One soft torn strip at the top. Wide open ivory center — the quietest option.</p>
+          </div>
+          <button type="button" class="pick" data-pick="A">Choose A</button>
+        </div>
+        <div class="preview p-a">
+          <div class="readable">
+            <p class="label">Together with their families</p>
+            <h3 class="names">Gio Anthony &amp; Augiela Shane</h3>
+            <p class="date">February 18, 2027 · San Luis, Tarlac City</p>
+            <p class="body">With joyful hearts we invite you to celebrate as we begin our life together.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-option="B" data-name="Side Rails">
+        <div class="meta">
+          <div>
+            <h2><span class="badge">B</span> Side Rails</h2>
+            <p>Thin torn edges only on the left and right. Open vertical lane for content.</p>
+          </div>
+          <button type="button" class="pick" data-pick="B">Choose B</button>
+        </div>
+        <div class="preview p-b">
+          <div class="readable">
+            <p class="label">Together with their families</p>
+            <h3 class="names">Gio Anthony &amp; Augiela Shane</h3>
+            <p class="date">February 18, 2027 · San Luis, Tarlac City</p>
+            <p class="body">With joyful hearts we invite you to celebrate as we begin our life together.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-option="C" data-name="Soft Frame">
+        <div class="meta">
+          <div>
+            <h2><span class="badge">C</span> Soft Frame</h2>
+            <p>A light deckled border around the page, pale teal wash, empty interior.</p>
+          </div>
+          <button type="button" class="pick" data-pick="C">Choose C</button>
+        </div>
+        <div class="preview p-c">
+          <div class="readable">
+            <p class="label">Together with their families</p>
+            <h3 class="names">Gio Anthony &amp; Augiela Shane</h3>
+            <p class="date">February 18, 2027 · San Luis, Tarlac City</p>
+            <p class="body">With joyful hearts we invite you to celebrate as we begin our life together.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-option="D" data-name="Bottom Band">
+        <div class="meta">
+          <div>
+            <h2><span class="badge">D</span> Bottom Band</h2>
+            <p>Clean cream above, one muted teal torn band below. Strong hierarchy for text first.</p>
+          </div>
+          <button type="button" class="pick" data-pick="D">Choose D</button>
+        </div>
+        <div class="preview p-d">
+          <div class="readable">
+            <p class="label">Together with their families</p>
+            <h3 class="names">Gio Anthony &amp; Augiela Shane</h3>
+            <p class="date">February 18, 2027 · San Luis, Tarlac City</p>
+            <p class="body">With joyful hearts we invite you to celebrate as we begin our life together.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-option="E" data-name="Two Soft Sheets">
+        <div class="meta">
+          <div>
+            <h2><span class="badge">E</span> Two Soft Sheets</h2>
+            <p>Just two light overlapping sheets with breathing room — torn paper, not a collage pile.</p>
+          </div>
+          <button type="button" class="pick" data-pick="E">Choose E</button>
+        </div>
+        <div class="preview p-e">
+          <div class="readable">
+            <p class="label">Together with their families</p>
+            <h3 class="names">Gio Anthony &amp; Augiela Shane</h3>
+            <p class="date">February 18, 2027 · San Luis, Tarlac City</p>
+            <p class="body">With joyful hearts we invite you to celebrate as we begin our life together.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="note">Reply with <strong>A, B, C, D, or E</strong> and I’ll apply that background to the full website.</p>
+  </main>
+
+  <div class="banner" id="banner" aria-live="polite"></div>
+  <script>
+    var banner = document.getElementById("banner");
+    document.querySelectorAll(".pick").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll(".pick").forEach(function (b) {
+          b.classList.remove("selected");
+          b.textContent = "Choose " + b.getAttribute("data-pick");
+        });
+        btn.classList.add("selected");
+        var letter = btn.getAttribute("data-pick");
+        btn.textContent = "Selected " + letter;
+        var card = btn.closest(".card");
+        banner.classList.add("show");
+        banner.innerHTML = "Selected <strong>Option " + letter + " — " + card.getAttribute("data-name") + "</strong>. Tell me this letter in chat to apply it.";
+        try { localStorage.setItem("torn-min-choice", letter); } catch (e) {}
+      });
+    });
+  </script>
+</body>
+</html>
