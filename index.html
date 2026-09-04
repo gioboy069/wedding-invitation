@@ -1876,6 +1876,11 @@
       overflow-y: auto;
     }
 
+    /* When portaled to body (open state), keep above glass panels / frame */
+    body > .name-search-results {
+      z-index: 1200;
+    }
+
     .name-search-results[hidden] {
       display: none;
     }
@@ -2919,7 +2924,7 @@
   </style>
   <link rel="stylesheet" href="/css/coastal.css?v=stitched-bg-1" />
   <link rel="stylesheet" href="/css/modern-vintage.css?v=12" />
-  <link rel="stylesheet" href="/css/collage-rumble.css?v=19" />
+  <link rel="stylesheet" href="/css/collage-rumble.css?v=20" />
 </head>
 <body class="intro-locked">
 
@@ -4591,6 +4596,13 @@
         guestNameResults.style.bottom = "";
         guestNameResults.style.width = "";
         guestNameResults.style.maxHeight = "";
+        guestNameResults.style.zIndex = "";
+        /* Keep listbox in the search field for accessibility when closed */
+        var host = document.getElementById("nameSearch");
+        var input = document.getElementById("guestNameSearch");
+        if (host && input && guestNameResults.parentElement !== host) {
+          host.insertBefore(guestNameResults, input.nextSibling);
+        }
         guestNameSearch.setAttribute("aria-expanded", "false");
         guestNameSearch.removeAttribute("aria-activedescendant");
         activeOption = -1;
@@ -4599,18 +4611,28 @@
 
       function placeNameResults() {
         if (guestNameResults.hidden) return;
+        /*
+          Glass panels use backdrop-filter, which creates a containing block for
+          position:fixed. Viewport coords from getBoundingClientRect then place the
+          list far from the input. Mount on body so fixed is truly viewport-relative.
+        */
+        if (guestNameResults.parentElement !== document.body) {
+          document.body.appendChild(guestNameResults);
+        }
         var inputRect = guestNameSearch.getBoundingClientRect();
-        var framePad = 56;
+        var framePad = 24;
         var gap = 6;
         var spaceBelow = window.innerHeight - inputRect.bottom - framePad;
         var spaceAbove = inputRect.top - framePad;
-        var openUp = spaceBelow < 168 && spaceAbove > spaceBelow;
+        /* Prefer below the field; only flip up when below space is too tight */
+        var openUp = spaceBelow < 132 && spaceAbove > spaceBelow + 24;
         var maxH = Math.max(120, Math.min(256, (openUp ? spaceAbove : spaceBelow) - gap));
         guestNameResults.style.position = "fixed";
         guestNameResults.style.left = Math.round(inputRect.left) + "px";
         guestNameResults.style.width = Math.round(inputRect.width) + "px";
         guestNameResults.style.right = "auto";
         guestNameResults.style.maxHeight = Math.round(maxH) + "px";
+        guestNameResults.style.zIndex = "1200";
         if (openUp) {
           guestNameResults.style.top = "auto";
           guestNameResults.style.bottom = Math.round(window.innerHeight - inputRect.top + gap) + "px";
