@@ -59,7 +59,7 @@
   position: absolute;
   inset: 0;
   background:
-    url("/img/collage/continuous-flow.webp") center top / 100% 100% no-repeat;
+    url("/img/design-options/torn-stitched-scroll.webp") center top / 100% 100% no-repeat;
   transform: translate3d(var(--rumble-x), var(--rumble-y), 0) rotate(var(--rumble-rot));
   will-change: transform;
 }
@@ -67,15 +67,16 @@
 .collage-flow__tint {
   position: absolute;
   inset: 0;
+  /* Very light wash only — keep stitched torn paper readable and quiet */
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--rumble-ivory) 28%, transparent) 0%,
-    color-mix(in srgb, var(--rumble-teal) 10%, transparent) 40%,
-    color-mix(in srgb, var(--rumble-sage) 14%, transparent) 70%,
-    color-mix(in srgb, var(--rumble-deep) 22%, transparent) 100%
+    color-mix(in srgb, var(--rumble-ivory) 12%, transparent) 0%,
+    transparent 35%,
+    color-mix(in srgb, var(--rumble-sage) 6%, transparent) 100%
   );
-  mix-blend-mode: soft-light;
-  opacity: 0.85;
+  mix-blend-mode: normal;
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 .site-reveal > .hero,
@@ -86,11 +87,17 @@
 }
 
 /* Keep site content above the fixed wash.
-   Envelope stays a full-screen fixed overlay above everything. */
+   Envelope stays a full-screen fixed overlay above everything.
+   Backdrop uses stitched torn scroll; envelope piece colors stay unchanged. */
 .envelope-intro {
   position: fixed !important;
   inset: 0 !important;
   z-index: 1000 !important;
+  background-color: #f3eee4 !important;
+  background-image: url("/img/design-options/torn-stitched-scroll.webp") !important;
+  background-size: cover !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
 }
 
 .nav,
@@ -103,32 +110,16 @@
 .nav { z-index: 300; }
 .scroll-progress { z-index: 400; }
 
-/* Envelope keeps collage world */
-.envelope-intro {
-  background-color: var(--rumble-wash, #c5d6d4) !important;
-  background-image:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--rumble-ivory, #f3eee4) 45%, transparent) 0%,
-      transparent 32%,
-      color-mix(in srgb, var(--rumble-teal, #2a8a8a) 22%, transparent) 62%,
-      color-mix(in srgb, var(--rumble-sage, #8fa88a) 30%, transparent) 100%
-    ),
-    url("/img/collage/continuous-flow.webp") !important;
-  background-size: cover !important;
-  background-position: center top !important;
-  background-repeat: no-repeat !important;
-}
-
 .envelope-intro::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
+  /* Soft ivory veil for depth only — does not recolor the envelope itself */
   background: radial-gradient(
-    ellipse 70% 50% at 50% 40%,
-    color-mix(in srgb, var(--rumble-ivory, #f3eee4) 28%, transparent),
+    ellipse 70% 50% at 50% 42%,
+    rgba(255, 252, 246, 0.22),
     transparent 72%
   );
 }
@@ -141,52 +132,8 @@
 
 .envelope-scene { z-index: 2; }
 
-.env-back {
-  background:
-    linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--rumble-sage, #8fa88a) 55%, var(--rumble-teal, #2a8a8a)) 0%,
-      color-mix(in srgb, var(--rumble-teal, #2a8a8a) 70%, var(--rumble-deep, #1e5a6e)) 100%
-    ) !important;
-  box-shadow: inset 0 0 0 1px rgba(255, 252, 246, 0.18);
-}
-
-.env-front {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--rumble-sheet, #d7e0db) 55%, var(--rumble-ivory, #f3eee4)) 0%,
-    color-mix(in srgb, var(--rumble-teal, #2a8a8a) 45%, var(--rumble-sage, #8fa88a)) 52%,
-    color-mix(in srgb, var(--rumble-deep, #1e5a6e) 60%, var(--rumble-teal, #2a8a8a)) 100%
-  ) !important;
-}
-
-.env-flap-face {
-  background: linear-gradient(
-    175deg,
-    color-mix(in srgb, var(--rumble-ivory, #f3eee4) 35%, var(--rumble-sheet, #d7e0db)) 0%,
-    color-mix(in srgb, var(--rumble-teal, #2a8a8a) 50%, var(--rumble-sage, #8fa88a)) 55%,
-    color-mix(in srgb, var(--rumble-sage, #8fa88a) 40%, var(--rumble-deep, #1e5a6e)) 100%
-  ) !important;
-}
-
-.env-card {
-  background-color: color-mix(
-    in srgb,
-    var(--rumble-ivory, #f3eee4) 88%,
-    var(--rumble-sheet, #d7e0db)
-  ) !important;
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--rumble-ivory, #f3eee4) 70%, transparent),
-    transparent 40%
-  ) !important;
-}
-
-.env-flap-kicker,
-.env-flap-names,
-.envelope-hint {
-  color: color-mix(in srgb, var(--rumble-deep, #1e5a6e) 75%, #0d2b45) !important;
-}
+/* Envelope piece colors stay with the original coastal palette
+   (defined in index.html). Only the intro backdrop above changes. */
 
 /* Sheets are translucent so the continuous collage flows through */
 .site-reveal > .hero,
@@ -216,6 +163,37 @@
   display: none !important;
 }
 
+/* Readable type system over the stitched torn background */
+.envelope-intro .env-flap-kicker {
+  color: #04151f !important;
+  font-weight: 700 !important;
+  text-shadow:
+    0 1px 0 rgba(255, 252, 246, 0.95),
+    0 0 10px rgba(255, 252, 246, 0.75);
+}
+
+.envelope-intro .env-flap-names {
+  color: #04151f !important;
+  font-weight: 500 !important;
+  text-shadow:
+    0 1px 0 rgba(255, 252, 246, 0.98),
+    0 0 12px rgba(255, 252, 246, 0.85);
+}
+
+.envelope-intro .envelope-hint {
+  color: #0d2b45 !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.32em !important;
+  opacity: 1 !important;
+  text-shadow: 0 1px 0 rgba(255, 252, 246, 1);
+}
+
+.envelope-intro .envelope-hint::after {
+  background: linear-gradient(to bottom, #0d2b45, transparent) !important;
+  opacity: 0.7;
+}
+
 .hero-content {
   border-radius: 1.25rem;
   position: relative;
@@ -225,13 +203,13 @@
   padding: 1.1rem 1.2rem 1.2rem !important;
   background: linear-gradient(
     180deg,
-    rgba(255, 252, 246, 0.3) 0%,
-    rgba(247, 242, 232, 0.2) 100%
+    rgba(255, 253, 248, 0.88) 0%,
+    rgba(247, 242, 232, 0.82) 100%
   );
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.72);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.5) inset,
-    0 10px 28px rgba(13, 43, 69, 0.06);
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 12px 30px rgba(13, 43, 69, 0.08);
   backdrop-filter: blur(18px) saturate(1.05);
   -webkit-backdrop-filter: blur(18px) saturate(1.05);
 }
@@ -272,13 +250,13 @@
   color: #04151f;
   background: linear-gradient(
     180deg,
-    rgba(255, 252, 246, 0.3) 0%,
-    rgba(247, 242, 232, 0.2) 100%
+    rgba(255, 253, 248, 0.9) 0%,
+    rgba(247, 242, 232, 0.86) 100%
   );
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.78);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.55) inset,
-    0 10px 28px rgba(13, 43, 69, 0.06);
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 12px 32px rgba(13, 43, 69, 0.09);
   backdrop-filter: blur(22px) saturate(1.1);
   -webkit-backdrop-filter: blur(22px) saturate(1.1);
 }
@@ -319,14 +297,14 @@
 #gallery > .container {
   background: linear-gradient(
     180deg,
-    rgba(255, 252, 246, 0.32) 0%,
-    rgba(236, 244, 246, 0.22) 100%
+    rgba(255, 253, 248, 0.9) 0%,
+    rgba(236, 244, 246, 0.86) 100%
   );
 }
 
 .rsvp-form,
 .rsvp-guide {
-  background-color: rgba(255, 252, 246, 0.34) !important;
+  background-color: rgba(255, 252, 246, 0.92) !important;
   color: #04151f !important;
   backdrop-filter: blur(20px) saturate(1.08);
   -webkit-backdrop-filter: blur(20px) saturate(1.08);
@@ -338,8 +316,8 @@
   padding: 1.65rem 1.45rem 1.85rem !important;
   background: linear-gradient(
     180deg,
-    rgba(255, 253, 248, 0.34) 0%,
-    rgba(244, 248, 247, 0.24) 100%
+    rgba(255, 253, 248, 0.94) 0%,
+    rgba(244, 248, 247, 0.9) 100%
   ) !important;
   border: 1px solid rgba(30, 90, 110, 0.36) !important;
   box-shadow:
@@ -390,10 +368,15 @@
   margin-bottom: 1.65rem !important;
   padding: 1.55rem 1.6rem 1.5rem 1.9rem !important;
   border: 1px solid rgba(30, 90, 110, 0.34) !important;
-  background: rgba(236, 247, 246, 0.36) !important;
+  background: rgba(255, 252, 246, 0.94) !important;
   box-shadow: 0 8px 22px rgba(13, 43, 69, 0.06) !important;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+}
+
+#rsvp .rsvp-guide li::marker {
+  color: #0d2b45 !important;
+  font-weight: 700 !important;
 }
 
 #rsvp .rsvp-form {
@@ -404,8 +387,8 @@
   border-radius: 1.35rem !important;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.55) 0%,
-    rgba(247, 251, 251, 0.42) 100%
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(247, 251, 251, 0.94) 100%
   ) !important;
   background-image: none !important;
   box-shadow:
@@ -444,7 +427,37 @@
 #rsvp .name-search input::placeholder,
 #rsvp input::placeholder,
 #rsvp textarea::placeholder {
-  color: rgba(11, 36, 51, 0.55) !important;
+  color: #0d2b45 !important;
+  -webkit-text-fill-color: #0d2b45 !important;
+  opacity: 0.78 !important;
+  font-weight: 500 !important;
+}
+
+#rsvp .rsvp-guide,
+#rsvp .rsvp-guide li,
+#rsvp .rsvp-guide-note {
+  font-size: 0.98rem !important;
+  line-height: 1.7 !important;
+}
+
+/* Guest note tray — solid enough to stay readable over busy collage */
+.details-tray .tray-note {
+  background: rgba(255, 252, 246, 0.94) !important;
+  color: #04151f !important;
+  border: 1px solid rgba(13, 43, 69, 0.18) !important;
+  box-shadow: 0 10px 28px rgba(13, 43, 69, 0.08) !important;
+}
+
+.details-tray .tray-note h3,
+.details-tray .tray-note p {
+  color: #04151f !important;
+  text-shadow: none !important;
+}
+
+.details-tray .tray-note a {
+  color: #0d3a4a !important;
+  font-weight: 700 !important;
+  border-bottom-color: rgba(13, 58, 74, 0.45) !important;
 }
 
 #rsvp .name-search input:focus,
@@ -480,8 +493,8 @@
   margin-left: auto;
   margin-right: auto;
   padding: 0.65rem 1.1rem;
-  background: rgba(255, 252, 246, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 252, 246, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   color: #04151f !important;
   text-shadow:
     0 1px 0 rgba(255, 252, 246, 1),
@@ -497,6 +510,7 @@
   color: #0b2433 !important;
 }
 
+/* Secondary labels, links, buttons — no light seafoam on parchment */
 .site-reveal .expand-btn,
 .site-reveal .gallery-more a,
 .site-reveal .attire-more,
@@ -504,9 +518,143 @@
 .site-reveal .timing-label,
 .site-reveal .detail-label,
 .site-reveal .story-expand-btn,
-.site-reveal .entourage-expand-btn {
+.site-reveal .entourage-expand-btn,
+.site-reveal .attire-expand-btn,
+.site-reveal .venue-link,
+.site-reveal .section-label,
+.site-reveal .timeline-year,
+.site-reveal .timeline-hearts,
+.site-reveal .entourage-group-role,
+.site-reveal .attire-look-label,
+.site-reveal .attire-teaser-link,
+.site-reveal .attire-teaser-content p,
+.nav-logo,
+.nav-link,
+.nav-toggle {
   color: #0a3d4d !important;
   text-shadow: 0 1px 0 rgba(255, 252, 246, 0.95);
+}
+
+.site-reveal .countdown-label,
+.site-reveal .timing-label,
+.site-reveal .detail-label,
+.site-reveal .section-label,
+.site-reveal .entourage-group-role,
+.site-reveal .attire-look-label {
+  font-weight: 700 !important;
+  color: #0d2b45 !important;
+  letter-spacing: 0.2em;
+}
+
+.site-reveal .story-expand-btn,
+.site-reveal .entourage-expand-btn,
+.site-reveal .attire-expand-btn {
+  background: #0d2b45 !important;
+  color: #fffef9 !important;
+  border-color: #0d2b45 !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+}
+
+.site-reveal .story-expand-btn:hover,
+.site-reveal .entourage-expand-btn:hover,
+.site-reveal .attire-expand-btn:hover {
+  background: #1e5a6e !important;
+  color: #fffef9 !important;
+  border-color: #1e5a6e !important;
+}
+
+.site-reveal .story-expand-btn svg,
+.site-reveal .entourage-expand-btn svg,
+.site-reveal .attire-expand-btn svg {
+  color: #fffef9 !important;
+  stroke: #fffef9 !important;
+}
+
+.site-reveal .countdown-value,
+.site-reveal .invite-greeting,
+.site-reveal .venue-featured-name,
+.site-reveal .venue-featured-time,
+.site-reveal .venue-featured-address,
+.site-reveal .timeline-title,
+.site-reveal .timeline-text,
+.site-reveal .entourage-role,
+.site-reveal .entourage-name,
+.site-reveal .guest-seat-name,
+.site-reveal .guest-seat-category,
+.site-reveal .attendance-copy,
+.site-reveal .attendance-copy em,
+.site-reveal .attendance-copy small {
+  color: #04151f !important;
+}
+
+.site-reveal .guest-seat-kicker,
+.site-reveal .option-meta,
+.site-reveal .guest-seat-table {
+  color: #0d3a4a !important;
+}
+
+/* Keep navy tip boxes crisp */
+.site-reveal .attire-notes-box,
+.site-reveal .attire-notes-box li,
+.site-reveal .attire-notes-box p {
+  color: #f7f5f1 !important;
+  text-shadow: none !important;
+}
+
+.site-reveal .attire-notes-box h4 {
+  color: #dff0ee !important;
+}
+
+/* Keep the invitation frame visible at the edges, but never over text */
+.floral-frame {
+  z-index: 2 !important;
+}
+
+.site-reveal > section > .container,
+.site-reveal > .footer > .container,
+.hero-content {
+  z-index: 3;
+}
+
+.site-reveal .lace-face {
+  color: #fffef9 !important;
+}
+
+.site-reveal .lace-month,
+.site-reveal .lace-grid span,
+.site-reveal .lace-year {
+  color: #fffef9 !important;
+  opacity: 1 !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(13, 43, 69, 0.35);
+}
+
+.site-reveal .lace-grid .dow {
+  opacity: 0.92 !important;
+  font-weight: 600 !important;
+}
+
+.site-reveal .countdown-cta,
+.site-reveal .rsvp-now,
+.site-reveal a.btn-rsvp,
+.site-reveal .finale-cta {
+  color: #04151f !important;
+  background: rgba(255, 252, 246, 0.95) !important;
+  border: 1.5px solid rgba(13, 43, 69, 0.45) !important;
+  font-weight: 700 !important;
+}
+
+.nav {
+  background: rgba(255, 252, 246, 0.9) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.nav-overlay .nav-link,
+.nav-menu .nav-link {
+  color: #04151f !important;
+  font-weight: 600 !important;
 }
 
 @media (max-width: 720px) {
@@ -518,6 +666,14 @@
 
   .hero-content {
     padding: 1rem 0.95rem 1.1rem !important;
+  }
+
+  .site-reveal .timeline-text,
+  .site-reveal .section-subtitle,
+  .site-reveal .invite-body,
+  .site-reveal p {
+    font-size: 1.02rem !important;
+    line-height: 1.65 !important;
   }
 }
 
