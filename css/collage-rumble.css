@@ -52,28 +52,31 @@
 .collage-flow__canvas {
   position: absolute;
   inset: 0;
-  /* Keep native aspect — stretching to full page height blurred the top wash.
-     Cream below the art comes from the page background. */
+  /* High-res scroll art — keep native aspect; cream fills below the art */
   background-color: #f3eee4;
-  background-image: url("/img/bg/torn-stitched-scroll.webp");
+  background-image: url("/img/bg/torn-stitched-scroll.webp?v=4k1");
   background-position: center top;
   background-size: 100% auto;
   background-repeat: no-repeat;
   transform: none;
+  filter: none;
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .collage-flow__tint {
   position: absolute;
   inset: 0;
-  /* Very light wash only — keep stitched torn paper readable and quiet */
+  /* Very light wash — keep texture crisp */
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--rumble-ivory) 12%, transparent) 0%,
-    transparent 35%,
-    color-mix(in srgb, var(--rumble-sage) 6%, transparent) 100%
+    color-mix(in srgb, var(--rumble-ivory) 6%, transparent) 0%,
+    transparent 40%,
+    color-mix(in srgb, var(--rumble-sage) 3%, transparent) 100%
   );
   mix-blend-mode: normal;
-  opacity: 0.55;
+  opacity: 0.28;
   pointer-events: none;
 }
 
@@ -92,11 +95,12 @@
   inset: 0 !important;
   z-index: 1000 !important;
   background-color: #f3eee4 !important;
-  /* Cover the viewport without vertical squash of the scroll texture */
-  background-image: url("/img/bg/torn-stitched-scroll.webp") !important;
-  background-size: cover !important;
+  /* Same 4K scroll texture as the site — top crop, no extra blur */
+  background-image: url("/img/bg/torn-stitched-scroll.webp?v=4k1") !important;
+  background-size: 100% auto !important;
   background-position: center top !important;
   background-repeat: no-repeat !important;
+  filter: none !important;
 }
 
 .nav,
@@ -110,17 +114,8 @@
 .scroll-progress { z-index: 400; }
 
 .envelope-intro::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  /* Soft ivory veil for depth only — does not recolor the envelope itself */
-  background: radial-gradient(
-    ellipse 70% 50% at 50% 42%,
-    rgba(255, 252, 246, 0.22),
-    transparent 72%
-  );
+  content: none !important;
+  display: none !important;
 }
 
 /* No separate top color band — collage background already provides the edge */
@@ -144,10 +139,10 @@
   background-image:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--rumble-ivory) 22%, transparent) 0%,
-      transparent 18%,
-      transparent 82%,
-      color-mix(in srgb, var(--rumble-sheet) 16%, transparent) 100%
+      color-mix(in srgb, var(--rumble-ivory) 10%, transparent) 0%,
+      transparent 14%,
+      transparent 86%,
+      color-mix(in srgb, var(--rumble-sheet) 8%, transparent) 100%
     ) !important;
 }
 
