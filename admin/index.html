@@ -370,6 +370,55 @@
       margin-bottom: 1rem;
     }
 
+    .textarea-with-size {
+      margin-bottom: 0.85rem;
+    }
+
+    .textarea-size-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin: 0.15rem 0 0.4rem;
+    }
+
+    .textarea-size-row label {
+      margin: 0;
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      font-weight: 500;
+    }
+
+    .textarea-size-row .size-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+      min-width: 160px;
+      max-width: 280px;
+    }
+
+    .textarea-size-row input[type="range"] {
+      flex: 1;
+      margin: 0;
+      padding: 0;
+      accent-color: var(--sage);
+    }
+
+    .textarea-size-row input[type="number"] {
+      width: 4.25rem;
+      margin: 0;
+      padding: 0.35rem 0.4rem;
+      font-size: 0.8rem;
+    }
+
+    .textarea-with-size textarea {
+      margin-bottom: 0;
+    }
+
     .timeline-editor, .venue-editor {
       border-top: 1px solid rgba(95, 168, 184, 0.15);
       padding-top: 1rem;
@@ -802,7 +851,7 @@
       <!-- Content -->
       <section class="panel" id="panel-content">
         <h2>Edit Details</h2>
-        <p class="lead">Update names, dates, story, venues, and copy shown on the invitation.</p>
+            <p class="lead" style="font-size:0.8rem;margin-bottom:1rem;">Update names, dates, story, venues, and copy shown on the invitation. Every text area includes a <strong>font size</strong> control (up to 72px) that applies on the public site after you save.</p>
         <form id="contentForm">
           <div class="card">
             <h3>Couple &amp; Date</h3>
@@ -1449,6 +1498,7 @@
             <button type="button" class="btn btn-danger" data-remove-wedding-day="${i}">Remove</button>
           </div>
         `).join("");
+        wireTextareaFontSizes(wrap);
       }
 
       const ATTIRE_PHOTO_FIELDS = [
@@ -1527,6 +1577,7 @@
             <button type="button" class="btn btn-danger" data-remove-timeline="${i}">Remove</button>
           </div>
         `).join("");
+        wireTextareaFontSizes(wrap);
       }
 
       function renderVenues() {
@@ -1544,6 +1595,7 @@
             <button type="button" class="btn btn-danger" data-remove-venue="${i}">Remove</button>
           </div>
         `).join("");
+        wireTextareaFontSizes(wrap);
       }
 
       function toDatetimeLocalValue(iso) {
@@ -1612,6 +1664,7 @@
         renderWeddingDayTimeline();
         syncAppearancePreview();
         syncEnvelopeAdminUI();
+        wireTextareaFontSizes();
       }
 
       document.getElementById("weddingDateTime").addEventListener("change", syncWeddingFieldsFromPicker);
@@ -1631,6 +1684,7 @@
           text: row.querySelector('[data-field="text"]').value,
           photo: row.querySelector('[data-field="photo"]').value,
           photoAlt: row.querySelector('[data-field="photoAlt"]').value,
+          textFontSize: clampFontSize(row.querySelector("[data-textarea-size]")?.value),
         }));
 
         data.attirePhotos = {};
@@ -1660,6 +1714,7 @@
           time: row.querySelector('[data-field="time"]').value,
           address: row.querySelector('[data-field="address"]').value,
           mapUrl: row.querySelector('[data-field="mapUrl"]').value,
+          addressFontSize: clampFontSize(row.querySelector("[data-textarea-size]")?.value),
         }));
 
         data.weddingDayTimeline = [...document.querySelectorAll("#weddingDayFields .wedding-day-editor")].map((row) => ({
@@ -1667,9 +1722,119 @@
           title: row.querySelector('[data-field="title"]').value,
           text: row.querySelector('[data-field="text"]').value,
           icon: row.querySelector('[data-field="icon"]').value,
+          textFontSize: clampFontSize(row.querySelector("[data-textarea-size]")?.value),
         }));
 
+        data.textFontSizes = collectStaticTextFontSizes();
+
         return data;
+      }
+
+      function clampFontSize(value, fallback) {
+        const n = Number(value);
+        if (!isFinite(n)) return fallback == null ? undefined : fallback;
+        return Math.min(72, Math.max(12, Math.round(n)));
+      }
+
+      function collectStaticTextFontSizes() {
+        const sizes = { ...(content.textFontSizes || {}) };
+        document.querySelectorAll("#contentForm textarea[id]").forEach((ta) => {
+          const input = ta.closest(".textarea-with-size")?.querySelector("[data-textarea-size]");
+          if (!input || !ta.id) return;
+          sizes[ta.id] = clampFontSize(input.value, 16);
+        });
+        return sizes;
+      }
+
+      const TEXTAREA_SIZE_DEFAULTS = {
+        storySubtitle: 18,
+        weddingDaySubtitle: 18,
+        entourageSubtitle: 18,
+        attireSummary: 16,
+        footerQuote: 20,
+      };
+
+      function textareaSizeKey(ta) {
+        if (ta.id) return ta.id;
+        const row = ta.closest(".timeline-editor, .venue-editor, .wedding-day-editor");
+        if (!row) return "";
+        const field = ta.getAttribute("data-field") || "text";
+        if (row.classList.contains("wedding-day-editor")) {
+          return "weddingDayTimeline." + (row.dataset.i || "0") + "." + field;
+        }
+        if (row.classList.contains("venue-editor")) {
+          return "venues." + (row.dataset.i || "0") + "." + field;
+        }
+        if (row.closest("#timelineFields")) {
+          return "timeline." + (row.dataset.i || "0") + "." + field;
+        }
+        return "";
+      }
+
+      function resolveTextareaSize(ta) {
+        const key = textareaSizeKey(ta);
+        const sizes = content.textFontSizes || {};
+        if (ta.id && sizes[ta.id] != null) return clampFontSize(sizes[ta.id], 16);
+        const row = ta.closest(".timeline-editor, .venue-editor, .wedding-day-editor");
+        if (row) {
+          const i = Number(row.dataset.i);
+          if (row.classList.contains("wedding-day-editor") && content.weddingDayTimeline?.[i]?.textFontSize != null) {
+            return clampFontSize(content.weddingDayTimeline[i].textFontSize, 16);
+          }
+          if (row.classList.contains("venue-editor") && content.venues?.[i]?.addressFontSize != null) {
+            return clampFontSize(content.venues[i].addressFontSize, 16);
+          }
+          if (row.closest("#timelineFields") && content.timeline?.[i]?.textFontSize != null) {
+            return clampFontSize(content.timeline[i].textFontSize, 16);
+          }
+        }
+        if (key && sizes[key] != null) return clampFontSize(sizes[key], 16);
+        if (ta.id && TEXTAREA_SIZE_DEFAULTS[ta.id] != null) return TEXTAREA_SIZE_DEFAULTS[ta.id];
+        return 16;
+      }
+
+      function wireTextareaFontSizes(scope) {
+        const root = scope || document.getElementById("contentForm") || document;
+        root.querySelectorAll("textarea").forEach((ta) => {
+          if (ta.closest(".textarea-with-size")) {
+            const existing = ta.closest(".textarea-with-size").querySelector("[data-textarea-size]");
+            if (existing) {
+              const size = resolveTextareaSize(ta);
+              existing.value = String(size);
+              ta.style.fontSize = size + "px";
+              const num = ta.closest(".textarea-with-size").querySelector("[data-textarea-size-num]");
+              if (num) num.value = String(size);
+            }
+            return;
+          }
+          const size = resolveTextareaSize(ta);
+          const wrap = document.createElement("div");
+          wrap.className = "textarea-with-size";
+          ta.parentNode.insertBefore(wrap, ta);
+          const row = document.createElement("div");
+          row.className = "textarea-size-row";
+          row.innerHTML =
+            '<label>Font size</label>' +
+            '<div class="size-controls">' +
+            '<input type="range" min="12" max="72" step="1" data-textarea-size value="' + size + '" aria-label="Font size" />' +
+            '<input type="number" min="12" max="72" step="1" data-textarea-size-num value="' + size + '" aria-label="Font size in pixels" />' +
+            "</div>";
+          wrap.appendChild(row);
+          wrap.appendChild(ta);
+          ta.style.fontSize = size + "px";
+
+          const range = row.querySelector("[data-textarea-size]");
+          const num = row.querySelector("[data-textarea-size-num]");
+          function sync(val) {
+            const px = clampFontSize(val, 16);
+            range.value = String(px);
+            num.value = String(px);
+            ta.style.fontSize = px + "px";
+          }
+          range.addEventListener("input", () => sync(range.value));
+          num.addEventListener("input", () => sync(num.value));
+          num.addEventListener("change", () => sync(num.value));
+        });
       }
 
       const APPEARANCE_FONT_HREF = {

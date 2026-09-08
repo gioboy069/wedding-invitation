@@ -235,5 +235,6 @@
   "envelopeColor": "#93c4bc",
   "envelopeColorAlt": "#6ba7a0",
   "envelopeInk": "#2c5853",
-  "envelopeImage": ""
+  "envelopeImage": "",
+  "textFontSizes": {}
 }

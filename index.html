@@ -4335,7 +4335,7 @@
           weddingDayIconSvg(item.icon) + '</svg></span>' +
           '<div class="wedding-day-label">' +
           '<p class="wedding-day-title">' + escapeHtml(item.title || "") + '</p>' +
-          (item.text ? '<p class="wedding-day-text">' + escapeHtml(item.text) + '</p>' : '') +
+          (item.text ? '<p class="wedding-day-text"' + fontSizeStyle(item.textFontSize) + '>' + escapeHtml(item.text) + '</p>' : '') +
           '</div></article>';
       }
 
@@ -4577,9 +4577,39 @@
         }
       }
 
+      function applyTextFontSizes(c) {
+        if (!c) return;
+        var sizes = c.textFontSizes || {};
+        function clampPx(v, fallback) {
+          var n = Number(v);
+          if (!isFinite(n)) return fallback;
+          return Math.min(72, Math.max(12, Math.round(n)));
+        }
+        function applyId(id, fallback) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          if (sizes[id] != null) el.style.fontSize = clampPx(sizes[id], fallback) + "px";
+        }
+        applyId("storySubtitle", 18);
+        applyId("weddingDaySubtitle", 18);
+        applyId("entourageSubtitle", 18);
+        applyId("attireSummary", 16);
+        applyId("footerQuote", 20);
+        applyId("inviteBody", 16);
+        applyId("heroPre", 14);
+      }
+
+      function fontSizeStyle(px) {
+        var n = Number(px);
+        if (!isFinite(n)) return "";
+        n = Math.min(72, Math.max(12, Math.round(n)));
+        return ' style="font-size:' + n + 'px"';
+      }
+
       function applyContent(c) {
         if (!c) return;
         applyAppearance(c);
+        applyTextFontSizes(c);
         if (c.weddingDate) {
           const parsed = new Date(c.weddingDate);
           if (!isNaN(parsed.getTime())) weddingDate = parsed;
@@ -4706,7 +4736,7 @@
               '<div class="timeline-text-side"><p class="timeline-year">' + year + '</p>' +
               heartOrnament +
               '<h3 class="timeline-heading">' + heading + '</h3>' +
-              '<p class="timeline-text">' + text + '</p></div>' +
+              '<p class="timeline-text"' + fontSizeStyle(item.textFontSize) + '>' + text + '</p></div>' +
               marker +
               '<div class="timeline-photo-side">' + photoHtml + '</div></article>';
           }).join("");
@@ -4729,7 +4759,13 @@
             var photoEl = document.getElementById(prefix === "ceremony" ? "ceremonyHeroPhoto" : "venueHeroPhoto");
             if (nameEl) nameEl.textContent = place.name || "";
             if (timeEl) timeEl.textContent = place.time || "";
-            if (addrEl) addrEl.innerHTML = escapeHtml(place.address || "").replace(/\n/g, "<br />");
+            if (addrEl) {
+              addrEl.innerHTML = escapeHtml(place.address || "").replace(/\n/g, "<br />");
+              if (place.addressFontSize != null) {
+                var px = Number(place.addressFontSize);
+                if (isFinite(px)) addrEl.style.fontSize = Math.min(72, Math.max(12, Math.round(px))) + "px";
+              }
+            }
             if (mapEl && place.mapUrl) mapEl.href = place.mapUrl;
             if (photoEl && photoUrl) photoEl.src = photoUrl;
           }
