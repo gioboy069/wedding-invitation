@@ -1,4 +1,5 @@
 import express from "express";
+import compression from "compression";
 import multer from "multer";
 import cookieParser from "cookie-parser";
 import ExcelJS from "exceljs";
@@ -219,6 +220,7 @@ const spreadsheetUpload = multer({
 
 const app = express();
 app.set("trust proxy", 1);
+app.use(compression());
 app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
 
@@ -248,7 +250,10 @@ app.get(["/download", "/download.zip"], (_req, res) => {
   res.download(zipPath, "augiela-gio-wedding-invitation.zip");
 });
 
-app.use("/uploads", express.static(UPLOAD_DIR));
+app.use("/uploads", express.static(UPLOAD_DIR, {
+  maxAge: "7d",
+  etag: true,
+}));
 
 // Admin dashboard — explicit routes so /admin and /admin/ always work on Render
 const adminIndex = join(ROOT, "admin", "index.html");
@@ -260,11 +265,24 @@ app.get(["/admin", "/admin/"], (_req, res) => {
   }
   res.sendFile(adminIndex);
 });
-app.use("/admin", express.static(join(ROOT, "admin")));
+app.use("/admin", express.static(join(ROOT, "admin"), {
+  maxAge: "1h",
+  etag: true,
+}));
 
 app.use(express.static(ROOT, {
   index: "index.html",
   extensions: ["html"],
+  etag: true,
+  setHeaders(res, filePath) {
+    if (/\.(?:webp|jpg|jpeg|png|svg|woff2)$/i.test(filePath)) {
+      res.setHeader("Cache-Control", "public, max-age=604800, immutable");
+    } else if (/\.(?:css|js)$/i.test(filePath)) {
+      res.setHeader("Cache-Control", "public, max-age=86400");
+    } else if (/\.html$/i.test(filePath)) {
+      res.setHeader("Cache-Control", "public, max-age=60");
+    }
+  },
 }));
 
 // ── Public API ──
@@ -1069,8 +1087,18 @@ app.put("/api/admin/content", requireAdmin, (req, res) => {
   content.ninongs = normalizeSponsors(content.ninongs);
   content.ninangs = normalizeSponsors(content.ninangs);
 
+  if (typeof content.envelopeImage === "string") {
+    content.envelopeImage = normalizeImageUrl(content.envelopeImage);
+  }
+
   writeJson("content.json", content);
   res.json({ ok: true, content });
+});
+
+// Generic image upload (envelope texture, etc.) — does not add to gallery
+app.post("/api/admin/upload", requireAdmin, upload.single("file"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+  res.json({ src: `/uploads/${req.file.filename}` });
 });
 
 // ── Admin gallery ──

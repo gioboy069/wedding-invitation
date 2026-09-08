@@ -7,9 +7,11 @@
   <title>Gio Anthony & Augiela Shane — Wedding Invitation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/shared.css?v=motif-darker-4" />
-  <script src="/js/shared.js?v=no-stones" defer></script>
+  <link rel="preload" as="image" href="/img/bg/torn-stitched-scroll.webp" type="image/webp" />
+  <link rel="preload" as="image" href="/img/couple/where-love-felt-easy.webp" type="image/webp" />
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,500;1,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/shared.css?v=perf-1" />
+  <script src="/js/shared.js?v=perf-1" defer></script>
   <style>
     :root {
       --deep: #0d2b45;
@@ -32,18 +34,21 @@
       --shadow: rgba(13, 43, 69, 0.07);
       --shadow-deep: rgba(13, 43, 69, 0.14);
       --font-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
-      --font-script: "Cormorant Garamond", Georgia, serif;
+      --font-script: "Allura", "Segoe Script", "Apple Chancery", cursive;
       --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
       --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
       --intro-ease: cubic-bezier(0.33, 1, 0.68, 1);
-      --intro-flap: 2.4s;
-      --intro-card: 3.6s;
-      --intro-card-delay: 1.85s;
-      --intro-card-ease: cubic-bezier(0.42, 0.08, 0.18, 1);
-      --intro-wrap: 6.4s;
-      --intro-wrap-delay: 0.85s;
-      --intro-fade: 1.8s;
-      --intro-site-delay: 1.8s;
+      --intro-flap: 1.05s;
+      --intro-card: 2.5s;
+      --intro-card-delay: 0.45s;
+      --intro-card-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+      --intro-front: 1.2s;
+      --intro-front-delay: 0.55s;
+      --intro-wrap: 2.1s;
+      --intro-wrap-delay: 1.45s;
+      --intro-fade: 0.7s;
+      --intro-site-delay: 1.2s;
+      --intro-anim-scale: 1;
       --section-pad: clamp(4.5rem, 10vw, 7.5rem);
     }
 
@@ -74,6 +79,7 @@
 
     img {
       max-width: 100%;
+      height: auto;
       display: block;
     }
 
@@ -99,8 +105,8 @@
       margin-left: auto;
       margin-right: auto;
       background: rgba(247, 245, 241, 0.88);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       border: 1px solid rgba(30, 90, 110, 0.1);
       border-radius: 999px;
       box-shadow: 0 4px 14px rgba(13, 43, 69, 0.06);
@@ -334,34 +340,37 @@
     }
 
     .hero-names {
-      font-family: var(--font-serif);
-      font-size: clamp(2.25rem, 7.5vw, 5.5rem);
-      font-weight: 300;
+      font-family: var(--font-script);
+      font-size: clamp(2.6rem, 9vw, 4.75rem);
+      font-weight: 400;
       line-height: 1.05;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.01em;
       color: var(--text);
       margin-bottom: 0.5rem;
       opacity: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.1rem;
+      gap: 0.05rem;
     }
 
     .hero-name {
       display: block;
       white-space: nowrap;
+      font-family: var(--font-script);
+      font-weight: 400;
+      font-style: normal;
     }
 
     .hero-amp {
       display: block;
-      font-family: var(--font-serif);
-      font-style: italic;
+      font-family: var(--font-script);
+      font-style: normal;
       font-weight: 400;
-      font-size: clamp(2rem, 5.5vw, 3.25rem);
+      font-size: clamp(2.1rem, 6vw, 3.4rem);
       line-height: 1;
       color: var(--sea);
-      padding: 0.35rem 0;
+      padding: 0.15rem 0;
     }
 
     .hero-date {
@@ -2599,7 +2608,7 @@
       top: clamp(1.25rem, 5.5vh, 3.5rem);
       width: min(480px, 90vw);
       text-align: center;
-      animation: intro-float 5s ease-in-out infinite;
+      animation: none;
     }
 
     @keyframes intro-float {
@@ -2618,7 +2627,23 @@
       margin: 0 auto;
       perspective: 1400px;
       overflow: visible;
-      filter: drop-shadow(0 24px 40px rgba(13, 43, 69, 0.16));
+      /* Avoid filter here — it flattens preserve-3d and breaks the open flap */
+      transform: none;
+      transform-style: preserve-3d;
+    }
+
+    .envelope-wrap::before {
+      content: "";
+      position: absolute;
+      left: 4%;
+      right: 4%;
+      top: 12%;
+      bottom: -6%;
+      border-radius: 8px;
+      background: rgba(35, 70, 64, 0.18);
+      filter: blur(22px);
+      z-index: 0;
+      pointer-events: none;
     }
 
     .envelope-btn {
@@ -2632,22 +2657,53 @@
     }
 
     .envelope-btn:focus-visible {
-      outline: 2px solid var(--seafoam);
+      outline: 2px solid #6ba7a0;
       outline-offset: 10px;
     }
 
     .envelope {
+      --env-teal-light: #8fbcb4;
+      --env-teal: #6ba7a0;
+      --env-teal-mid: #4f8f88;
+      --env-teal-deep: #3a726c;
+      --env-teal-ink: var(--env-ink, #2c5853);
+      --env-fill: #93c4bc;
+      --env-fill-2: #6ba7a0;
+      --env-surface: none;
+      --env-image: none;
+      --env-paper-noise: url("/img/envelope/teal-paper.webp");
       position: absolute;
       inset: 0;
       transform-style: preserve-3d;
       overflow: visible;
+      z-index: 1;
+    }
+
+    .envelope.env-mode-twoTone {
+      --env-surface: linear-gradient(145deg, var(--env-fill) 0%, var(--env-fill-2) 100%);
+    }
+
+    .envelope.env-mode-image {
+      --env-surface: linear-gradient(180deg, color-mix(in srgb, var(--env-fill) 32%, transparent), color-mix(in srgb, var(--env-fill) 16%, transparent)), var(--env-image);
+    }
+
+    .env-back,
+    .env-front,
+    .env-front::before,
+    .env-front::after,
+    .env-bottom {
+      background-color: var(--env-fill);
+      background-image: var(--env-surface);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
     }
 
     .env-back {
       position: absolute;
       inset: 0;
-      border-radius: 4px;
-      background: linear-gradient(165deg, #6ba7a0 0%, #1e5a6e 100%);
+      border-radius: 3px;
+      box-shadow: none;
     }
 
     .env-card {
@@ -2658,11 +2714,11 @@
       height: 76%;
       transform: translateX(-50%);
       background-color: #f7f5f1;
-      background-image: var(--paper-sheet-bg);
+      background-image:
+        linear-gradient(180deg, #fffcf7 0%, #f4efe6 100%),
+        var(--paper-sheet-bg);
       background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100%;
-      background-image: var(--paper-sheet-bg);
-      background-size: 100% 100%, 100% 100%, 120px 120px, 100% 100%;
-      border: 1px solid rgba(30, 90, 110, 0.12);
+      border: 1px solid rgba(79, 143, 136, 0.16);
       border-radius: 2px;
       z-index: 2;
       display: flex;
@@ -2670,20 +2726,26 @@
       align-items: center;
       justify-content: center;
       gap: 0.4rem;
-      box-shadow: 0 4px 16px rgba(13, 43, 69, 0.08);
-      transition: transform var(--intro-card) var(--intro-card-ease) var(--intro-card-delay);
+      padding-top: 0;
+      box-shadow:
+        0 8px 20px rgba(45, 90, 82, 0.14),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.65);
+      /* Keep transition on the base rule — redefining it on .opening snaps motion */
+      transition:
+        transform var(--intro-card) var(--intro-card-ease) var(--intro-card-delay),
+        padding-top var(--intro-card) var(--intro-card-ease) var(--intro-card-delay);
     }
 
     .env-card-monogram {
       font-family: var(--font-serif);
       font-size: clamp(1.6rem, 4.5vw, 2.1rem);
-      color: var(--deep);
+      color: var(--env-teal-ink);
       line-height: 1;
       letter-spacing: 0.06em;
     }
 
     .env-card-monogram span {
-      color: var(--seafoam);
+      color: var(--env-teal-mid);
       font-style: italic;
     }
 
@@ -2691,45 +2753,97 @@
       font-size: 0.55rem;
       letter-spacing: 0.28em;
       text-transform: uppercase;
-      color: var(--teal);
+      color: var(--env-teal-mid);
     }
 
     .env-front {
       position: absolute;
       inset: 0;
-      border-radius: 4px;
+      border-radius: 3px;
       z-index: 3;
       overflow: hidden;
-      background: linear-gradient(180deg, #7da4ae 0%, #638a9f 45%, #dcc8aa 100%);
-      /* Closed: a rectangle. Open: a V-cut so the pocket has a triangular mouth. */
-      clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0, 50% 0);
-      transition: clip-path var(--intro-flap) var(--intro-ease);
+      /* Same vertex order as the open V so clip-path morphs cleanly (only the notch deepens) */
+      clip-path: polygon(0 0, 50% 0, 100% 0, 100% 100%, 0 100%);
+      transition: clip-path var(--intro-front) var(--intro-ease) var(--intro-front-delay);
+      box-shadow: none;
     }
 
+    /* Left side flap — only visible while opening (closed seams were the X lines) */
     .env-front::before {
-      display: none;
+      content: "";
+      position: absolute;
+      inset: 0;
+      clip-path: polygon(0 0, 50% 56%, 0 100%);
+      box-shadow: none;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.35s var(--intro-ease);
+    }
+
+    /* Right side flap — matches left */
+    .env-front::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      clip-path: polygon(100% 0, 50% 56%, 100% 100%);
+      box-shadow: none;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.35s var(--intro-ease);
+    }
+
+    /* Explicit bottom pocket flap — same teal; hidden until open */
+    .env-bottom {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      clip-path: polygon(0 100%, 50% 56%, 100% 100%);
+      box-shadow: none;
+      opacity: 0;
+      transition: opacity 0.35s var(--intro-ease);
     }
 
     .env-flap {
       position: absolute;
-      top: 0;
+      top: -1px;
       left: 0;
       right: 0;
-      height: 58%;
+      height: calc(58% + 1px);
       z-index: 5;
       transform-origin: top center;
-      transform-style: preserve-3d;
-      transition: transform var(--intro-flap) var(--intro-ease);
+      transform: none;
+      opacity: 1;
+      transform-style: flat;
+      transition: opacity calc(var(--intro-flap) * 0.4) var(--intro-ease);
       overflow: visible;
+    }
+
+    .env-flap::before,
+    .env-flap::after {
+      content: none !important;
+      display: none !important;
     }
 
     .env-flap-face {
       position: absolute;
       inset: 0;
-      background: linear-gradient(175deg, #a0bcc4 0%, #638a9f 40%, #325a55 100%);
+      background-color: var(--env-fill);
+      background-image:
+        linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.16) 0%,
+          transparent 42%
+        ),
+        var(--env-surface);
+      background-size: cover, cover;
+      background-position: center, center;
+      background-repeat: no-repeat;
       clip-path: polygon(0 0, 100% 0, 50% 100%);
       z-index: 1;
-      filter: drop-shadow(0 2px 4px rgba(13, 43, 69, 0.1));
+      box-shadow: none;
+      outline: none;
+      border: none;
     }
 
     .env-flap-copy {
@@ -2741,24 +2855,28 @@
       text-align: center;
       z-index: 4;
       pointer-events: none;
+      text-shadow: 0 1px 0 rgba(255, 252, 246, 0.4);
+      transition: opacity 0.35s var(--intro-ease);
     }
 
     .env-flap-kicker {
+      font-family: var(--env-font-sans, var(--font-sans));
       font-size: clamp(0.5rem, 1.5vw, 0.58rem);
       font-weight: 500;
       letter-spacing: 0.3em;
       text-transform: uppercase;
-      color: var(--teal);
+      color: var(--env-ink, var(--env-teal-ink));
       margin-bottom: 0.4rem;
     }
 
     .env-flap-names {
-      font-family: var(--font-serif);
-      font-size: clamp(1.35rem, 4.5vw, 1.9rem);
+      font-family: var(--env-font-script, var(--font-script));
+      font-size: clamp(1.7rem, 5.5vw, 2.4rem);
       font-weight: 400;
-      font-style: italic;
-      color: var(--deep);
-      line-height: 1.2;
+      font-style: normal;
+      color: var(--env-ink, var(--env-teal-ink));
+      line-height: 1.15;
+      letter-spacing: 0.02em;
     }
 
     .env-lace-svg {
@@ -2766,7 +2884,7 @@
     }
 
     .env-fold-line {
-      display: none;
+      display: none !important;
     }
 
     .env-seal {
@@ -2775,40 +2893,38 @@
       bottom: 0;
       top: auto;
       transform: translate(-50%, 42%);
-      width: clamp(58px, 14vw, 72px);
-      height: clamp(58px, 14vw, 72px);
-      border-radius: 50%;
+      width: clamp(76px, 19vw, 98px);
+      height: clamp(76px, 19vw, 98px);
+      border-radius: 0;
       background:
-        radial-gradient(circle at 35% 28%, #6ba7a0, #1e5a6e 55%, #0d2b45 100%);
-      box-shadow:
-        0 8px 20px rgba(13, 43, 69, 0.28),
-        inset 0 1px 2px rgba(255, 255, 255, 0.25);
+        url("/img/envelope/gold-wax-seal.webp") center / contain no-repeat;
+      box-shadow: none;
+      filter: drop-shadow(0 10px 16px rgba(90, 60, 20, 0.3));
       z-index: 6;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 0;
-      color: #f7f5f1;
+      color: transparent;
       pointer-events: none;
-      transition: transform 1s var(--intro-ease), opacity 0.8s var(--intro-ease);
+      transition: transform 1s var(--intro-ease), opacity 0.8s var(--intro-ease), filter 0.8s var(--intro-ease);
     }
 
-    .env-seal::before {
-      content: "";
-      position: absolute;
-      inset: 5px;
-      border-radius: 50%;
-      border: 1px solid rgba(247, 245, 241, 0.22);
-      pointer-events: none;
+    .env-seal::before,
+    .env-seal::after {
+      content: none;
+      display: none;
     }
 
     .env-seal-mono {
-      position: relative;
-      font-family: var(--font-serif);
-      font-size: clamp(0.95rem, 2.8vw, 1.15rem);
-      line-height: 1;
-      letter-spacing: 0.06em;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      opacity: 0;
     }
 
     .env-seal-sprig {
@@ -2816,20 +2932,82 @@
     }
 
     .envelope-intro.opening .env-flap {
-      transform: rotateX(-168deg);
-    }
-
-    .envelope-intro.opening .env-front {
-      clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0, 50% 56%);
-    }
-
-    .envelope-intro.opening .env-seal {
-      transform: translate(-50%, 42%) scale(0.4);
+      /* Fade the closed face as the open flap grows — no slide/collapse gap */
       opacity: 0;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .envelope-intro.opening .env-flap-face {
+      opacity: 1;
+      filter: none;
+      backface-visibility: visible;
+    }
+
+    /* Resting open flap — appears above as the closed flap lifts away */
+    .env-flap-up {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 100%;
+      height: 48%;
+      margin-bottom: -1px;
+      background-color: var(--env-fill);
+      background-image:
+        linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.14) 0%,
+          transparent 45%
+        ),
+        var(--env-surface);
+      background-size: cover, cover;
+      background-position: center, center;
+      background-repeat: no-repeat;
+      clip-path: polygon(50% 0, 0 100%, 100% 100%);
+      z-index: 1;
+      opacity: 0;
+      pointer-events: none;
+      transform-origin: bottom center;
+      transform: scaleY(0.2);
+      transition:
+        opacity calc(var(--intro-flap) * 0.4) var(--intro-ease) calc(var(--intro-flap) * 0.08),
+        transform calc(var(--intro-flap) * 0.7) var(--intro-ease) calc(var(--intro-flap) * 0.05);
+    }
+
+    .envelope-intro.opening .env-flap-up {
+      opacity: 1;
+      transform: scaleY(1);
     }
 
     .envelope-intro.opening .env-card {
-      transform: translateX(-50%) translateY(-96%);
+      z-index: 2;
+      transform: translateX(-50%) translateY(-62%);
+      justify-content: flex-start;
+      padding-top: 12%;
+    }
+
+    .envelope-intro.opening .env-flap-copy {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .envelope-intro.opening .env-front {
+      /* Lower pocket V — sits nearer the closed-flap tip without a torn morph */
+      clip-path: polygon(0 0, 50% 40%, 100% 0, 100% 100%, 0 100%);
+      z-index: 3;
+    }
+
+    .envelope-intro.opening .env-front::before,
+    .envelope-intro.opening .env-front::after,
+    .envelope-intro.opening .env-bottom {
+      opacity: 0 !important;
+    }
+
+    .envelope-intro.opening .env-seal {
+      transform: translate(-50%, 42%) scale(0.35);
+      opacity: 0;
+      visibility: hidden;
+      filter: none;
     }
 
     .envelope-intro.opening .envelope-wrap {
@@ -2841,20 +3019,12 @@
         transform: translateY(0) scale(1);
         opacity: 1;
       }
-      28% {
-        transform: translateY(40px) scale(1);
-        opacity: 1;
-      }
-      55% {
-        transform: translateY(56px) scale(0.995);
-        opacity: 1;
-      }
-      72% {
-        transform: translateY(62px) scale(0.98);
+      35% {
+        transform: translateY(28px) scale(0.99);
         opacity: 1;
       }
       100% {
-        transform: translateY(76px) scale(0.96);
+        transform: translateY(56px) scale(0.96);
         opacity: 0;
       }
     }
@@ -2883,6 +3053,75 @@
       50% { opacity: 1; }
     }
 
+    /* Soft butterfly + floral accents around the envelope */
+    .env-decor {
+      position: absolute;
+      pointer-events: none;
+      z-index: 8;
+      color: #4f8f88;
+    }
+
+    .env-decor svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .env-decor--butterfly {
+      width: clamp(2.6rem, 10vw, 3.6rem);
+      top: -8%;
+      right: -2%;
+      opacity: 0.95;
+      animation: env-butterfly-float 5.5s ease-in-out infinite;
+      filter: drop-shadow(0 4px 8px rgba(45, 90, 82, 0.14));
+    }
+
+    .env-decor--flowers-bl {
+      width: clamp(4.6rem, 17vw, 6.4rem);
+      left: -10%;
+      bottom: -6%;
+      opacity: 0.92;
+      transform: rotate(-8deg);
+      animation: env-bloom-sway 7s ease-in-out infinite;
+    }
+
+    .env-decor--flowers-tr {
+      width: clamp(3.5rem, 13vw, 5rem);
+      right: -8%;
+      top: 38%;
+      opacity: 0.88;
+      transform: rotate(12deg);
+      animation: env-bloom-sway 8s ease-in-out infinite reverse;
+    }
+
+    @keyframes env-butterfly-float {
+      0%, 100% { transform: translate(0, 0) rotate(-6deg); }
+      40% { transform: translate(-10px, -14px) rotate(4deg); }
+      70% { transform: translate(6px, -8px) rotate(-2deg); }
+    }
+
+    @keyframes env-bloom-sway {
+      0%, 100% { transform: rotate(var(--env-bloom-rot, -8deg)) translateY(0); }
+      50% { transform: rotate(calc(var(--env-bloom-rot, -8deg) + 4deg)) translateY(-4px); }
+    }
+
+    .env-decor--flowers-bl { --env-bloom-rot: -8deg; }
+    .env-decor--flowers-tr { --env-bloom-rot: 12deg; }
+
+    .envelope-intro.opening .env-decor {
+      opacity: 0;
+      transition: opacity 0.6s var(--intro-ease);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .env-decor--butterfly,
+      .env-decor--flowers-bl,
+      .env-decor--flowers-tr {
+        animation: none;
+      }
+    }
+
     .envelope-intro.opening .envelope-hint,
     .envelope-intro.revealed .envelope-hint {
       opacity: 0;
@@ -2897,6 +3136,20 @@
       .env-flap-copy {
         top: 16%;
         width: 76%;
+      }
+
+      .env-decor--butterfly {
+        right: 0;
+        top: -6%;
+      }
+
+      .env-decor--flowers-bl {
+        left: -4%;
+        bottom: -4%;
+      }
+
+      .env-decor--flowers-tr {
+        right: -4%;
       }
     }
 
@@ -2922,9 +3175,9 @@
       visibility: visible;
     }
   </style>
-  <link rel="stylesheet" href="/css/coastal.css?v=stitched-bg-1" />
-  <link rel="stylesheet" href="/css/modern-vintage.css?v=12" />
-  <link rel="stylesheet" href="/css/collage-rumble.css?v=19" />
+  <link rel="stylesheet" href="/css/coastal.css?v=env-admin-1" />
+  <link rel="stylesheet" href="/css/modern-vintage.css?v=perf-1" />
+  <link rel="stylesheet" href="/css/collage-rumble.css?v=env-admin-1" />
 </head>
 <body class="intro-locked">
 
@@ -2940,6 +3193,54 @@
   <div class="envelope-intro" id="envelopeIntro" aria-hidden="false">
     <div class="envelope-scene">
       <div class="envelope-wrap" id="envelopeWrap">
+        <div class="env-decor env-decor--flowers-bl" aria-hidden="true">
+          <svg viewBox="0 0 120 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 98C28 78 42 62 58 52" stroke="#6ba7a0" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
+            <path d="M58 52C52 40 44 30 34 24" stroke="#6ba7a0" stroke-width="1.2" stroke-linecap="round" opacity="0.55"/>
+            <path d="M58 52C70 44 84 40 98 42" stroke="#6ba7a0" stroke-width="1.2" stroke-linecap="round" opacity="0.55"/>
+            <ellipse cx="28" cy="22" rx="9" ry="12" fill="#8fbcb4" opacity="0.55" transform="rotate(-28 28 22)"/>
+            <ellipse cx="40" cy="18" rx="8" ry="11" fill="#a8cfc8" opacity="0.5" transform="rotate(18 40 18)"/>
+            <ellipse cx="34" cy="28" rx="7" ry="10" fill="#6ba7a0" opacity="0.45" transform="rotate(8 34 28)"/>
+            <circle cx="34" cy="24" r="3.2" fill="#dcc8aa" opacity="0.75"/>
+            <ellipse cx="96" cy="36" rx="8" ry="11" fill="#8fbcb4" opacity="0.5" transform="rotate(32 96 36)"/>
+            <ellipse cx="104" cy="44" rx="7" ry="10" fill="#a8cfc8" opacity="0.48" transform="rotate(-12 104 44)"/>
+            <ellipse cx="92" cy="46" rx="6.5" ry="9" fill="#6ba7a0" opacity="0.4" transform="rotate(20 92 46)"/>
+            <circle cx="97" cy="42" r="2.8" fill="#e8dcc8" opacity="0.7"/>
+            <path d="M48 70C42 64 34 62 28 64" stroke="#7da89a" stroke-width="1" stroke-linecap="round" opacity="0.55"/>
+            <path d="M28 64c-2 6 2 12 8 10 4-1 6-6 4-10-3-1-7 0-12 0z" fill="#6ba7a0" opacity="0.4"/>
+            <path d="M72 64C78 58 88 56 94 60" stroke="#7da89a" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+            <path d="M94 60c3 5-1 11-7 10-4 0-6-5-4-9 2-1 7-1 11-1z" fill="#8fbcb4" opacity="0.38"/>
+          </svg>
+        </div>
+        <div class="env-decor env-decor--butterfly" aria-hidden="true">
+          <svg viewBox="0 0 64 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 10c0 8-1.5 18-1.5 28" stroke="#2c5853" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M30.5 12c-2-5-5-8-8-8" stroke="#2c5853" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+            <path d="M33.5 12c2-5 5-8 8-8" stroke="#2c5853" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+            <path d="M31 18C18 8 6 12 8 24c2 10 12 12 23 6-2-4-2-8 0-12z" fill="#6ba7a0" opacity="0.72"/>
+            <path d="M33 18C46 8 58 12 56 24c-2 10-12 12-23 6 2-4 2-8 0-12z" fill="#8fbcb4" opacity="0.7"/>
+            <path d="M31 28C20 30 12 38 16 44c4 5 12 2 16-8-1-2-1-5-1-8z" fill="#4f8f88" opacity="0.55"/>
+            <path d="M33 28C44 30 52 38 48 44c-4 5-12 2-16-8 1-2 1-5 1-8z" fill="#6ba7a0" opacity="0.52"/>
+            <circle cx="20" cy="20" r="1.4" fill="#f7f5f1" opacity="0.55"/>
+            <circle cx="44" cy="20" r="1.4" fill="#f7f5f1" opacity="0.55"/>
+            <circle cx="32" cy="26" r="1.6" fill="#2c5853" opacity="0.65"/>
+          </svg>
+        </div>
+        <div class="env-decor env-decor--flowers-tr" aria-hidden="true">
+          <svg viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 78C30 60 42 46 58 38" stroke="#6ba7a0" stroke-width="1.3" stroke-linecap="round" opacity="0.65"/>
+            <path d="M58 38C50 28 48 16 52 8" stroke="#6ba7a0" stroke-width="1.1" stroke-linecap="round" opacity="0.5"/>
+            <ellipse cx="52" cy="10" rx="7" ry="10" fill="#a8cfc8" opacity="0.55" transform="rotate(-10 52 10)"/>
+            <ellipse cx="60" cy="14" rx="6" ry="9" fill="#8fbcb4" opacity="0.5" transform="rotate(28 60 14)"/>
+            <ellipse cx="46" cy="16" rx="6" ry="8" fill="#6ba7a0" opacity="0.42" transform="rotate(-36 46 16)"/>
+            <circle cx="52" cy="14" r="2.6" fill="#dcc8aa" opacity="0.72"/>
+            <path d="M44 52C38 46 30 44 24 46" stroke="#7da89a" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+            <path d="M24 46c-1 5 2 10 7 9 3-1 5-5 3-8-2-1-6 0-10-1z" fill="#6ba7a0" opacity="0.38"/>
+            <circle cx="70" cy="48" r="5" fill="#8fbcb4" opacity="0.35"/>
+            <circle cx="74" cy="44" r="3.5" fill="#a8cfc8" opacity="0.4"/>
+            <circle cx="68" cy="44" r="2.8" fill="#dcc8aa" opacity="0.45"/>
+          </svg>
+        </div>
         <div class="envelope">
           <div class="env-back"></div>
           <div class="env-card" aria-hidden="true">
@@ -2947,6 +3248,7 @@
             <p class="env-card-text">You're Invited</p>
           </div>
           <div class="env-front"></div>
+          <div class="env-bottom" aria-hidden="true"></div>
           <div class="env-fold-line"></div>
           <div class="env-flap">
             <div class="env-flap-face" aria-hidden="true"></div>
@@ -2966,6 +3268,7 @@
               </span>
             </div>
           </div>
+          <div class="env-flap-up" aria-hidden="true"></div>
         </div>
         <button type="button" class="envelope-btn" id="envelopeBtn" aria-label="Open wedding invitation"></button>
       </div>
@@ -3008,7 +3311,18 @@
     <div class="hero-stage">
       <div class="torn-sheet">
         <figure class="polaroid">
-          <img id="heroPolaroid" src="img/couple/where-love-felt-easy.jpg" alt="Gio Anthony and Augiela Shane" />
+          <picture>
+            <source srcset="img/couple/where-love-felt-easy.webp" type="image/webp" />
+            <img
+              id="heroPolaroid"
+              src="img/couple/where-love-felt-easy.jpg"
+              alt="Gio Anthony and Augiela Shane"
+              width="1100"
+              height="1467"
+              decoding="async"
+              fetchpriority="high"
+            />
+          </picture>
           <span class="polaroid-pearl" aria-hidden="true"></span>
         </figure>
       </div>
@@ -3750,21 +4064,27 @@
         envelopeIntro.classList.add("opening");
         document.body.classList.add("intro-open");
 
-        setTimeout(playHeroMotion, 3800);
+        setTimeout(playHeroMotion, Math.round(2200 * introAnimScale()));
 
         setTimeout(function () {
           document.body.classList.remove("intro-locked");
-        }, 2500);
+        }, Math.round(1800 * introAnimScale()));
 
         setTimeout(function () {
           envelopeIntro.classList.add("revealed");
           envelopeIntro.setAttribute("aria-hidden", "true");
-        }, 7400);
+        }, Math.round(3400 * introAnimScale()));
 
         setTimeout(function () {
           envelopeIntro.remove();
           scrollToHashTarget();
-        }, 9600);
+        }, Math.round(4200 * introAnimScale()));
+      }
+
+      function introAnimScale() {
+        var s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--intro-anim-scale"));
+        if (!isFinite(s) || s <= 0) return 1;
+        return Math.min(2, Math.max(0.5, s));
       }
 
       /* Skip envelope when returning or when arriving via #rsvp / other hash */
@@ -3829,119 +4149,24 @@
         bar.className = "scroll-progress";
         bar.setAttribute("aria-hidden", "true");
         document.body.appendChild(bar);
-        var root = document.documentElement;
         var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         if (reduce) {
           bar.style.display = "none";
+          return;
         }
-
-        function hexToRgb(hex) {
-          var h = hex.replace("#", "");
-          if (h.length === 3) {
-            h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
-          }
-          return {
-            r: parseInt(h.slice(0, 2), 16),
-            g: parseInt(h.slice(2, 4), 16),
-            b: parseInt(h.slice(4, 6), 16)
-          };
-        }
-
-        function rgbToHex(c) {
-          function ch(n) {
-            var s = Math.max(0, Math.min(255, Math.round(n))).toString(16);
-            return s.length === 1 ? "0" + s : s;
-          }
-          return "#" + ch(c.r) + ch(c.g) + ch(c.b);
-        }
-
-        function mix(a, b, t) {
-          return {
-            r: a.r + (b.r - a.r) * t,
-            g: a.g + (b.g - a.g) * t,
-            b: a.b + (b.b - a.b) * t
-          };
-        }
-
-        function mixStops(stops, t) {
-          if (t <= 0) return stops[0].c;
-          if (t >= 1) return stops[stops.length - 1].c;
-          for (var i = 0; i < stops.length - 1; i++) {
-            var a = stops[i];
-            var b = stops[i + 1];
-            if (t >= a.t && t <= b.t) {
-              var local = (t - a.t) / Math.max(0.0001, b.t - a.t);
-              return mix(a.c, b.c, local);
-            }
-          }
-          return stops[stops.length - 1].c;
-        }
-
-        var ivory = [
-          { t: 0, c: hexToRgb("#f3eee4") },
-          { t: 0.35, c: hexToRgb("#efe6d8") },
-          { t: 0.65, c: hexToRgb("#e4ddd2") },
-          { t: 1, c: hexToRgb("#d9d2c6") }
-        ];
-        var teal = [
-          { t: 0, c: hexToRgb("#2a8a8a") },
-          { t: 0.35, c: hexToRgb("#3a9a96") },
-          { t: 0.65, c: hexToRgb("#1e6e78") },
-          { t: 1, c: hexToRgb("#0d2b45") }
-        ];
-        var sage = [
-          { t: 0, c: hexToRgb("#8fa88a") },
-          { t: 0.35, c: hexToRgb("#7eb09a") },
-          { t: 0.65, c: hexToRgb("#6ba7a0") },
-          { t: 1, c: hexToRgb("#4f7f78") }
-        ];
-        var wash = [
-          { t: 0, c: hexToRgb("#c5d6d4") },
-          { t: 0.35, c: hexToRgb("#b7d0cb") },
-          { t: 0.65, c: hexToRgb("#8fb0b4") },
-          { t: 1, c: hexToRgb("#5f8498") }
-        ];
-        var sheet = [
-          { t: 0, c: hexToRgb("#d7e0db") },
-          { t: 0.35, c: hexToRgb("#c9d8d5") },
-          { t: 0.65, c: hexToRgb("#adc4ca") },
-          { t: 1, c: hexToRgb("#8eacb4") }
-        ];
-        var deep = [
-          { t: 0, c: hexToRgb("#1e5a6e") },
-          { t: 0.45, c: hexToRgb("#174a5c") },
-          { t: 1, c: hexToRgb("#0d2b45") }
-        ];
 
         var ticking = false;
+        var lastT = -1;
         function updateProgress() {
           var y = window.scrollY || document.documentElement.scrollTop || 0;
           var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
           var t = Math.min(1, Math.max(0, y / max));
-          if (!reduce) {
-            bar.style.transform = "scaleX(" + t + ")";
+          /* Quantize to cut style thrash while scrolling */
+          var q = Math.round(t * 40) / 40;
+          if (q !== lastT) {
+            bar.style.transform = "scaleX(" + q + ")";
+            lastT = q;
           }
-
-          root.style.setProperty("--rumble-t", String(t.toFixed(4)));
-          root.style.setProperty("--rumble-ivory", rgbToHex(mixStops(ivory, t)));
-          root.style.setProperty("--rumble-teal", rgbToHex(mixStops(teal, t)));
-          root.style.setProperty("--rumble-sage", rgbToHex(mixStops(sage, t)));
-          root.style.setProperty("--rumble-wash", rgbToHex(mixStops(wash, t)));
-          root.style.setProperty("--rumble-sheet", rgbToHex(mixStops(sheet, t)));
-          root.style.setProperty("--rumble-deep", rgbToHex(mixStops(deep, t)));
-
-          if (!reduce) {
-            var wave = t * Math.PI * 2;
-            var x = Math.sin(wave * 3.1) * 10 + Math.sin(wave * 7.2) * 3;
-            var yy = Math.cos(wave * 2.4) * 8 + Math.sin(wave * 5.5) * 2.5;
-            var rot = Math.sin(wave * 2.1) * 0.55;
-            root.style.setProperty("--rumble-x", x.toFixed(2) + "px");
-            root.style.setProperty("--rumble-y", yy.toFixed(2) + "px");
-            root.style.setProperty("--rumble-rot", rot.toFixed(3) + "deg");
-            root.style.setProperty("--rumble-shift", (t * -4).toFixed(2) + "%");
-          }
-
-          document.body.style.backgroundColor = rgbToHex(mixStops(wash, t));
           ticking = false;
         }
 
@@ -3952,7 +4177,7 @@
         }
 
         window.addEventListener("scroll", onScroll, { passive: true });
-        window.addEventListener("resize", onScroll);
+        window.addEventListener("resize", onScroll, { passive: true });
         updateProgress();
       })();
 
@@ -4206,8 +4431,155 @@
         }
       }
 
+      function applyAppearance(c) {
+        if (!c) return;
+        var root = document.documentElement;
+        var serif = c.fontSerif || "Cormorant Garamond";
+        var script = c.fontScript || "Allura";
+        var sans = c.fontSans || "Source Sans 3";
+        var SERIF_STACK = {
+          "Cormorant Garamond": '"Cormorant Garamond", Georgia, "Times New Roman", serif',
+          "Playfair Display": '"Playfair Display", Georgia, serif',
+          "Libre Baskerville": '"Libre Baskerville", Georgia, serif',
+          "Lora": '"Lora", Georgia, serif',
+          "EB Garamond": '"EB Garamond", Georgia, serif',
+          "Cormorant Infant": '"Cormorant Infant", Georgia, serif'
+        };
+        var SCRIPT_STACK = {
+          "Allura": '"Allura", "Segoe Script", "Apple Chancery", cursive',
+          "Great Vibes": '"Great Vibes", "Segoe Script", cursive',
+          "Sacramento": '"Sacramento", "Segoe Script", cursive',
+          "Dancing Script": '"Dancing Script", "Segoe Script", cursive',
+          "Parisienne": '"Parisienne", "Segoe Script", cursive',
+          "Satisfy": '"Satisfy", "Segoe Script", cursive',
+          "Alex Brush": '"Alex Brush", "Segoe Script", cursive'
+        };
+        var SANS_STACK = {
+          "Source Sans 3": '"Source Sans 3", "Segoe UI", system-ui, sans-serif',
+          "Montserrat": '"Montserrat", "Segoe UI", system-ui, sans-serif',
+          "Josefin Sans": '"Josefin Sans", "Segoe UI", system-ui, sans-serif',
+          "Nunito": '"Nunito", "Segoe UI", system-ui, sans-serif',
+          "Raleway": '"Raleway", "Segoe UI", system-ui, sans-serif',
+          "Poppins": '"Poppins", "Segoe UI", system-ui, sans-serif'
+        };
+        var FONT_HREF = {
+          "Cormorant Garamond": "Cormorant+Garamond:ital,wght@0,500;1,400",
+          "Playfair Display": "Playfair+Display:ital,wght@0,500;1,400",
+          "Libre Baskerville": "Libre+Baskerville:ital,wght@0,400;1,400",
+          "Lora": "Lora:ital,wght@0,500;1,400",
+          "EB Garamond": "EB+Garamond:ital,wght@0,500;1,400",
+          "Cormorant Infant": "Cormorant+Infant:ital,wght@0,500;1,400",
+          "Allura": "Allura",
+          "Great Vibes": "Great+Vibes",
+          "Sacramento": "Sacramento",
+          "Dancing Script": "Dancing+Script:wght@500",
+          "Parisienne": "Parisienne",
+          "Satisfy": "Satisfy",
+          "Alex Brush": "Alex+Brush",
+          "Source Sans 3": "Source+Sans+3:wght@400;500;600",
+          "Montserrat": "Montserrat:wght@400;500;600",
+          "Josefin Sans": "Josefin+Sans:wght@400;500;600",
+          "Nunito": "Nunito:wght@400;600",
+          "Raleway": "Raleway:wght@400;500;600",
+          "Poppins": "Poppins:wght@400;500;600"
+        };
+
+        root.style.setProperty("--font-serif", SERIF_STACK[serif] || SERIF_STACK["Cormorant Garamond"]);
+        root.style.setProperty("--font-script", SCRIPT_STACK[script] || SCRIPT_STACK.Allura);
+        root.style.setProperty("--font-sans", SANS_STACK[sans] || SANS_STACK["Source Sans 3"]);
+
+        var families = [serif, script, sans].map(function (n) { return FONT_HREF[n]; }).filter(Boolean);
+        var link = document.getElementById("dynamicSiteFonts");
+        if (!link) {
+          link = document.createElement("link");
+          link.id = "dynamicSiteFonts";
+          link.rel = "stylesheet";
+          document.head.appendChild(link);
+        }
+        link.href = "https://fonts.googleapis.com/css2?family=" + families.join("&family=") + "&display=swap";
+
+        var seconds = Number(c.calendarSpinSeconds) || 60;
+        if (seconds < 4) seconds = 4;
+        if (seconds > 300) seconds = 300;
+        var mode = c.calendarSpinMode || "tick";
+        var disk = document.querySelector(".lace-disk");
+        root.style.setProperty("--lace-spin-duration", seconds + "s");
+        if (mode === "off") {
+          root.style.setProperty("--lace-spin-timing", "linear");
+          if (disk) disk.classList.add("lace-spin-off");
+        } else if (mode === "smooth") {
+          root.style.setProperty("--lace-spin-timing", "linear");
+          if (disk) disk.classList.remove("lace-spin-off");
+        } else {
+          root.style.setProperty("--lace-spin-timing", "steps(" + Math.round(seconds) + ")");
+          if (disk) disk.classList.remove("lace-spin-off");
+        }
+
+        applyEnvelopeAppearance(c, SCRIPT_STACK, SANS_STACK, FONT_HREF);
+      }
+
+      function applyEnvelopeAppearance(c, SCRIPT_STACK, SANS_STACK, FONT_HREF) {
+        var root = document.documentElement;
+        var envelope = document.querySelector(".envelope");
+        var scale = Number(c.envelopeAnimSpeed);
+        if (!isFinite(scale) || scale <= 0) scale = 1;
+        scale = Math.min(2, Math.max(0.5, scale));
+        root.style.setProperty("--intro-anim-scale", String(scale));
+        root.style.setProperty("--intro-flap", (1.05 * scale).toFixed(2) + "s");
+        root.style.setProperty("--intro-card", (2.5 * scale).toFixed(2) + "s");
+        root.style.setProperty("--intro-card-delay", (0.45 * scale).toFixed(2) + "s");
+        root.style.setProperty("--intro-front", (1.2 * scale).toFixed(2) + "s");
+        root.style.setProperty("--intro-front-delay", (0.55 * scale).toFixed(2) + "s");
+        root.style.setProperty("--intro-wrap", (2.1 * scale).toFixed(2) + "s");
+        root.style.setProperty("--intro-wrap-delay", (1.45 * scale).toFixed(2) + "s");
+        root.style.setProperty("--intro-fade", (0.7 * scale).toFixed(2) + "s");
+
+        var envScript = c.envelopeFontScript || c.fontScript || "Allura";
+        var envSans = c.envelopeFontSans || c.fontSans || "Source Sans 3";
+        root.style.setProperty("--env-font-script", SCRIPT_STACK[envScript] || SCRIPT_STACK.Allura);
+        root.style.setProperty("--env-font-sans", SANS_STACK[envSans] || SANS_STACK["Source Sans 3"]);
+
+        var link = document.getElementById("dynamicSiteFonts");
+        if (link && link.href) {
+          var extra = [envScript, envSans].map(function (n) { return FONT_HREF[n]; }).filter(Boolean);
+          extra.forEach(function (family) {
+            if (link.href.indexOf(family) === -1) {
+              link.href += "&family=" + family;
+            }
+          });
+        }
+
+        var color = c.envelopeColor || "#93c4bc";
+        var colorAlt = c.envelopeColorAlt || "#6ba7a0";
+        var ink = c.envelopeInk || "#2c5853";
+        var colorMode = c.envelopeColorMode || "solid";
+        var imageUrl = String(c.envelopeImage || "").trim();
+
+        root.style.setProperty("--env-fill", color);
+        root.style.setProperty("--env-fill-2", colorAlt);
+        root.style.setProperty("--env-ink", ink);
+        root.style.setProperty("--env-ink-names", ink);
+        if (envelope) {
+          envelope.style.setProperty("--env-fill", color);
+          envelope.style.setProperty("--env-fill-2", colorAlt);
+          envelope.style.setProperty("--env-ink", ink);
+          envelope.classList.remove("env-mode-solid", "env-mode-twoTone", "env-mode-image");
+          if (colorMode === "twoTone") {
+            envelope.classList.add("env-mode-twoTone");
+            envelope.style.setProperty("--env-image", "none");
+          } else if (colorMode === "image" && imageUrl) {
+            envelope.classList.add("env-mode-image");
+            envelope.style.setProperty("--env-image", 'url("' + imageUrl.replace(/"/g, '\\"') + '")');
+          } else {
+            envelope.classList.add("env-mode-solid");
+            envelope.style.setProperty("--env-image", "none");
+          }
+        }
+      }
+
       function applyContent(c) {
         if (!c) return;
+        applyAppearance(c);
         if (c.weddingDate) {
           const parsed = new Date(c.weddingDate);
           if (!isNaN(parsed.getTime())) weddingDate = parsed;

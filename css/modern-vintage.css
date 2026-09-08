@@ -41,7 +41,6 @@
   border-radius: 999px;
   letter-spacing: 0.24em;
   font-size: 0.64rem;
-  backdrop-filter: blur(6px);
 }
 
 /* ── RSVP section ── */
@@ -77,8 +76,6 @@
   border: 1px solid var(--mv-line) !important;
   border-radius: var(--mv-radius-md) !important;
   background: var(--mv-cream) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   box-shadow: var(--mv-shadow-soft) !important;
   position: relative;
 }
@@ -291,8 +288,6 @@
   border: 1px solid var(--mv-line-strong) !important;
   border-radius: var(--mv-radius-sm) !important;
   background: rgba(255, 255, 255, 0.96) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 16px 36px rgba(13, 43, 69, 0.12) !important;
   overflow: hidden;
 }
@@ -486,7 +481,6 @@
   border: 1px solid var(--mv-line);
   border-radius: var(--mv-radius-lg);
   background: var(--mv-cream);
-  backdrop-filter: blur(8px);
   box-shadow: var(--mv-shadow-soft);
 }
 

@@ -4,9 +4,9 @@ Coastal-chic wedding invitation with a prenup gallery, attire guide, interactive
 
 **Palette:** ocean deep `#0D2B45` · teal `#1E5A6E` · seafoam `#6BA7A0` · sky `#B7D4E6` · sand `#DCC8AA`
 
-**Type:** Cormorant Garamond for names and headings, Source Sans 3 for body and forms. Each section is a torn ocean-teal paper sheet, in invitation order from cover to RSVP.
+**Type:** Cormorant Garamond for names and headings, Source Sans 3 for body and forms.
 
-**Hero:** ivory / soft teal (`#2A8A8A`) / sage torn-paper collage — desktop `img/hero/torn-paper-desktop.webp` (16:9) and mobile `img/hero/torn-paper-mobile.webp` (9:16). A fixed page collage wash (`img/hero/torn-paper-page.webp`) sits behind every section; sheet colors rumble from ivory→teal→sage→deep coastal as you scroll.
+**Background:** a continuous stitched torn-paper scroll (`img/bg/torn-stitched-scroll.webp`) behind translucent content panels, with the coastal palette above.
 
 ## Quick Start
 

@@ -844,6 +844,139 @@
           </div>
 
           <div class="card">
+            <h3>Appearance</h3>
+            <p class="lead" style="font-size:0.8rem;margin-bottom:1rem;">Fonts and calendar motion apply across the public invitation after you save.</p>
+            <label for="fontSerif">Headings &amp; body serif</label>
+            <select id="fontSerif" name="fontSerif">
+              <option value="Cormorant Garamond">Cormorant Garamond (default)</option>
+              <option value="Playfair Display">Playfair Display</option>
+              <option value="Libre Baskerville">Libre Baskerville</option>
+              <option value="Lora">Lora</option>
+              <option value="EB Garamond">EB Garamond</option>
+              <option value="Cormorant Infant">Cormorant Infant</option>
+            </select>
+            <label for="fontScript">Names / script</label>
+            <select id="fontScript" name="fontScript">
+              <option value="Allura">Allura — relaxed bohemian (default)</option>
+              <option value="Great Vibes">Great Vibes</option>
+              <option value="Sacramento">Sacramento</option>
+              <option value="Dancing Script">Dancing Script</option>
+              <option value="Parisienne">Parisienne</option>
+              <option value="Satisfy">Satisfy</option>
+              <option value="Alex Brush">Alex Brush</option>
+            </select>
+            <label for="fontSans">Labels &amp; UI sans</label>
+            <select id="fontSans" name="fontSans">
+              <option value="Source Sans 3">Source Sans 3 (default)</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Josefin Sans">Josefin Sans</option>
+              <option value="Nunito">Nunito</option>
+              <option value="Raleway">Raleway</option>
+              <option value="Poppins">Poppins</option>
+            </select>
+            <div class="row-2" style="margin-top:0.5rem">
+              <div>
+                <label for="calendarSpinMode">Calendar ring motion</label>
+                <select id="calendarSpinMode" name="calendarSpinMode">
+                  <option value="tick">Ticking clock</option>
+                  <option value="smooth">Smooth spin</option>
+                  <option value="off">Off</option>
+                </select>
+              </div>
+              <div>
+                <label for="calendarSpinSeconds">Full rotation speed</label>
+                <select id="calendarSpinSeconds" name="calendarSpinSeconds">
+                  <option value="120">Very slow — 2 minutes</option>
+                  <option value="60">Clock — 60 seconds (default)</option>
+                  <option value="30">Medium — 30 seconds</option>
+                  <option value="15">Faster — 15 seconds</option>
+                  <option value="8">Quick — 8 seconds</option>
+                </select>
+              </div>
+            </div>
+            <p id="appearancePreview" style="font-size:0.9rem;margin:1rem 0 0;padding:0.85rem 1rem;border:1px solid rgba(30,90,110,0.15);border-radius:10px;background:rgba(255,252,246,0.8)">
+              <span style="font-family:Georgia,serif" id="previewSerif">Heading sample</span>
+              ·
+              <span style="font-size:1.35rem" id="previewScript">Gio &amp; Augiela</span>
+              ·
+              <span style="font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase" id="previewSans">Save the date</span>
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>Envelope</h3>
+            <p class="lead" style="font-size:0.8rem;margin-bottom:1rem;">Control the intro envelope open speed, flap fonts, and paper look (solid, two-tone, or image).</p>
+            <label for="envelopeAnimSpeed">Open &amp; exit speed</label>
+            <select id="envelopeAnimSpeed" name="envelopeAnimSpeed">
+              <option value="0.65">Fast</option>
+              <option value="1">Normal (default)</option>
+              <option value="1.35">Slow</option>
+              <option value="1.75">Linger</option>
+            </select>
+            <div class="row-2">
+              <div>
+                <label for="envelopeFontScript">Flap name font</label>
+                <select id="envelopeFontScript" name="envelopeFontScript">
+                  <option value="">Same as site script</option>
+                  <option value="Allura">Allura</option>
+                  <option value="Great Vibes">Great Vibes</option>
+                  <option value="Sacramento">Sacramento</option>
+                  <option value="Dancing Script">Dancing Script</option>
+                  <option value="Parisienne">Parisienne</option>
+                  <option value="Satisfy">Satisfy</option>
+                  <option value="Alex Brush">Alex Brush</option>
+                </select>
+              </div>
+              <div>
+                <label for="envelopeFontSans">Flap label font</label>
+                <select id="envelopeFontSans" name="envelopeFontSans">
+                  <option value="">Same as site sans</option>
+                  <option value="Source Sans 3">Source Sans 3</option>
+                  <option value="Montserrat">Montserrat</option>
+                  <option value="Josefin Sans">Josefin Sans</option>
+                  <option value="Nunito">Nunito</option>
+                  <option value="Raleway">Raleway</option>
+                  <option value="Poppins">Poppins</option>
+                </select>
+              </div>
+            </div>
+            <label for="envelopeColorMode">Paper style</label>
+            <select id="envelopeColorMode" name="envelopeColorMode">
+              <option value="solid">Single color</option>
+              <option value="twoTone">Two-tone gradient</option>
+              <option value="image">Image / texture</option>
+            </select>
+            <div class="row-2" id="envelopeColorRow">
+              <div>
+                <label for="envelopeColor" id="envelopeColorLabel">Envelope color</label>
+                <input type="color" id="envelopeColor" name="envelopeColor" value="#93c4bc" />
+              </div>
+              <div id="envelopeColorAltWrap">
+                <label for="envelopeColorAlt">Second tone</label>
+                <input type="color" id="envelopeColorAlt" name="envelopeColorAlt" value="#6ba7a0" />
+              </div>
+            </div>
+            <div id="envelopeImageWrap" style="display:none;margin-top:0.35rem">
+              <label for="envelopeImage">Texture image URL</label>
+              <input id="envelopeImage" name="envelopeImage" placeholder="Paste a Drive link, image URL, or upload below" />
+              <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.45rem;flex-wrap:wrap">
+                <input type="file" id="envelopeImageFile" accept="image/jpeg,image/png,image/webp,image/gif" style="flex:1;min-width:12rem" />
+                <button type="button" class="btn btn-ghost" id="envelopeImageUpload">Upload texture</button>
+              </div>
+              <p class="lead" style="font-size:0.75rem;margin:0.4rem 0 0">Primary color above tints the image lightly. Local uploads may reset on free hosting redeploys — prefer Drive links for permanence.</p>
+            </div>
+            <label for="envelopeInk" style="margin-top:0.65rem">Flap text ink</label>
+            <input type="color" id="envelopeInk" name="envelopeInk" value="#2c5853" />
+            <div id="envelopePreview" aria-hidden="true" style="margin-top:1rem;height:92px;border-radius:10px;border:1px solid rgba(30,90,110,0.14);position:relative;overflow:hidden">
+              <div id="envelopePreviewPaper" style="position:absolute;inset:0;background:#93c4bc"></div>
+              <div style="position:absolute;left:50%;top:18%;transform:translateX(-50%);text-align:center;z-index:1">
+                <div id="envelopePreviewKicker" style="font-size:0.55rem;letter-spacing:0.22em;text-transform:uppercase;color:#2c5853">A love letter from</div>
+                <div id="envelopePreviewNames" style="font-size:1.35rem;color:#2c5853;line-height:1.1">Gio &amp; Augiela</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
             <h3>Our Story</h3>
             <label for="storyTitle">Title</label>
             <input id="storyTitle" name="storyTitle" />
@@ -1451,11 +1584,21 @@
       }
 
       function fillContentForm() {
-        ["groom","bride","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote","weddingDayTitle","weddingDaySubtitle","entourageTitle","entourageSubtitle","principalSponsorsTitle"]
+        ["groom","bride","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote","weddingDayTitle","weddingDaySubtitle","entourageTitle","entourageSubtitle","principalSponsorsTitle","fontSerif","fontScript","fontSans","calendarSpinMode","calendarSpinSeconds","envelopeAnimSpeed","envelopeFontScript","envelopeFontSans","envelopeColorMode","envelopeColor","envelopeColorAlt","envelopeInk","envelopeImage"]
           .forEach((k) => {
             const el = document.getElementById(k);
-            if (el) el.value = content[k] || "";
+            if (el) el.value = content[k] ?? el.value ?? "";
           });
+        if (!content.fontSerif) document.getElementById("fontSerif").value = "Cormorant Garamond";
+        if (!content.fontScript) document.getElementById("fontScript").value = "Allura";
+        if (!content.fontSans) document.getElementById("fontSans").value = "Source Sans 3";
+        if (!content.calendarSpinMode) document.getElementById("calendarSpinMode").value = "tick";
+        if (!content.calendarSpinSeconds) document.getElementById("calendarSpinSeconds").value = "60";
+        if (content.envelopeAnimSpeed == null || content.envelopeAnimSpeed === "") document.getElementById("envelopeAnimSpeed").value = "1";
+        if (!content.envelopeColorMode) document.getElementById("envelopeColorMode").value = "solid";
+        if (!content.envelopeColor) document.getElementById("envelopeColor").value = "#93c4bc";
+        if (!content.envelopeColorAlt) document.getElementById("envelopeColorAlt").value = "#6ba7a0";
+        if (!content.envelopeInk) document.getElementById("envelopeInk").value = "#2c5853";
         document.getElementById("weddingDate").value = content.weddingDate || "";
         document.getElementById("weddingDateDisplay").value = content.weddingDateDisplay || "";
         document.getElementById("weddingDateTime").value = toDatetimeLocalValue(content.weddingDate);
@@ -1467,6 +1610,8 @@
         renderEntourageGroups();
         renderVenues();
         renderWeddingDayTimeline();
+        syncAppearancePreview();
+        syncEnvelopeAdminUI();
       }
 
       document.getElementById("weddingDateTime").addEventListener("change", syncWeddingFieldsFromPicker);
@@ -1475,8 +1620,10 @@
       function collectContent() {
         syncWeddingFieldsFromPicker();
         const data = { ...content };
-        ["groom","bride","weddingDate","weddingDateDisplay","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote","weddingDayTitle","weddingDaySubtitle","entourageTitle","entourageSubtitle","principalSponsorsTitle"]
+        ["groom","bride","weddingDate","weddingDateDisplay","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote","weddingDayTitle","weddingDaySubtitle","entourageTitle","entourageSubtitle","principalSponsorsTitle","fontSerif","fontScript","fontSans","calendarSpinMode","envelopeFontScript","envelopeFontSans","envelopeColorMode","envelopeColor","envelopeColorAlt","envelopeInk","envelopeImage"]
           .forEach((k) => { data[k] = document.getElementById(k).value; });
+        data.calendarSpinSeconds = Number(document.getElementById("calendarSpinSeconds").value) || 60;
+        data.envelopeAnimSpeed = Number(document.getElementById("envelopeAnimSpeed").value) || 1;
 
         data.timeline = [...document.querySelectorAll("#timelineFields .timeline-editor")].map((row) => ({
           year: row.querySelector('[data-field="year"]').value,
@@ -1524,6 +1671,114 @@
 
         return data;
       }
+
+      const APPEARANCE_FONT_HREF = {
+        "Cormorant Garamond": "Cormorant+Garamond:ital,wght@0,500;1,400",
+        "Playfair Display": "Playfair+Display:ital,wght@0,500;1,400",
+        "Libre Baskerville": "Libre+Baskerville:ital,wght@0,400;1,400",
+        "Lora": "Lora:ital,wght@0,500;1,400",
+        "EB Garamond": "EB+Garamond:ital,wght@0,500;1,400",
+        "Cormorant Infant": "Cormorant+Infant:ital,wght@0,500;1,400",
+        "Allura": "Allura",
+        "Great Vibes": "Great+Vibes",
+        "Sacramento": "Sacramento",
+        "Dancing Script": "Dancing+Script:wght@500",
+        "Parisienne": "Parisienne",
+        "Satisfy": "Satisfy",
+        "Alex Brush": "Alex+Brush",
+        "Source Sans 3": "Source+Sans+3:wght@400;500;600",
+        "Montserrat": "Montserrat:wght@400;500;600",
+        "Josefin Sans": "Josefin+Sans:wght@400;500;600",
+        "Nunito": "Nunito:wght@400;600",
+        "Raleway": "Raleway:wght@400;500;600",
+        "Poppins": "Poppins:wght@400;500;600",
+      };
+
+      function loadAppearancePreviewFonts(serif, script, sans) {
+        const families = [serif, script, sans]
+          .map((name) => APPEARANCE_FONT_HREF[name])
+          .filter(Boolean);
+        let link = document.getElementById("appearanceFontLink");
+        if (!link) {
+          link = document.createElement("link");
+          link.id = "appearanceFontLink";
+          link.rel = "stylesheet";
+          document.head.appendChild(link);
+        }
+        link.href = "https://fonts.googleapis.com/css2?family=" + families.join("&family=") + "&display=swap";
+      }
+
+      function syncAppearancePreview() {
+        const serif = document.getElementById("fontSerif").value || "Cormorant Garamond";
+        const script = document.getElementById("fontScript").value || "Allura";
+        const sans = document.getElementById("fontSans").value || "Source Sans 3";
+        loadAppearancePreviewFonts(serif, script, sans);
+        document.getElementById("previewSerif").style.fontFamily = '"' + serif + '", Georgia, serif';
+        document.getElementById("previewScript").style.fontFamily = '"' + script + '", cursive';
+        document.getElementById("previewSans").style.fontFamily = '"' + sans + '", system-ui, sans-serif';
+      }
+
+      ["fontSerif", "fontScript", "fontSans"].forEach((id) => {
+        document.getElementById(id).addEventListener("change", syncAppearancePreview);
+      });
+
+      function syncEnvelopeAdminUI() {
+        const mode = document.getElementById("envelopeColorMode").value || "solid";
+        const altWrap = document.getElementById("envelopeColorAltWrap");
+        const imageWrap = document.getElementById("envelopeImageWrap");
+        const colorLabel = document.getElementById("envelopeColorLabel");
+        altWrap.style.display = mode === "twoTone" ? "" : "none";
+        imageWrap.style.display = mode === "image" ? "" : "none";
+        colorLabel.textContent = mode === "image" ? "Tint color" : (mode === "twoTone" ? "Primary color" : "Envelope color");
+
+        const color = document.getElementById("envelopeColor").value || "#93c4bc";
+        const colorAlt = document.getElementById("envelopeColorAlt").value || "#6ba7a0";
+        const ink = document.getElementById("envelopeInk").value || "#2c5853";
+        const image = document.getElementById("envelopeImage").value.trim();
+        const paper = document.getElementById("envelopePreviewPaper");
+        const script = document.getElementById("envelopeFontScript").value || document.getElementById("fontScript").value || "Allura";
+        const sans = document.getElementById("envelopeFontSans").value || document.getElementById("fontSans").value || "Source Sans 3";
+        loadAppearancePreviewFonts(
+          document.getElementById("fontSerif").value || "Cormorant Garamond",
+          script,
+          sans
+        );
+        document.getElementById("envelopePreviewKicker").style.fontFamily = '"' + sans + '", system-ui, sans-serif';
+        document.getElementById("envelopePreviewKicker").style.color = ink;
+        document.getElementById("envelopePreviewNames").style.fontFamily = '"' + script + '", cursive';
+        document.getElementById("envelopePreviewNames").style.color = ink;
+        if (mode === "twoTone") {
+          paper.style.background = "linear-gradient(145deg, " + color + " 0%, " + colorAlt + " 100%)";
+        } else if (mode === "image" && image) {
+          paper.style.background = "linear-gradient(180deg, color-mix(in srgb, " + color + " 32%, transparent), color-mix(in srgb, " + color + " 16%, transparent)), url(\"" + image.replace(/"/g, '\\"') + "\") center / cover no-repeat";
+        } else {
+          paper.style.background = color;
+        }
+      }
+
+      ["envelopeColorMode", "envelopeColor", "envelopeColorAlt", "envelopeInk", "envelopeImage", "envelopeFontScript", "envelopeFontSans", "fontScript", "fontSans"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("input", syncEnvelopeAdminUI);
+        if (el) el.addEventListener("change", syncEnvelopeAdminUI);
+      });
+
+      document.getElementById("envelopeImageUpload").addEventListener("click", async () => {
+        const fileInput = document.getElementById("envelopeImageFile");
+        if (!fileInput.files || !fileInput.files[0]) {
+          toast("Choose an image file first", true);
+          return;
+        }
+        const fd = new FormData();
+        fd.append("file", fileInput.files[0]);
+        try {
+          const res = await api("/api/admin/upload", { method: "POST", body: fd });
+          document.getElementById("envelopeImage").value = res.src;
+          syncEnvelopeAdminUI();
+          toast("Texture uploaded — save details to apply");
+        } catch (ex) {
+          toast(ex.message, true);
+        }
+      });
 
       document.getElementById("addTimeline").addEventListener("click", () => {
         content = collectContent();

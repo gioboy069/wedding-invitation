@@ -5,7 +5,7 @@
   "weddingDateDisplay": "February 18, 2027",
   "location": "San Luis, Tarlac City",
   "heroPre": "Together with their families",
-  "heroPhoto": "img/couple/where-love-felt-easy.jpg",
+  "heroPhoto": "img/couple/where-love-felt-easy.webp",
   "heroPhotoAlt": "Gio Anthony and Augiela Shane",
   "inviteGreeting": "Dear friends and family!",
   "inviteBody": "With joyful hearts we invite you to celebrate the wedding of Gio Anthony and Augiela Shane. Come share in the vows, the dinner, and the dancing as we begin our life together.",
@@ -89,12 +89,24 @@
   "entourageSubtitle": "With grateful hearts, we honor the family and friends who walk beside us.",
   "principalSponsorsTitle": "Principal Sponsors",
   "ninongs": [
-    { "name": "Mr. Roberto Santos" },
-    { "name": "Mr. Miguel Reyes" }
+    {
+      "name": "Mr. Roberto Santos",
+      "photo": ""
+    },
+    {
+      "name": "Mr. Miguel Reyes",
+      "photo": ""
+    }
   ],
   "ninangs": [
-    { "name": "Mrs. Elena Cruz" },
-    { "name": "Mrs. Patricia Lim" }
+    {
+      "name": "Mrs. Elena Cruz",
+      "photo": ""
+    },
+    {
+      "name": "Mrs. Patricia Lim",
+      "photo": ""
+    }
   ],
   "entourageGroups": [
     {
@@ -210,5 +222,18 @@
       "text": "",
       "icon": "moon"
     }
-  ]
+  ],
+  "fontSerif": "Cormorant Garamond",
+  "fontScript": "Allura",
+  "fontSans": "Source Sans 3",
+  "calendarSpinMode": "tick",
+  "calendarSpinSeconds": 60,
+  "envelopeAnimSpeed": 1,
+  "envelopeFontScript": "",
+  "envelopeFontSans": "",
+  "envelopeColorMode": "solid",
+  "envelopeColor": "#93c4bc",
+  "envelopeColorAlt": "#6ba7a0",
+  "envelopeInk": "#2c5853",
+  "envelopeImage": ""
 }
