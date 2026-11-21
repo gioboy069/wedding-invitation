@@ -11,7 +11,7 @@
   <link rel="preload" as="image" href="/img/couple/where-love-felt-easy.webp" type="image/webp" />
   <link href="https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,500;1,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/shared.css?v=perf-1" />
-  <script src="/js/shared.js?v=perf-1" defer></script>
+  <script src="/js/shared.js?v=nav-scroll-2" defer></script>
   <style>
     :root {
       --deep: #0d2b45;
@@ -1358,7 +1358,8 @@
 
     .lightbox-close {
       top: 1.25rem;
-      right: 1.25rem;
+      left: max(0.75rem, env(safe-area-inset-left));
+      right: auto;
       font-size: 1.6rem;
       border-radius: 50%;
     }
@@ -1483,8 +1484,17 @@
       height: 14px;
     }
 
-    #attire {
-      scroll-margin-top: 6rem;
+    #story,
+    #venue,
+    #gallery,
+    #attire,
+    #rsvp,
+    #wedding-day,
+    #entourage,
+    #details,
+    #calendar,
+    #countdown-section {
+      scroll-margin-top: clamp(5.5rem, 12vw, 7rem);
     }
 
     .attire-expand-btn {
@@ -4213,20 +4223,21 @@
       function scrollToHashTarget() {
         var hash = window.location.hash;
         if (!hash || hash === "#") return;
-        var id = decodeURIComponent(hash.slice(1));
-        /* Opening hashes skip the envelope and stay at the names */
-        if (id === "invite" || id === "hero") {
-          window.scrollTo(0, 0);
+        if (window.WeddingUI && window.WeddingUI.scrollToHash) {
+          window.WeddingUI.scrollToHash(hash, "smooth");
           return;
         }
-        if (id === "attire") {
-          setAttireExpanded(true, false);
+        var id = decodeURIComponent(hash.slice(1));
+        if (id === "invite" || id === "hero") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
         }
+        if (id === "attire") setAttireExpanded(true, false);
         var el = document.getElementById(id);
         if (!el) return;
-        requestAnimationFrame(function () {
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
-        });
+        var offset = 96;
+        var top = el.getBoundingClientRect().top + (window.scrollY || 0) - offset;
+        window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
       }
 
       function playHeroMotion() {
@@ -4391,7 +4402,7 @@
         if (nav) nav.classList.remove("menu-open");
       }
 
-      function pinDockedNav(docked, y) {
+      function pinDockedNav(docked) {
         if (!nav) return;
         if (!docked) {
           ["position", "top", "right", "left", "bottom", "margin", "width", "transform", "opacity", "visibility"].forEach(function (prop) {
@@ -4400,8 +4411,8 @@
           nav.removeAttribute("data-dock-compensate");
           return;
         }
-        y = Number(y) || 0;
         nav.style.setProperty("position", "fixed", "important");
+        nav.style.setProperty("top", "16px", "important");
         nav.style.setProperty("right", "16px", "important");
         nav.style.setProperty("left", "auto", "important");
         nav.style.setProperty("bottom", "auto", "important");
@@ -4410,13 +4421,7 @@
         nav.style.setProperty("transform", "none", "important");
         nav.style.setProperty("opacity", "1", "important");
         nav.style.setProperty("visibility", "visible", "important");
-        var compensate = nav.getAttribute("data-dock-compensate") === "1";
-        nav.style.setProperty("top", (compensate ? 16 + y : 16) + "px", "important");
-        var rect = nav.getBoundingClientRect();
-        if (rect.top < 4) {
-          nav.setAttribute("data-dock-compensate", "1");
-          nav.style.setProperty("top", (16 + y) + "px", "important");
-        }
+        nav.removeAttribute("data-dock-compensate");
       }
 
       /* Dock collapsed nav to the right while scrolling */
@@ -4426,7 +4431,7 @@
         var shouldDock = y > 80;
         nav.classList.toggle("scrolled", y > 24);
         nav.classList.toggle("nav-docked", shouldDock);
-        pinDockedNav(shouldDock, y);
+        pinDockedNav(shouldDock);
         if (!shouldDock) closeMenu();
       }
 
@@ -4448,8 +4453,24 @@
       if (navOverlay) navOverlay.addEventListener("click", closeMenu);
       if (navLinks) {
         navLinks.querySelectorAll("a").forEach(function (link) {
-          link.addEventListener("click", function () {
+          link.addEventListener("click", function (e) {
+            var href = link.getAttribute("href") || "";
             closeMenu();
+            if (href.charAt(0) !== "#" || href.length < 2) return;
+            e.preventDefault();
+            e.stopPropagation();
+            if (history.pushState) history.pushState(null, "", href);
+            else window.location.hash = href;
+            var go = function () {
+              if (window.WeddingUI && window.WeddingUI.scrollToHash) {
+                window.WeddingUI.scrollToHash(href, "smooth");
+              } else {
+                scrollToHashTarget();
+              }
+            };
+            // Wait a tick so the docked menu can close before measuring targets
+            go();
+            window.setTimeout(go, 100);
           });
         });
       }

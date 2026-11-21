@@ -154,11 +154,17 @@
     }
   }
 
-  function scrollToHash(hash, behavior) {
-    if (!hash || hash === "#") return false;
-    var id = decodeURIComponent(hash.replace(/^#/, ""));
+  function navScrollOffset() {
+    var nav = document.getElementById("nav") || document.querySelector(".nav");
+    if (!nav) return 96;
+    var h = nav.getBoundingClientRect().height || 0;
+    return Math.max(88, Math.round(h + 28));
+  }
+
+  function scrollToSectionId(id, behavior) {
+    if (!id) return false;
     if (id === "invite" || id === "hero") {
-      window.scrollTo({ top: 0, behavior: behavior || "auto" });
+      window.scrollTo({ top: 0, behavior: behavior || "smooth" });
       return true;
     }
     if (id === "attire" && window.WeddingUI && window.WeddingUI.setAttireExpanded) {
@@ -166,10 +172,26 @@
     }
     var el = document.getElementById(id);
     if (!el) return false;
+
+    function move() {
+      var top = el.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
+      var target = Math.max(0, top - navScrollOffset());
+      window.scrollTo({ top: target, behavior: behavior || "smooth" });
+    }
+
     requestAnimationFrame(function () {
-      el.scrollIntoView({ behavior: behavior || "smooth", block: "start" });
+      move();
+      // Retry after layout settles (expanded attire, docked nav, fonts)
+      window.setTimeout(move, 80);
+      window.setTimeout(move, 280);
     });
     return true;
+  }
+
+  function scrollToHash(hash, behavior) {
+    if (!hash || hash === "#") return false;
+    var id = decodeURIComponent(hash.replace(/^#/, ""));
+    return scrollToSectionId(id, behavior);
   }
 
   function navigateWithTransition(url) {
@@ -273,7 +295,7 @@
     });
   }
 
-  function pinDockedNav(nav, docked, y) {
+  function pinDockedNav(nav, docked) {
     if (!nav) return;
     if (!docked) {
       ["position", "top", "right", "left", "bottom", "margin", "width", "transform", "opacity", "visibility"].forEach(function (prop) {
@@ -283,8 +305,9 @@
       return;
     }
 
-    y = Number(y) || 0;
+    // Keep docked menu pinned to the viewport corner (never offset by scrollY)
     nav.style.setProperty("position", "fixed", "important");
+    nav.style.setProperty("top", "16px", "important");
     nav.style.setProperty("right", "16px", "important");
     nav.style.setProperty("left", "auto", "important");
     nav.style.setProperty("bottom", "auto", "important");
@@ -293,15 +316,7 @@
     nav.style.setProperty("transform", "none", "important");
     nav.style.setProperty("opacity", "1", "important");
     nav.style.setProperty("visibility", "visible", "important");
-
-    var compensate = nav.getAttribute("data-dock-compensate") === "1";
-    nav.style.setProperty("top", (compensate ? 16 + y : 16) + "px", "important");
-
-    var rect = nav.getBoundingClientRect();
-    if (rect.top < 4) {
-      nav.setAttribute("data-dock-compensate", "1");
-      nav.style.setProperty("top", (16 + y) + "px", "important");
-    }
+    nav.removeAttribute("data-dock-compensate");
   }
 
   function bindStickyNav() {
@@ -336,7 +351,7 @@
       if (menuOpen) nav.classList.add("menu-open");
       else nav.classList.remove("menu-open");
 
-      pinDockedNav(nav, shouldDock, y);
+      pinDockedNav(nav, shouldDock);
 
       if (wasDocked && !shouldDock) closeMenuIfNeeded();
       ticking = false;
@@ -405,4 +420,5 @@
   /* Expose for index.html envelope + hash scroll */
   window.WeddingUI = window.WeddingUI || {};
   window.WeddingUI.scrollToHash = scrollToHash;
+  window.WeddingUI.scrollToSectionId = scrollToSectionId;
 })();
