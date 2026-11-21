@@ -1305,6 +1305,7 @@
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.4s, visibility 0.4s;
+      touch-action: pan-y;
     }
 
     .lightbox.open {
@@ -1314,46 +1315,63 @@
 
     .lightbox img,
     .lightbox video {
-      max-width: min(960px, 100%);
+      max-width: min(960px, 92vw);
       max-height: 78vh;
       object-fit: contain;
       box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
       background: #0a1f30;
+      touch-action: none;
     }
 
     .lightbox-close,
     .lightbox-prev,
     .lightbox-next {
       position: absolute;
-      background: none;
-      border: 1px solid rgba(247, 245, 241, 0.3);
-      color: var(--bg);
-      width: 44px;
-      height: 44px;
+      background: rgba(247, 245, 241, 0.18);
+      border: 1px solid rgba(247, 245, 241, 0.55);
+      color: #f7f5f1;
+      width: 52px;
+      height: 52px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.3s, border-color 0.3s;
-      z-index: 2;
+      transition: background 0.3s, border-color 0.3s, transform 0.2s;
+      z-index: 3;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+      font-size: 1.35rem;
+      line-height: 1;
     }
 
     .lightbox-close:hover,
     .lightbox-prev:hover,
-    .lightbox-next:hover {
-      background: rgba(247, 245, 241, 0.1);
-      border-color: var(--sage-light);
+    .lightbox-next:hover,
+    .lightbox-close:focus-visible,
+    .lightbox-prev:focus-visible,
+    .lightbox-next:focus-visible {
+      background: rgba(247, 245, 241, 0.32);
+      border-color: #f7f5f1;
+      outline: none;
     }
 
     .lightbox-close {
-      top: 1.5rem;
-      right: 1.5rem;
-      font-size: 1.5rem;
-      line-height: 1;
+      top: 1.25rem;
+      right: 1.25rem;
+      font-size: 1.6rem;
+      border-radius: 50%;
     }
 
-    .lightbox-prev { left: 1.5rem; top: 50%; transform: translateY(-50%); }
-    .lightbox-next { right: 1.5rem; top: 50%; transform: translateY(-50%); }
+    .lightbox-prev,
+    .lightbox-next {
+      top: 50%;
+      transform: translateY(-50%);
+      border-radius: 50%;
+    }
+
+    .lightbox-prev { left: max(0.75rem, env(safe-area-inset-left)); }
+    .lightbox-next { right: max(0.75rem, env(safe-area-inset-right)); }
 
     .lightbox-caption {
       position: absolute;
@@ -1366,6 +1384,20 @@
       text-align: center;
       max-width: 600px;
       padding: 0 1rem;
+      pointer-events: none;
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+    }
+
+    .lightbox-swipe-hint {
+      position: absolute;
+      bottom: 0.65rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(247, 245, 241, 0.45);
+      pointer-events: none;
     }
 
     /* ── Attire teaser ── */
@@ -2631,14 +2663,25 @@
         padding-inline: 12vw;
       }
 
-      .lightbox-prev,
-      .lightbox-next {
-        width: 40px;
-        height: 40px;
+      .lightbox {
+        padding: 1rem 3.4rem;
       }
 
-      .lightbox-prev { left: 0.65rem; }
-      .lightbox-next { right: 0.65rem; }
+      .lightbox-prev,
+      .lightbox-next {
+        width: 46px;
+        height: 46px;
+        font-size: 1.2rem;
+        background: rgba(247, 245, 241, 0.26);
+      }
+
+      .lightbox-prev { left: 0.45rem; }
+      .lightbox-next { right: 0.45rem; }
+
+      .lightbox-caption {
+        bottom: 2.6rem;
+        font-size: 0.95rem;
+      }
 
       .attire-teaser-card {
         grid-template-columns: 1fr;
@@ -3869,6 +3912,7 @@
     <video id="galleryLightboxVideo" controls playsinline hidden></video>
     <button class="lightbox-next" id="galleryLightboxNext" type="button" aria-label="Next">&#8594;</button>
     <p class="lightbox-caption" id="galleryLightboxCaption"></p>
+    <p class="lightbox-swipe-hint" id="gallerySwipeHint">Swipe or use arrows</p>
   </div>
 
   <!-- Details note on a silver tray -->
@@ -5298,12 +5342,58 @@
         var prevBtn = document.getElementById("galleryLightboxPrev");
         var nextBtn = document.getElementById("galleryLightboxNext");
         if (closeBtn) closeBtn.addEventListener("click", closeGalleryLightbox);
-        if (prevBtn) prevBtn.addEventListener("click", function () { shiftGalleryLightbox(-1); });
-        if (nextBtn) nextBtn.addEventListener("click", function () { shiftGalleryLightbox(1); });
+        if (prevBtn) prevBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          shiftGalleryLightbox(-1);
+        });
+        if (nextBtn) nextBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          shiftGalleryLightbox(1);
+        });
         if (lightbox) {
           lightbox.addEventListener("click", function (e) {
             if (e.target === lightbox) closeGalleryLightbox();
           });
+
+          // Swipe left/right inside the enlarged viewer
+          var swipe = { active: false, x: 0, y: 0, dx: 0, dy: 0, id: null };
+          function swipeTargetOk(target) {
+            if (!target || !target.closest) return true;
+            if (target.closest(".lightbox-close, .lightbox-prev, .lightbox-next")) return false;
+            // Allow scrubbing video controls without changing slides
+            if (target.closest("video")) return false;
+            return true;
+          }
+          lightbox.addEventListener("pointerdown", function (e) {
+            if (!lightbox.classList.contains("open")) return;
+            if (e.button != null && e.button !== 0) return;
+            if (!swipeTargetOk(e.target)) return;
+            swipe.active = true;
+            swipe.id = e.pointerId;
+            swipe.x = e.clientX;
+            swipe.y = e.clientY;
+            swipe.dx = 0;
+            swipe.dy = 0;
+            try { lightbox.setPointerCapture(e.pointerId); } catch (err) {}
+          });
+          lightbox.addEventListener("pointermove", function (e) {
+            if (!swipe.active || e.pointerId !== swipe.id) return;
+            swipe.dx = e.clientX - swipe.x;
+            swipe.dy = e.clientY - swipe.y;
+          });
+          function endLightboxSwipe(e) {
+            if (!swipe.active) return;
+            if (e && swipe.id != null && e.pointerId !== swipe.id) return;
+            var dx = swipe.dx;
+            var dy = swipe.dy;
+            swipe.active = false;
+            swipe.id = null;
+            if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+            if (dx < 0) shiftGalleryLightbox(1);
+            else shiftGalleryLightbox(-1);
+          }
+          lightbox.addEventListener("pointerup", endLightboxSwipe);
+          lightbox.addEventListener("pointercancel", endLightboxSwipe);
         }
         document.addEventListener("keydown", function (e) {
           if (!lightbox || !lightbox.classList.contains("open")) return;
