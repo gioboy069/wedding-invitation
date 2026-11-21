@@ -161,8 +161,23 @@
     return Math.max(88, Math.round(h + 28));
   }
 
+  function unlockInvitationScroll() {
+    var body = document.body;
+    if (!body) return;
+    if (body.classList.contains("intro-locked")) {
+      body.classList.remove("intro-locked");
+      body.classList.add("intro-open");
+    }
+    body.style.overflow = "";
+    body.style.height = "";
+    document.documentElement.style.overflow = "";
+  }
+
+  var sectionScrollToken = 0;
+
   function scrollToSectionId(id, behavior) {
     if (!id) return false;
+    unlockInvitationScroll();
     if (id === "invite" || id === "hero") {
       window.scrollTo({ top: 0, behavior: behavior || "smooth" });
       return true;
@@ -173,17 +188,25 @@
     var el = document.getElementById(id);
     if (!el) return false;
 
-    function move() {
+    var token = ++sectionScrollToken;
+    function targetTop() {
       var top = el.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
-      var target = Math.max(0, top - navScrollOffset());
-      window.scrollTo({ top: target, behavior: behavior || "smooth" });
+      return Math.max(0, top - navScrollOffset());
+    }
+    function move(mode) {
+      if (token !== sectionScrollToken) return;
+      window.scrollTo({ top: targetTop(), behavior: mode });
     }
 
+    // One smooth jump, then a single snap if the first pass landed short
+    // (common on the first visit while the envelope lock is lifting).
     requestAnimationFrame(function () {
-      move();
-      // Retry after layout settles (expanded attire, docked nav, fonts)
-      window.setTimeout(move, 80);
-      window.setTimeout(move, 280);
+      move(behavior || "smooth");
+      window.setTimeout(function () {
+        if (token !== sectionScrollToken) return;
+        var delta = Math.abs(el.getBoundingClientRect().top - navScrollOffset());
+        if (delta > 40) move("auto");
+      }, 520);
     });
     return true;
   }
@@ -214,9 +237,26 @@
 
       var href = anchor.getAttribute("href") || "";
 
+      /* Home mark (G & A) and bare # links */
+      if (href === "#" || href === "#hero" || href === "#invite" || anchor.id === "navLogo" || anchor.classList.contains("nav-logo")) {
+        e.preventDefault();
+        unlockInvitationScroll();
+        if (window.WeddingUI && typeof window.WeddingUI.closeGalleryLightbox === "function") {
+          window.WeddingUI.closeGalleryLightbox();
+        }
+        if (history.pushState) {
+          history.pushState(null, "", window.location.pathname + window.location.search);
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
       /* In-page anchors */
       if (href.charAt(0) === "#" && href.length > 1) {
         e.preventDefault();
+        if (window.WeddingUI && typeof window.WeddingUI.closeGalleryLightbox === "function") {
+          window.WeddingUI.closeGalleryLightbox();
+        }
         if (history.pushState) {
           history.pushState(null, "", href);
         } else {
@@ -229,6 +269,9 @@
       /* Same document with hash (index.html#rsvp while on home) */
       if (samePageHashLink(anchor)) {
         e.preventDefault();
+        if (window.WeddingUI && typeof window.WeddingUI.closeGalleryLightbox === "function") {
+          window.WeddingUI.closeGalleryLightbox();
+        }
         var url = new URL(anchor.href, window.location.href);
         if (history.pushState) {
           history.pushState(null, "", url.hash);

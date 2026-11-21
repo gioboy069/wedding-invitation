@@ -11,7 +11,7 @@
   <link rel="preload" as="image" href="/img/couple/where-love-felt-easy.webp" type="image/webp" />
   <link href="https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,500;1,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/shared.css?v=perf-1" />
-  <script src="/js/shared.js?v=nav-scroll-2" defer></script>
+  <script src="/js/shared.js?v=nav-first-1" defer></script>
   <style>
     :root {
       --deep: #0d2b45;
@@ -90,11 +90,11 @@
 
     /* ── Navigation ── */
     .nav {
-      position: fixed;
+      position: fixed !important;
       top: calc(var(--frame-inset) + 0.45rem);
       left: 0;
       right: 0;
-      z-index: 230;
+      z-index: 600 !important;
       padding: 0.4rem 0.95rem;
       display: flex;
       align-items: center;
@@ -1298,6 +1298,7 @@
       inset: 0;
       z-index: 500;
       background: rgba(13, 43, 69, 0.94);
+      /* Nav sits above this so Story/Venue/etc. still work while open */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1399,6 +1400,35 @@
       text-transform: uppercase;
       color: rgba(247, 245, 241, 0.45);
       pointer-events: none;
+    }
+
+    /* Desktop only: indented ring inside the control border */
+    @media (min-width: 769px) {
+      .lightbox-close,
+      .lightbox-prev,
+      .lightbox-next {
+        width: 56px;
+        height: 56px;
+        border: 1px solid rgba(247, 245, 241, 0.62);
+        box-shadow:
+          inset 0 0 0 3px rgba(13, 43, 69, 0.42),
+          inset 0 0 0 4px rgba(247, 245, 241, 0.38),
+          inset 0 1px 3px rgba(0, 0, 0, 0.22),
+          0 8px 22px rgba(0, 0, 0, 0.28);
+      }
+
+      .lightbox-close:hover,
+      .lightbox-prev:hover,
+      .lightbox-next:hover,
+      .lightbox-close:focus-visible,
+      .lightbox-prev:focus-visible,
+      .lightbox-next:focus-visible {
+        box-shadow:
+          inset 0 0 0 3px rgba(13, 43, 69, 0.28),
+          inset 0 0 0 4px rgba(247, 245, 241, 0.55),
+          inset 0 1px 3px rgba(0, 0, 0, 0.18),
+          0 10px 24px rgba(0, 0, 0, 0.32);
+      }
     }
 
     /* ── Attire teaser ── */
@@ -2601,7 +2631,7 @@
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.25s, visibility 0.25s;
-        z-index: 220;
+        z-index: 590;
         pointer-events: none;
       }
 
@@ -3370,9 +3400,9 @@
       visibility: visible;
     }
   </style>
-  <link rel="stylesheet" href="/css/coastal.css?v=clothesline-1" />
+  <link rel="stylesheet" href="/css/coastal.css?v=nav-lightbox-2" />
   <link rel="stylesheet" href="/css/modern-vintage.css?v=perf-1" />
-  <link rel="stylesheet" href="/css/collage-rumble.css?v=clothesline-1" />
+  <link rel="stylesheet" href="/css/collage-rumble.css?v=nav-lightbox-2" />
 </head>
 <body class="intro-locked">
 
@@ -4451,29 +4481,82 @@
       }
 
       if (navOverlay) navOverlay.addEventListener("click", closeMenu);
+
+      function dismissGalleryThenGo(href) {
+        if (typeof closeGalleryLightbox === "function") closeGalleryLightbox();
+        else if (window.WeddingUI && typeof window.WeddingUI.closeGalleryLightbox === "function") {
+          window.WeddingUI.closeGalleryLightbox();
+        }
+        // First visit keeps the page locked under the envelope until the animation ends.
+        // Unlock immediately so the first nav click can reach the section.
+        document.body.classList.remove("intro-locked");
+        document.body.classList.add("intro-open");
+        document.body.style.overflow = "";
+        document.body.style.height = "";
+        var go = function () {
+          if (!href || href === "#") {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            return;
+          }
+          if (window.WeddingUI && window.WeddingUI.scrollToHash) {
+            window.WeddingUI.scrollToHash(href, "smooth");
+          } else {
+            window.location.hash = href;
+            scrollToHashTarget();
+          }
+        };
+        requestAnimationFrame(go);
+      }
+
+      function goHomeFromNav(e) {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        closeMenu();
+        if (history.pushState) {
+          history.pushState(null, "", window.location.pathname + window.location.search);
+        }
+        dismissGalleryThenGo("#");
+      }
+
+      var navLogo = document.getElementById("navLogo");
+      if (navLogo) {
+        navLogo.addEventListener("click", goHomeFromNav);
+      }
+
       if (navLinks) {
         navLinks.querySelectorAll("a").forEach(function (link) {
           link.addEventListener("click", function (e) {
             var href = link.getAttribute("href") || "";
             closeMenu();
+            if (href === "#" || href === "#hero" || href === "#invite") {
+              goHomeFromNav(e);
+              return;
+            }
             if (href.charAt(0) !== "#" || href.length < 2) return;
             e.preventDefault();
             e.stopPropagation();
             if (history.pushState) history.pushState(null, "", href);
             else window.location.hash = href;
-            var go = function () {
-              if (window.WeddingUI && window.WeddingUI.scrollToHash) {
-                window.WeddingUI.scrollToHash(href, "smooth");
-              } else {
-                scrollToHashTarget();
-              }
-            };
-            // Wait a tick so the docked menu can close before measuring targets
-            go();
-            window.setTimeout(go, 100);
+            dismissGalleryThenGo(href);
           });
         });
       }
+
+      // Capture-phase backup: section jumps and the G & A home mark close the photo
+      document.addEventListener("click", function (e) {
+        var anchor = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+        if (!anchor) return;
+        var href = anchor.getAttribute("href") || "";
+        var isHome = href === "#" || href === "#hero" || href === "#invite" || anchor.id === "navLogo" || anchor.classList.contains("nav-logo");
+        var isSection = href.charAt(0) === "#" && href.length > 1 && !isHome;
+        if (!isHome && !isSection) return;
+        if (typeof closeGalleryLightbox === "function") closeGalleryLightbox();
+        else if (window.WeddingUI && typeof window.WeddingUI.closeGalleryLightbox === "function") {
+          window.WeddingUI.closeGalleryLightbox();
+        }
+      }, true);
 
       window.addEventListener("load", function () {
         if (window.location.hash) scrollToHashTarget();
@@ -5236,6 +5319,7 @@
         if (caption) caption.textContent = item.caption || "";
         lightbox.hidden = false;
         lightbox.classList.add("open");
+        lightbox.style.pointerEvents = "";
         document.body.style.overflow = "hidden";
       }
 
@@ -5244,20 +5328,37 @@
         var video = document.getElementById("galleryLightboxVideo");
         var img = document.getElementById("galleryLightboxImg");
         if (video) {
-          video.pause();
+          try { video.pause(); } catch (err) {}
           video.removeAttribute("src");
+          video.load && video.load();
           video.hidden = true;
         }
         if (img) {
           img.removeAttribute("src");
           img.hidden = true;
         }
-        if (!lightbox) return;
-        lightbox.classList.remove("open");
-        lightbox.hidden = true;
+        if (lightbox) {
+          lightbox.classList.remove("open");
+          lightbox.hidden = true;
+          lightbox.style.pointerEvents = "none";
+        }
         document.body.style.overflow = "";
-        clothesline.auto = !clothesline.reduceMotion;
+        document.documentElement.style.overflow = "";
+        if (typeof clothesline !== "undefined" && clothesline) {
+          clothesline.auto = !clothesline.reduceMotion;
+          clothesline.dragging = false;
+        }
+        // Re-enable pointer events next frame so a following nav scroll works
+        if (lightbox) {
+          requestAnimationFrame(function () {
+            lightbox.style.pointerEvents = "";
+          });
+        }
       }
+
+      // Expose early so nav handlers can always close the viewer
+      window.WeddingUI = window.WeddingUI || {};
+      window.WeddingUI.closeGalleryLightbox = closeGalleryLightbox;
 
       function shiftGalleryLightbox(dir) {
         openGalleryLightbox(galleryLightboxIndex + dir);
@@ -6006,6 +6107,7 @@
 
       window.WeddingUI = window.WeddingUI || {};
       window.WeddingUI.setAttireExpanded = setAttireExpanded;
+      window.WeddingUI.closeGalleryLightbox = closeGalleryLightbox;
     })();
   </script>
 </body>

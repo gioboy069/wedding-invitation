@@ -99,14 +99,20 @@
   background-repeat: no-repeat !important;
 }
 
-.nav,
 .site-reveal,
 .scroll-progress {
   position: relative;
   z-index: 1;
 }
 
-.nav { z-index: 300; }
+/* Keep nav above the gallery lightbox so links work while a photo is open */
+.nav {
+  position: fixed !important;
+  z-index: 600 !important;
+}
+.nav-overlay {
+  z-index: 590 !important;
+}
 .scroll-progress { z-index: 400; }
 
 .envelope-intro::before {
