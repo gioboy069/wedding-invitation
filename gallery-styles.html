@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Choose a prenup gallery style for the invitation" />
+  <title>Gallery styles — pick one</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --deep: #0d2b45;
+      --teal: #1e5a6e;
+      --seafoam: #6ba7a0;
+      --sand: #dcc8aa;
+      --sky: #b7d4e6;
+      --paper: #f4f7f5;
+      --ink: #0d2b45;
+      --muted: #4a6674;
+      --font-serif: "Cormorant Garamond", Georgia, serif;
+      --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 90% 40% at 50% -10%, rgba(183, 212, 230, 0.55), transparent 55%),
+        linear-gradient(180deg, #e8eef2 0%, var(--paper) 28%, #e6ebe8 100%);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem 1.25rem;
+      padding: 0.85rem clamp(1rem, 3vw, 2rem);
+      background: rgba(244, 247, 245, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(13, 43, 69, 0.1);
+    }
+
+    .topbar-brand {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+
+    .topbar-brand span { color: var(--seafoam); }
+
+    .topbar-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .topbar-nav a {
+      text-decoration: none;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.45rem 0.75rem;
+      border: 1px solid rgba(30, 90, 110, 0.28);
+      color: var(--teal);
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .topbar-nav a:hover,
+    .topbar-nav a:focus-visible {
+      background: var(--deep);
+      color: #f7f5f1;
+      border-color: var(--deep);
+      outline: none;
+    }
+
+    .intro {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: clamp(2rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2rem) 1.5rem;
+      text-align: center;
+    }
+
+    .intro-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--seafoam);
+      margin-bottom: 0.75rem;
+    }
+
+    .intro h1 {
+      font-family: var(--font-serif);
+      font-weight: 500;
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.15;
+      margin-bottom: 0.85rem;
+    }
+
+    .intro p {
+      color: var(--muted);
+      font-size: 1.02rem;
+    }
+
+    .option {
+      padding: clamp(2rem, 5vw, 3.5rem) 0 clamp(3rem, 6vw, 4.5rem);
+      border-top: 1px solid rgba(13, 43, 69, 0.08);
+    }
+
+    .option-head {
+      max-width: 1100px;
+      margin: 0 auto 1.5rem;
+      padding: 0 clamp(1rem, 4vw, 2.5rem);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .option-meta .num {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--seafoam);
+      margin-bottom: 0.35rem;
+    }
+
+    .option-meta h2 {
+      font-family: var(--font-serif);
+      font-weight: 500;
+      font-size: clamp(1.6rem, 3vw, 2.15rem);
+      line-height: 1.2;
+    }
+
+    .option-meta p {
+      margin-top: 0.4rem;
+      max-width: 34rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .pick-btn {
+      appearance: none;
+      border: 1px solid var(--deep);
+      background: var(--deep);
+      color: #f7f5f1;
+      font-family: var(--font-sans);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.85rem 1.15rem;
+      cursor: pointer;
+      transition: background 0.25s var(--ease), color 0.25s var(--ease);
+    }
+
+    .pick-btn:hover,
+    .pick-btn:focus-visible {
+      background: transparent;
+      color: var(--deep);
+      outline: none;
+    }
+
+    .pick-btn.is-selected {
+      background: var(--seafoam);
+      border-color: var(--seafoam);
+      color: #0d2b45;
+    }
+
+    .gallery-empty {
+      text-align: center;
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--muted);
+      padding: 2rem 1rem;
+    }
+
+    .play-badge {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 1px solid rgba(247, 245, 241, 0.6);
+      background: rgba(13, 43, 69, 0.4);
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .play-badge svg {
+      width: 18px;
+      height: 18px;
+      margin-left: 2px;
+      fill: #f7f5f1;
+    }
+
+    /* ── Option 1: Horizon Ribbon ── */
+    .opt1 {
+      background: linear-gradient(180deg, rgba(13, 43, 69, 0.94) 0%, #16384f 100%);
+      color: #f4f7f5;
+    }
+
+    .opt1 .option-meta h2 { color: #f7f5f1; }
+    .opt1 .option-meta p { color: rgba(247, 245, 241, 0.68); }
+    .opt1 .option-meta .num { color: var(--sand); }
+    .opt1 .pick-btn {
+      background: transparent;
+      color: #f7f5f1;
+      border-color: rgba(247, 245, 241, 0.45);
+    }
+    .opt1 .pick-btn:hover,
+    .opt1 .pick-btn:focus-visible {
+      background: #f7f5f1;
+      color: var(--deep);
+    }
+    .opt1 .pick-btn.is-selected {
+      background: var(--sand);
+      border-color: var(--sand);
+      color: var(--deep);
+    }
+
+    .ribbon {
+      display: flex;
+      gap: 1.15rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: clamp(1rem, 4vw, 2.5rem);
+      padding: 0.25rem clamp(1rem, 4vw, 2.5rem) 1.5rem;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(220, 200, 170, 0.5) transparent;
+    }
+
+    .ribbon::-webkit-scrollbar { height: 5px; }
+    .ribbon::-webkit-scrollbar-thumb {
+      background: rgba(220, 200, 170, 0.45);
+      border-radius: 999px;
+    }
+
+    .ribbon-card {
+      flex: 0 0 min(68vw, 260px);
+      scroll-snap-align: start;
+      border: none;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      text-align: left;
+      color: inherit;
+    }
+
+    .ribbon-frame {
+      position: relative;
+      height: clamp(300px, 56vw, 400px);
+      overflow: hidden;
+      background: #1e5a6e;
+    }
+
+    .ribbon-frame img,
+    .ribbon-frame video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.7s var(--ease);
+    }
+
+    .ribbon-card:hover .ribbon-frame img,
+    .ribbon-card:hover .ribbon-frame video {
+      transform: scale(1.04);
+    }
+
+    .ribbon-caption {
+      margin-top: 0.75rem;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.98rem;
+      color: rgba(247, 245, 241, 0.88);
+      border-top: 1px solid rgba(220, 200, 170, 0.35);
+      padding-top: 0.55rem;
+    }
+
+    .hint {
+      text-align: center;
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      opacity: 0.55;
+      margin-top: 0.25rem;
+    }
+
+    /* ── Option 2: Tide Window ── */
+    .opt2 {
+      background:
+        linear-gradient(180deg, rgba(232, 238, 242, 0.9), rgba(244, 247, 245, 0.95));
+    }
+
+    .tide {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 clamp(1rem, 4vw, 2rem);
+    }
+
+    .tide-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      background: #1e5a6e;
+      overflow: hidden;
+      border: 1px solid rgba(13, 43, 69, 0.12);
+    }
+
+    .tide-stage img,
+    .tide-stage video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .tide-stage-btn {
+      position: absolute;
+      inset: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .tide-caption {
+      margin: 0.9rem 0 1.1rem;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 1.15rem;
+      color: var(--deep);
+      text-align: center;
+    }
+
+    .tide-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .tide-arrow {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(30, 90, 110, 0.35);
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--deep);
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    .tide-arrow:hover,
+    .tide-arrow:focus-visible {
+      background: var(--deep);
+      color: #f7f5f1;
+      outline: none;
+    }
+
+    .tide-strip {
+      display: flex;
+      gap: 0.55rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding: 0.15rem 0.1rem 0.55rem;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      flex: 1;
+    }
+
+    .tide-thumb {
+      flex: 0 0 88px;
+      height: 72px;
+      border: 1px solid transparent;
+      padding: 0;
+      background: #c9d6dc;
+      overflow: hidden;
+      cursor: pointer;
+      scroll-snap-align: start;
+      position: relative;
+    }
+
+    .tide-thumb img,
+    .tide-thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      opacity: 0.72;
+      transition: opacity 0.25s;
+    }
+
+    .tide-thumb.is-active {
+      border-color: var(--deep);
+    }
+
+    .tide-thumb.is-active img,
+    .tide-thumb.is-active video,
+    .tide-thumb:hover img,
+    .tide-thumb:hover video {
+      opacity: 1;
+    }
+
+    .tide-thumb .play-badge {
+      width: 28px;
+      height: 28px;
+    }
+
+    .tide-thumb .play-badge svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* ── Option 3: Drift Pages ── */
+    .opt3 {
+      background: linear-gradient(180deg, #102f45 0%, #1a4558 55%, #16384f 100%);
+      color: #f4f7f5;
+    }
+
+    .opt3 .option-meta h2 { color: #f7f5f1; }
+    .opt3 .option-meta p { color: rgba(247, 245, 241, 0.68); }
+    .opt3 .option-meta .num { color: var(--sky); }
+    .opt3 .pick-btn {
+      background: transparent;
+      color: #f7f5f1;
+      border-color: rgba(183, 212, 230, 0.45);
+    }
+    .opt3 .pick-btn:hover,
+    .opt3 .pick-btn:focus-visible {
+      background: var(--sky);
+      color: var(--deep);
+      border-color: var(--sky);
+    }
+    .opt3 .pick-btn.is-selected {
+      background: var(--sky);
+      border-color: var(--sky);
+      color: var(--deep);
+    }
+
+    .drift {
+      height: min(72vh, 640px);
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 clamp(1rem, 4vw, 2.5rem);
+      border: 1px solid rgba(183, 212, 230, 0.18);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(183, 212, 230, 0.45) transparent;
+    }
+
+    .drift-page {
+      position: relative;
+      height: 100%;
+      min-height: min(72vh, 640px);
+      scroll-snap-align: start;
+      border: none;
+      padding: 0;
+      width: 100%;
+      cursor: pointer;
+      overflow: hidden;
+      background: #0d2b45;
+      color: inherit;
+      text-align: left;
+    }
+
+    .drift-page img,
+    .drift-page video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .drift-page::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 42%, rgba(8, 28, 44, 0.72) 100%);
+      pointer-events: none;
+    }
+
+    .drift-caption {
+      position: absolute;
+      left: clamp(1rem, 3vw, 2rem);
+      right: clamp(1rem, 3vw, 2rem);
+      bottom: clamp(1.25rem, 3vw, 2rem);
+      z-index: 1;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: clamp(1.15rem, 2.4vw, 1.55rem);
+      color: #f7f5f1;
+    }
+
+    .choice-banner {
+      position: fixed;
+      left: 50%;
+      bottom: 1.1rem;
+      transform: translateX(-50%);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: rgba(13, 43, 69, 0.96);
+      color: #f7f5f1;
+      border: 1px solid rgba(183, 212, 230, 0.28);
+      max-width: calc(100vw - 1.5rem);
+      font-size: 0.9rem;
+    }
+
+    .choice-banner.is-visible { display: flex; flex-wrap: wrap; }
+
+    .choice-banner strong {
+      font-family: var(--font-serif);
+      font-weight: 500;
+      font-style: italic;
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(8, 24, 38, 0.94);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s, visibility 0.35s;
+    }
+
+    .lightbox.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .lightbox img,
+    .lightbox video {
+      max-width: min(960px, 100%);
+      max-height: 78vh;
+      object-fit: contain;
+      background: #0a1f30;
+    }
+
+    .lightbox-close,
+    .lightbox-prev,
+    .lightbox-next {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(247, 245, 241, 0.3);
+      background: transparent;
+      color: #f7f5f1;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      z-index: 2;
+    }
+
+    .lightbox-close { top: 1.25rem; right: 1.25rem; font-size: 1.4rem; }
+    .lightbox-prev { left: 1rem; top: 50%; transform: translateY(-50%); }
+    .lightbox-next { right: 1rem; top: 50%; transform: translateY(-50%); }
+
+    .lightbox-caption {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: rgba(247, 245, 241, 0.88);
+      text-align: center;
+      max-width: 36rem;
+      padding: 0 1rem;
+    }
+
+    @media (max-width: 700px) {
+      .tide-stage { aspect-ratio: 4 / 5; }
+      .option-head { align-items: start; flex-direction: column; }
+      .lightbox-prev, .lightbox-next { width: 38px; height: 38px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="topbar-brand" href="/">G <span>&</span> A</a>
+    <nav class="topbar-nav" aria-label="Style options">
+      <a href="#style-1">1 · Horizon</a>
+      <a href="#style-2">2 · Tide</a>
+      <a href="#style-3">3 · Drift</a>
+      <a href="/#gallery">Back to site</a>
+    </nav>
+  </header>
+
+  <section class="intro">
+    <p class="intro-label">Gallery styles</p>
+    <h1>Three elegant ways to scroll your prenup moments</h1>
+    <p>Each option uses your live gallery photos and videos. Try them, then tap <strong>Use this style</strong> on the one you want for the invitation.</p>
+  </section>
+
+  <section class="option opt1" id="style-1">
+    <div class="option-head">
+      <div class="option-meta">
+        <p class="num">Option 1</p>
+        <h2>Horizon Ribbon</h2>
+        <p>A calm sideways filmstrip of tall frames. Captions sit quietly beneath each photo — easy to swipe on phone.</p>
+      </div>
+      <button type="button" class="pick-btn" data-pick="1" data-name="Horizon Ribbon">Use this style</button>
+    </div>
+    <div class="ribbon" id="style1Track" aria-label="Horizon Ribbon gallery"></div>
+    <p class="hint">Swipe or scroll sideways</p>
+  </section>
+
+  <section class="option opt2" id="style-2">
+    <div class="option-head">
+      <div class="option-meta">
+        <p class="num">Option 2</p>
+        <h2>Tide Window</h2>
+        <p>One featured frame, with a scrolling strip of moments beneath. Arrows and thumbs move through the set together.</p>
+      </div>
+      <button type="button" class="pick-btn" data-pick="2" data-name="Tide Window">Use this style</button>
+    </div>
+    <div class="tide">
+      <div class="tide-stage" id="tideStage">
+        <img id="tideMainImg" alt="" hidden />
+        <video id="tideMainVideo" muted playsinline preload="metadata" hidden></video>
+        <button type="button" class="tide-stage-btn" id="tideOpen" aria-label="Open featured media"></button>
+        <span class="play-badge" id="tidePlay" hidden aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </span>
+      </div>
+      <p class="tide-caption" id="tideCaption"></p>
+      <div class="tide-nav">
+        <button type="button" class="tide-arrow" id="tidePrev" aria-label="Previous">&#8592;</button>
+        <div class="tide-strip" id="tideStrip" aria-label="Gallery thumbnails"></div>
+        <button type="button" class="tide-arrow" id="tideNext" aria-label="Next">&#8594;</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="option opt3" id="style-3">
+    <div class="option-head">
+      <div class="option-meta">
+        <p class="num">Option 3</p>
+        <h2>Drift Pages</h2>
+        <p>A vertical story reel — scroll down through full frames, one memory at a time, like turning soft pages.</p>
+      </div>
+      <button type="button" class="pick-btn" data-pick="3" data-name="Drift Pages">Use this style</button>
+    </div>
+    <div class="drift" id="style3Track" aria-label="Drift Pages gallery"></div>
+    <p class="hint" style="margin-top:0.85rem">Scroll inside the frame</p>
+  </section>
+
+  <div class="choice-banner" id="choiceBanner" role="status">
+    <span>Selected: <strong id="choiceName">—</strong></span>
+    <span>Tell me in chat: use option <strong id="choiceNum">—</strong></span>
+  </div>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Gallery viewer" hidden>
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close">&times;</button>
+    <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous">&#8592;</button>
+    <img id="lightboxImg" alt="" hidden />
+    <video id="lightboxVideo" controls playsinline hidden></video>
+    <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next">&#8594;</button>
+    <p class="lightbox-caption" id="lightboxCaption"></p>
+  </div>
+
+  <script>
+    (function () {
+      var items = [];
+      var tideIndex = 0;
+      var lightIndex = 0;
+      var selected = Number(localStorage.getItem("galleryStylePick") || 0) || 0;
+
+      function escapeHtml(s) {
+        return String(s || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function isVideo(item) {
+        return String(item && item.type || "").toLowerCase() === "video";
+      }
+
+      function mediaSrc(item) {
+        var src = String(item && item.src || "");
+        if (isVideo(item) && src.indexOf("/api/media/drive/") === 0 && src.indexOf("type=video") === -1) {
+          return src + (src.indexOf("?") === -1 ? "?" : "&") + "type=video";
+        }
+        return src;
+      }
+
+      function playBadge() {
+        return '<span class="play-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>';
+      }
+
+      function renderRibbon() {
+        var track = document.getElementById("style1Track");
+        if (!track) return;
+        if (!items.length) {
+          track.innerHTML = '<p class="gallery-empty">No gallery media yet.</p>';
+          return;
+        }
+        track.innerHTML = items.map(function (item, i) {
+          var video = isVideo(item);
+          var media = video
+            ? '<video src="' + escapeHtml(mediaSrc(item)) + '" muted playsinline preload="metadata"></video>' + playBadge()
+            : '<img src="' + escapeHtml(item.src) + '" alt="' + escapeHtml(item.alt || item.caption || "") + '" loading="lazy" />';
+          return (
+            '<button type="button" class="ribbon-card" data-index="' + i + '" aria-label="' + escapeHtml(item.caption || "Open media") + '">' +
+              '<div class="ribbon-frame">' + media + '</div>' +
+              '<p class="ribbon-caption">' + escapeHtml(item.caption || "") + '</p>' +
+            '</button>'
+          );
+        }).join("");
+      }
+
+      function setTide(index) {
+        if (!items.length) return;
+        tideIndex = (index + items.length) % items.length;
+        var item = items[tideIndex];
+        var img = document.getElementById("tideMainImg");
+        var video = document.getElementById("tideMainVideo");
+        var caption = document.getElementById("tideCaption");
+        var play = document.getElementById("tidePlay");
+        if (isVideo(item)) {
+          img.hidden = true;
+          img.removeAttribute("src");
+          video.hidden = false;
+          video.src = mediaSrc(item);
+          if (play) play.hidden = false;
+        } else {
+          video.pause();
+          video.removeAttribute("src");
+          video.hidden = true;
+          img.hidden = false;
+          img.src = item.src;
+          img.alt = item.alt || item.caption || "";
+          if (play) play.hidden = true;
+        }
+        if (caption) caption.textContent = item.caption || "";
+        document.querySelectorAll(".tide-thumb").forEach(function (btn) {
+          btn.classList.toggle("is-active", Number(btn.dataset.index) === tideIndex);
+        });
+        var active = document.querySelector('.tide-thumb[data-index="' + tideIndex + '"]');
+        if (active && active.scrollIntoView) {
+          active.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+        }
+      }
+
+      function renderTide() {
+        var strip = document.getElementById("tideStrip");
+        if (!strip) return;
+        if (!items.length) {
+          strip.innerHTML = "";
+          document.getElementById("tideCaption").textContent = "No gallery media yet.";
+          return;
+        }
+        strip.innerHTML = items.map(function (item, i) {
+          var video = isVideo(item);
+          var media = video
+            ? '<video src="' + escapeHtml(mediaSrc(item)) + '" muted playsinline preload="metadata"></video>' + playBadge()
+            : '<img src="' + escapeHtml(item.src) + '" alt="" loading="lazy" />';
+          return '<button type="button" class="tide-thumb" data-index="' + i + '" aria-label="' + escapeHtml(item.caption || "Show media") + '">' + media + '</button>';
+        }).join("");
+        setTide(0);
+      }
+
+      function renderDrift() {
+        var track = document.getElementById("style3Track");
+        if (!track) return;
+        if (!items.length) {
+          track.innerHTML = '<p class="gallery-empty">No gallery media yet.</p>';
+          return;
+        }
+        track.innerHTML = items.map(function (item, i) {
+          var video = isVideo(item);
+          var media = video
+            ? '<video src="' + escapeHtml(mediaSrc(item)) + '" muted playsinline preload="metadata"></video>' + playBadge()
+            : '<img src="' + escapeHtml(item.src) + '" alt="' + escapeHtml(item.alt || item.caption || "") + '" loading="lazy" />';
+          return (
+            '<button type="button" class="drift-page" data-index="' + i + '" aria-label="' + escapeHtml(item.caption || "Open media") + '">' +
+              media +
+              '<span class="drift-caption">' + escapeHtml(item.caption || "") + '</span>' +
+            '</button>'
+          );
+        }).join("");
+      }
+
+      function openLightbox(index) {
+        if (!items.length) return;
+        lightIndex = (index + items.length) % items.length;
+        var item = items[lightIndex];
+        var box = document.getElementById("lightbox");
+        var img = document.getElementById("lightboxImg");
+        var video = document.getElementById("lightboxVideo");
+        var caption = document.getElementById("lightboxCaption");
+        if (isVideo(item)) {
+          img.hidden = true;
+          img.removeAttribute("src");
+          video.hidden = false;
+          video.src = mediaSrc(item);
+          video.play().catch(function () {});
+        } else {
+          video.pause();
+          video.removeAttribute("src");
+          video.hidden = true;
+          img.hidden = false;
+          img.src = item.src;
+          img.alt = item.alt || item.caption || "";
+        }
+        caption.textContent = item.caption || "";
+        box.hidden = false;
+        box.classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeLightbox() {
+        var box = document.getElementById("lightbox");
+        var img = document.getElementById("lightboxImg");
+        var video = document.getElementById("lightboxVideo");
+        video.pause();
+        video.removeAttribute("src");
+        video.hidden = true;
+        img.removeAttribute("src");
+        img.hidden = true;
+        box.classList.remove("open");
+        box.hidden = true;
+        document.body.style.overflow = "";
+      }
+
+      function markPick(n) {
+        selected = n;
+        localStorage.setItem("galleryStylePick", String(n));
+        document.querySelectorAll(".pick-btn").forEach(function (btn) {
+          btn.classList.toggle("is-selected", Number(btn.dataset.pick) === n);
+          btn.textContent = Number(btn.dataset.pick) === n ? "Selected" : "Use this style";
+        });
+        var name = document.querySelector('.pick-btn[data-pick="' + n + '"]');
+        document.getElementById("choiceName").textContent = name ? name.dataset.name : "—";
+        document.getElementById("choiceNum").textContent = String(n);
+        document.getElementById("choiceBanner").classList.add("is-visible");
+      }
+
+      document.getElementById("style1Track").addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-index]");
+        if (btn) openLightbox(Number(btn.dataset.index) || 0);
+      });
+
+      document.getElementById("style3Track").addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-index]");
+        if (btn) openLightbox(Number(btn.dataset.index) || 0);
+      });
+
+      document.getElementById("tideStrip").addEventListener("click", function (e) {
+        var btn = e.target.closest(".tide-thumb");
+        if (btn) setTide(Number(btn.dataset.index) || 0);
+      });
+
+      document.getElementById("tidePrev").addEventListener("click", function () { setTide(tideIndex - 1); });
+      document.getElementById("tideNext").addEventListener("click", function () { setTide(tideIndex + 1); });
+      document.getElementById("tideOpen").addEventListener("click", function () { openLightbox(tideIndex); });
+
+      document.querySelectorAll(".pick-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          markPick(Number(btn.dataset.pick));
+        });
+      });
+
+      document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
+      document.getElementById("lightboxPrev").addEventListener("click", function () { openLightbox(lightIndex - 1); });
+      document.getElementById("lightboxNext").addEventListener("click", function () { openLightbox(lightIndex + 1); });
+      document.getElementById("lightbox").addEventListener("click", function (e) {
+        if (e.target.id === "lightbox") closeLightbox();
+      });
+      document.addEventListener("keydown", function (e) {
+        var box = document.getElementById("lightbox");
+        if (!box.classList.contains("open")) return;
+        if (e.key === "Escape") closeLightbox();
+        if (e.key === "ArrowLeft") openLightbox(lightIndex - 1);
+        if (e.key === "ArrowRight") openLightbox(lightIndex + 1);
+      });
+
+      fetch("/api/gallery")
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          items = Array.isArray(data) ? data : [];
+          renderRibbon();
+          renderTide();
+          renderDrift();
+          if (selected) markPick(selected);
+        })
+        .catch(function () {
+          document.getElementById("style1Track").innerHTML = '<p class="gallery-empty">Unable to load gallery.</p>';
+        });
+    })();
+  </script>
+</body>
+</html>

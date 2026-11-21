@@ -190,14 +190,50 @@ const storage = multer.diskStorage({
   },
 });
 
+const IMAGE_MIME = /^image\/(jpeg|png|webp|gif)$/;
+const VIDEO_MIME = /^video\/(mp4|webm|quicktime)$/;
+
 const upload = multer({
   storage,
   limits: { fileSize: 8 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (/^image\/(jpeg|png|webp|gif)$/.test(file.mimetype)) cb(null, true);
+    if (IMAGE_MIME.test(file.mimetype)) cb(null, true);
     else cb(new Error("Only image uploads are allowed"));
   },
 });
+
+const galleryUpload = multer({
+  storage,
+  limits: { fileSize: 48 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (IMAGE_MIME.test(file.mimetype) || VIDEO_MIME.test(file.mimetype)) cb(null, true);
+    else cb(new Error("Only photo (JPEG/PNG/WebP/GIF) or short video (MP4/WebM/MOV) uploads are allowed"));
+  },
+});
+
+function isVideoSrc(src, mime) {
+  if (mime && VIDEO_MIME.test(mime)) return true;
+  const value = String(src || "").toLowerCase();
+  return /\.(mp4|webm|mov)(\?|#|$)/i.test(value) || value.includes("/video/");
+}
+
+function galleryItemType(item, mime) {
+  const explicit = String(item?.type || "").toLowerCase();
+  if (explicit === "video" || explicit === "photo" || explicit === "image") {
+    return explicit === "image" ? "photo" : explicit;
+  }
+  return isVideoSrc(item?.src || item?.url, mime) ? "video" : "photo";
+}
+
+function isAllowedGallerySrc(src) {
+  const value = String(src || "").trim();
+  if (!value) return false;
+  if (/^https?:\/\//i.test(value)) return true;
+  if (value.startsWith("/api/media/drive/")) return true;
+  if (value.startsWith("/uploads/")) return true;
+  if (value.startsWith("img/") || value.startsWith("/img/")) return true;
+  return false;
+}
 
 const spreadsheetUpload = multer({
   storage: multer.memoryStorage(),
@@ -294,10 +330,14 @@ app.get("/api/content", (_req, res) => {
 app.get("/api/gallery", (_req, res) => {
   const gallery = readJson("gallery.json", []);
   res.json(
-    gallery.map((item) => ({
-      ...item,
-      src: normalizeImageUrl(item.src || item.url || ""),
-    }))
+    gallery.map((item) => {
+      const src = normalizeImageUrl(item.src || item.url || "");
+      return {
+        ...item,
+        src,
+        type: galleryItemType({ ...item, src }),
+      };
+    })
   );
 });
 
@@ -1180,18 +1220,25 @@ function rewriteDriveUrlsInContent(content) {
   return next;
 }
 
-// Proxy Google Drive images so they display reliably in <img> tags
+// Proxy Google Drive media so photos and short videos display reliably
 app.get("/api/media/drive/:id", async (req, res) => {
   const id = String(req.params.id || "").trim();
   if (!/^[a-zA-Z0-9_-]{10,}$/.test(id)) {
     return res.status(400).type("text").send("Invalid Drive file id");
   }
 
-  const candidates = [
-    `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w2000`,
-    `https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=w2000`,
-    `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`,
-  ];
+  const preferVideo = String(req.query.type || "").toLowerCase() === "video";
+  const candidates = preferVideo
+    ? [
+        `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`,
+        `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w2000`,
+        `https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=w2000`,
+      ]
+    : [
+        `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w2000`,
+        `https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=w2000`,
+        `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`,
+      ];
 
   for (const url of candidates) {
     try {
@@ -1199,7 +1246,7 @@ app.get("/api/media/drive/:id", async (req, res) => {
         redirect: "follow",
         headers: {
           "User-Agent": "Mozilla/5.0 (compatible; WeddingInvitation/1.0)",
-          Accept: "image/*,*/*;q=0.8",
+          Accept: preferVideo ? "video/*,image/*,*/*;q=0.8" : "image/*,*/*;q=0.8",
         },
       });
       if (!upstream.ok) continue;
@@ -1219,12 +1266,17 @@ app.get("/api/media/drive/:id", async (req, res) => {
         contentType.startsWith("image/") ||
         contentType.includes("octet-stream") ||
         contentType.includes("application/binary");
-      if (!isImage && contentType) continue;
+      const isVideo = contentType.startsWith("video/");
+      if (!isImage && !isVideo && contentType) continue;
 
-      res.setHeader(
-        "Content-Type",
-        contentType.startsWith("image/") ? contentType.split(";")[0] : "image/jpeg"
-      );
+      let outType = "image/jpeg";
+      if (contentType.startsWith("image/") || contentType.startsWith("video/")) {
+        outType = contentType.split(";")[0];
+      } else if (preferVideo) {
+        outType = "video/mp4";
+      }
+
+      res.setHeader("Content-Type", outType);
       res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
       return res.send(buffer);
     } catch (err) {
@@ -1232,18 +1284,24 @@ app.get("/api/media/drive/:id", async (req, res) => {
     }
   }
 
-  return res.status(404).type("text").send("Drive image unavailable. Check sharing is set to Anyone with the link.");
+  return res
+    .status(404)
+    .type("text")
+    .send("Drive media unavailable. Check sharing is set to Anyone with the link.");
 });
 
-app.post("/api/admin/gallery", requireAdmin, upload.single("photo"), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "Photo file is required" });
+app.post("/api/admin/gallery", requireAdmin, galleryUpload.single("photo"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "Photo or video file is required" });
 
+  const src = `/uploads/${req.file.filename}`;
+  const type = galleryItemType({ type: req.body?.type, src }, req.file.mimetype);
   const gallery = readJson("gallery.json", []);
   const item = {
     id: `g-${Date.now()}`,
-    src: `/uploads/${req.file.filename}`,
+    src,
+    type,
     caption: String(req.body.caption || "").trim() || "Untitled",
-    alt: String(req.body.alt || req.body.caption || "Prenup photo").trim(),
+    alt: String(req.body.alt || req.body.caption || (type === "video" ? "Prenup video" : "Prenup photo")).trim(),
     source: "upload",
   };
   gallery.unshift(item);
@@ -1252,18 +1310,21 @@ app.post("/api/admin/gallery", requireAdmin, upload.single("photo"), (req, res) 
 });
 
 app.post("/api/admin/gallery/url", requireAdmin, (req, res) => {
-  const src = normalizeImageUrl(req.body?.url || req.body?.src);
-  if (!src) return res.status(400).json({ error: "Image URL is required" });
-  if (!/^https?:\/\//i.test(src)) {
-    return res.status(400).json({ error: "URL must start with http:// or https://" });
+  const raw = req.body?.url || req.body?.src;
+  const src = normalizeImageUrl(raw);
+  if (!src) return res.status(400).json({ error: "Media URL is required" });
+  if (!isAllowedGallerySrc(src)) {
+    return res.status(400).json({ error: "URL must be http(s), a Drive link, or an uploaded file path" });
   }
 
+  const type = galleryItemType({ type: req.body?.type, src });
   const gallery = readJson("gallery.json", []);
   const item = {
     id: `g-${Date.now()}`,
     src,
+    type,
     caption: String(req.body.caption || "").trim() || "Untitled",
-    alt: String(req.body.alt || req.body.caption || "Prenup photo").trim(),
+    alt: String(req.body.alt || req.body.caption || (type === "video" ? "Prenup video" : "Prenup photo")).trim(),
     source: "url",
   };
   gallery.unshift(item);
@@ -1278,14 +1339,22 @@ app.patch("/api/admin/gallery/:id", requireAdmin, (req, res) => {
 
   if (req.body.caption !== undefined) gallery[idx].caption = String(req.body.caption).trim();
   if (req.body.alt !== undefined) gallery[idx].alt = String(req.body.alt).trim();
+  if (req.body.type !== undefined) {
+    gallery[idx].type = galleryItemType({ type: req.body.type, src: gallery[idx].src });
+  }
   if (req.body.url !== undefined || req.body.src !== undefined) {
     const next = normalizeImageUrl(req.body.url || req.body.src);
-    if (!next) return res.status(400).json({ error: "Image URL is required" });
+    if (!next || !isAllowedGallerySrc(next)) {
+      return res.status(400).json({ error: "Media URL is required" });
+    }
     gallery[idx].src = next;
     gallery[idx].source = "url";
+    if (req.body.type === undefined) {
+      gallery[idx].type = galleryItemType({ ...gallery[idx], src: next });
+    }
   }
   writeJson("gallery.json", gallery);
-  res.json(gallery[idx]);
+  res.json({ ...gallery[idx], type: galleryItemType(gallery[idx]) });
 });
 
 app.delete("/api/admin/gallery/:id", requireAdmin, (req, res) => {

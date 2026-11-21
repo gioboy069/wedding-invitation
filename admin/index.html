@@ -447,11 +447,25 @@
       overflow: hidden;
     }
 
-    .gallery-admin-item img {
+    .gallery-admin-item img,
+    .gallery-admin-item video {
       width: 100%;
       aspect-ratio: 4/5;
       object-fit: cover;
       display: block;
+      background: #e8eef2;
+    }
+
+    .gallery-admin-item .media-badge {
+      display: inline-block;
+      margin-bottom: 0.45rem;
+      padding: 0.15rem 0.45rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--sea);
+      border: 1px solid rgba(95, 168, 184, 0.45);
+      background: rgba(95, 168, 184, 0.12);
     }
 
     .gallery-admin-item .meta {
@@ -799,7 +813,7 @@
           <div class="stat"><strong id="statTotal">0</strong><span>Total RSVPs</span></div>
           <div class="stat"><strong id="statYes">0</strong><span>Guests attending</span></div>
           <div class="stat"><strong id="statNo">0</strong><span>Declined</span></div>
-          <div class="stat"><strong id="statPhotos">0</strong><span>Gallery Photos</span></div>
+          <div class="stat"><strong id="statPhotos">0</strong><span>Gallery Media</span></div>
           <div class="stat"><strong id="statGuests">0</strong><span>Guest List</span></div>
         </div>
 
@@ -1092,30 +1106,41 @@
       <!-- Gallery -->
       <section class="panel" id="panel-gallery">
         <h2>Gallery</h2>
-        <p class="lead">Add prenup photos from Google Drive (recommended on Render) or upload a file.</p>
+        <p class="lead">Add prenup photos and short videos from Google Drive (recommended on Render) or upload a file. They appear in the scrollable gallery on the invitation home page.</p>
 
         <div class="card" style="margin-bottom:1.25rem">
-          <h3>Google Drive photos (permanent)</h3>
+          <h3>Google Drive / URL (permanent)</h3>
           <ol style="font-size:0.85rem;color:var(--text-soft);line-height:1.7;padding-left:1.2rem;margin-bottom:1rem;text-align:left">
-            <li>Upload your photo to Google Drive</li>
+            <li>Upload your photo or short video to Google Drive</li>
             <li>Right-click the file → <strong>Share</strong> → General access: <strong>Anyone with the link</strong></li>
             <li>Click <strong>Copy link</strong></li>
-            <li>Paste the link below and save</li>
+            <li>Paste the link below, choose Photo or Video, and save</li>
           </ol>
           <form id="urlForm">
-            <label for="photoUrl">Google Drive link or image URL</label>
+            <label for="photoUrl">Google Drive link, image URL, or video URL</label>
             <input type="url" id="photoUrl" placeholder="https://drive.google.com/file/d/xxxxx/view?usp=sharing" required />
+            <label for="urlMediaType">Media type</label>
+            <select id="urlMediaType">
+              <option value="photo">Photo</option>
+              <option value="video">Short video</option>
+            </select>
             <label for="urlCaption">Caption</label>
             <input type="text" id="urlCaption" placeholder="Golden hour in the vineyard" />
-            <button type="submit" class="btn btn-primary">Add Drive Photo</button>
+            <button type="submit" class="btn btn-primary">Add from URL</button>
           </form>
         </div>
 
         <div class="upload-zone">
-          <p style="font-size:0.8rem;color:var(--text-soft);margin-bottom:1rem">File upload is temporary on Render Free and may be deleted on redeploy. Prefer Google Drive links above.</p>
+          <p style="font-size:0.8rem;color:var(--text-soft);margin-bottom:1rem">File upload is temporary on Render Free and may be deleted on redeploy. Prefer Google Drive links above. Short videos up to about 48&nbsp;MB (MP4 / WebM / MOV).</p>
           <form id="uploadForm">
-            <label for="photoFile">Choose photo (optional / temporary)</label>
-            <input type="file" id="photoFile" accept="image/jpeg,image/png,image/webp,image/gif" required />
+            <label for="photoFile">Choose photo or short video</label>
+            <input type="file" id="photoFile" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" required />
+            <label for="uploadMediaType">Media type</label>
+            <select id="uploadMediaType">
+              <option value="auto">Detect from file</option>
+              <option value="photo">Photo</option>
+              <option value="video">Short video</option>
+            </select>
             <label for="photoCaption">Caption</label>
             <input type="text" id="photoCaption" placeholder="Golden hour in the vineyard" />
             <button type="submit" class="btn btn-ghost">Upload File</button>
@@ -2048,26 +2073,41 @@
       });
 
       // Gallery
+      function galleryMediaType(g) {
+        return String(g?.type || "").toLowerCase() === "video" ? "video" : "photo";
+      }
+
       function renderGalleryAdmin() {
         document.getElementById("statPhotos").textContent = gallery.length;
         const wrap = document.getElementById("galleryAdmin");
         if (!gallery.length) {
-          wrap.innerHTML = "<p class='lead'>No photos yet. Add a Google Drive link above.</p>";
+          wrap.innerHTML = "<p class='lead'>No photos or videos yet. Add a Google Drive link or upload a file above.</p>";
           return;
         }
-        wrap.innerHTML = gallery.map((g) => `
+        wrap.innerHTML = gallery.map((g) => {
+          const type = galleryMediaType(g);
+          const media = type === "video"
+            ? `<video src="${escapeAttr(g.src)}" muted playsinline preload="metadata" controls></video>`
+            : `<img src="${escapeAttr(g.src)}" alt="${escapeAttr(g.alt || "")}" onerror="this.style.opacity=0.3" />`;
+          return `
           <div class="gallery-admin-item" data-id="${g.id}">
-            <img src="${escapeAttr(g.src)}" alt="${escapeAttr(g.alt || "")}" onerror="this.style.opacity=0.3" />
+            ${media}
             <div class="meta">
+              <span class="media-badge">${type === "video" ? "Video" : "Photo"}</span>
+              <label style="font-size:0.7rem;display:block;margin-bottom:0.25rem">Type</label>
+              <select data-type>
+                <option value="photo"${type === "photo" ? " selected" : ""}>Photo</option>
+                <option value="video"${type === "video" ? " selected" : ""}>Short video</option>
+              </select>
               <input data-cap value="${escapeAttr(g.caption || "")}" placeholder="Caption" />
-              <input data-url value="${escapeAttr(g.src || "")}" placeholder="Image URL" style="font-size:0.7rem" />
+              <input data-url value="${escapeAttr(g.src || "")}" placeholder="Media URL" style="font-size:0.7rem" />
               <div class="actions">
                 <button type="button" class="btn btn-ghost" data-save="${g.id}">Save</button>
                 <button type="button" class="btn btn-danger" data-del="${g.id}">Delete</button>
               </div>
             </div>
-          </div>
-        `).join("");
+          </div>`;
+        }).join("");
       }
 
       document.getElementById("urlForm").addEventListener("submit", async (e) => {
@@ -2078,12 +2118,13 @@
             body: JSON.stringify({
               url: document.getElementById("photoUrl").value,
               caption: document.getElementById("urlCaption").value,
+              type: document.getElementById("urlMediaType").value,
             }),
           });
           document.getElementById("urlForm").reset();
           gallery = await api("/api/gallery");
           renderGalleryAdmin();
-          toast("Drive photo added");
+          toast("Media added");
         } catch (ex) {
           toast(ex.message, true);
         }
@@ -2096,12 +2137,14 @@
         const fd = new FormData();
         fd.append("photo", file);
         fd.append("caption", document.getElementById("photoCaption").value);
+        const mediaType = document.getElementById("uploadMediaType").value;
+        if (mediaType && mediaType !== "auto") fd.append("type", mediaType);
         try {
           await api("/api/admin/gallery", { method: "POST", body: fd });
           document.getElementById("uploadForm").reset();
           gallery = await api("/api/gallery");
           renderGalleryAdmin();
-          toast("Photo uploaded (temporary on Render Free)");
+          toast("File uploaded (temporary on Render Free)");
         } catch (ex) {
           toast(ex.message, true);
         }
@@ -2118,22 +2161,23 @@
               body: JSON.stringify({
                 caption: item.querySelector("[data-cap]").value,
                 url: item.querySelector("[data-url]").value,
+                type: item.querySelector("[data-type]").value,
               }),
             });
             gallery = await api("/api/gallery");
             renderGalleryAdmin();
-            toast("Photo updated");
+            toast("Media updated");
           } catch (ex) {
             toast(ex.message, true);
           }
         }
         if (del) {
-          if (!confirm("Delete this photo?")) return;
+          if (!confirm("Delete this photo or video?")) return;
           try {
             await api("/api/admin/gallery/" + del.dataset.del, { method: "DELETE" });
             gallery = await api("/api/gallery");
             renderGalleryAdmin();
-            toast("Photo deleted");
+            toast("Media deleted");
           } catch (ex) {
             toast(ex.message, true);
           }

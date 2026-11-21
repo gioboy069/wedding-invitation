@@ -1248,9 +1248,9 @@ header.hero,
   outline-offset: 3px;
 }
 
-/* ── Gallery (keep, restyle light) ── */
+/* ── Gallery clothesline sits on soft paper ── */
 .gallery {
-  background: linear-gradient(180deg, #3a4454 0%, #4a5a70 100%);
+  background: #f7f5f1 !important;
 }
 
 /* ── Envelope footer ── */
@@ -1519,9 +1519,9 @@ header.hero,
 #attire { --panel: #adc4ca; --rip-fill: #adc4ca; }
 #entourage { --panel: #aabec0; --rip-fill: #aabec0; }
 #gallery {
-  --panel: transparent;
-  --rip-fill: transparent;
-  --paper-pulp: rgba(216, 224, 218, 0.5);
+  --panel: #f7f5f1;
+  --rip-fill: #f7f5f1;
+  --paper-pulp: rgba(247, 245, 241, 0.9);
 }
 .details-tray,
 #rsvp {
@@ -1855,9 +1855,16 @@ body.hero-play .polaroid {
   padding-bottom: 6.5rem !important;
 }
 
-.gallery .gallery-more {
-  margin-top: 1.65rem;
-  text-align: center;
+.gallery .gallery-hint {
+  margin-top: 0.35rem;
+  color: rgba(17, 10, 8, 0.42) !important;
+  text-shadow: none !important;
+}
+
+#gallery .section-title,
+#gallery .section-subtitle,
+#gallery .section-label {
+  text-shadow: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

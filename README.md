@@ -16,7 +16,7 @@ npm run dev
 ```
 
 - Invitation: [http://127.0.0.1:4317](http://127.0.0.1:4317)
-- Gallery: [http://127.0.0.1:4317/gallery.html](http://127.0.0.1:4317/gallery.html)
+- Gallery (clothesline on home): [http://127.0.0.1:4317/#gallery](http://127.0.0.1:4317/#gallery)
 - Attire guide (expandable on home): [http://127.0.0.1:4317/#attire](http://127.0.0.1:4317/#attire)
 - Admin: [http://127.0.0.1:4317/admin/](http://127.0.0.1:4317/admin/)
 
@@ -32,14 +32,16 @@ To set a different first-time password, set `ADMIN_PASSWORD` **before** the firs
 ADMIN_PASSWORD='your-secure-password' npm run dev
 ```
 
-## Gallery photos (Google Drive)
+## Gallery photos & short videos (Google Drive)
 
-On Render Free, uploaded files can disappear. Prefer Google Drive links in **Admin → Gallery**:
+The prenup gallery lives on the home page as a sideways-scrolling strip of photos and short videos. Manage it in **Admin → Gallery** (upload, caption, type, update, delete).
 
-1. Upload photo to Google Drive
+On Render Free, uploaded files can disappear. Prefer Google Drive links:
+
+1. Upload a photo or short video to Google Drive
 2. Share → **Anyone with the link**
 3. Copy link
-4. Paste into Admin → **Add Drive Photo**
+4. Paste into Admin → Gallery, choose **Photo** or **Short video**, and save
 
 Drive files stay permanent. If Render redeploys and clears `data/gallery.json`, just re-add the same Drive links (or commit an updated `data/gallery.json` to GitHub).
 
@@ -82,15 +84,14 @@ RSVP_EMAIL='your@email.com' npm run dev
 - **Edit details** — names, date, story timeline, venues, and copy
 - **Guest list** — invited names with category, table number, and seat allocation (1–10); download or upload an Excel file to update the list; RSVP guests search by a few letters, choose their full name, and see their category (table numbers stay in admin only)
 - **RSVP monitor** — live count of guest-list names that have replied versus those still waiting
-- **Gallery** — upload, caption, and delete prenup photos
+- **Gallery** — upload, caption, update, and delete prenup photos and short videos shown in the home-page scroll gallery
 - **RSVPs** — track attending/declined, party size, companions, filter, delete, export CSV
 
 ## Pages
 
 | Page | Purpose |
 |------|---------|
-| `index.html` | Invitation with countdown, story, gallery teaser, venues, expandable attire guide, RSVP |
-| `gallery.html` | Full prenup photo gallery |
+| `index.html` | Invitation with countdown, story, scrollable photo/video gallery, venues, expandable attire guide, RSVP |
 | `admin/` | Password-protected dashboard |
 
 ## Data
