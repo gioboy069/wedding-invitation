@@ -16,7 +16,7 @@ npm run dev
 ```
 
 - Invitation: [http://127.0.0.1:4317](http://127.0.0.1:4317)
-- Gallery (clothesline on home): [http://127.0.0.1:4317/#gallery](http://127.0.0.1:4317/#gallery)
+- Gallery (prenup line and guest album on one page): [http://127.0.0.1:4317/#gallery](http://127.0.0.1:4317/#gallery)
 - Attire guide (expandable on home): [http://127.0.0.1:4317/#attire](http://127.0.0.1:4317/#attire)
 - Admin: [http://127.0.0.1:4317/admin/](http://127.0.0.1:4317/admin/)
 
@@ -47,7 +47,7 @@ Drive files stay permanent. If Render redeploys and clears `data/gallery.json`, 
 
 ## Guest album
 
-Guests post their own photos and short films from the celebration on the home page under **Album** (`/#album`). Each post goes into Main album, Photographer, Ceremony, or Reception, and is uploaded to the connected Google Drive account. Anyone can leave a heart or a short comment.
+Guests post their own photos and videos from the celebration on the home **Gallery** page, under **Guest album**. The old `/#album` address still opens that part of the same page. They can select one file or many at once. Each post goes into Main album, Photographer, Ceremony, or Reception, and is uploaded to the connected Google Drive account. Anyone can leave a heart or a short comment.
 
 In **Admin → Guest album**, connect Google Drive, open the album folder, or download a ZIP of the photos, films, captions, hearts, and comments.
 

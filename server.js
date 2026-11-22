@@ -1526,7 +1526,6 @@ const guestStorage = multer.diskStorage({
 
 const guestUpload = multer({
   storage: guestStorage,
-  limits: { fileSize: 48 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (IMAGE_MIME.test(file.mimetype) || VIDEO_MIME.test(file.mimetype)) cb(null, true);
     else cb(new Error("Only photo (JPEG/PNG/WebP/GIF) or short video (MP4/WebM/MOV) uploads are allowed"));
@@ -1628,11 +1627,7 @@ function removeUpload(file) {
 }
 
 app.post("/api/guest-album", guestUpload.single("media"), async (req, res) => {
-  if (!allowGuestAction(req, "upload", 8, 60 * 60 * 1000)) {
-    removeUpload(req.file);
-    return res.status(429).json({ error: "Too many uploads from this connection. Try again in a little while." });
-  }
-  if (!req.file) return res.status(400).json({ error: "Choose a photo or short film to share." });
+  if (!req.file) return res.status(400).json({ error: "Choose a photo or video to share." });
   const name = clipText(req.body?.name, 60);
   const caption = clipText(req.body?.caption, 240);
   const albumId = String(req.body?.album || "main").trim();

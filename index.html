@@ -1075,7 +1075,6 @@
       --clothe-clip: #1a1412;
       background: var(--clothe-bg);
       color: var(--clothe-ink);
-      overflow: hidden;
       padding-bottom: 2.5rem;
     }
 
@@ -1388,31 +1387,6 @@
       background: #f7f5f1;
     }
 
-    .reel-badge {
-      position: absolute;
-      z-index: 3;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      margin: 0;
-      padding: 0.65rem 1rem;
-      border-radius: 999px;
-      background: rgba(13, 43, 69, 0.5);
-      border: 1px solid rgba(247, 245, 241, 0.35);
-      color: #f7f5f1;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      font-size: 0.72rem;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-    }
-
-    .lightbox.is-paused .reel-badge,
-    .lightbox.is-zoomed .reel-badge {
-      opacity: 1;
-    }
-
     .reel-tools {
       position: absolute;
       left: 50%;
@@ -1691,8 +1665,16 @@
     }
 
     .guest-album {
-      background: #eef6f8;
+      background: transparent;
       text-align: center;
+      margin-top: 2.75rem;
+      padding-top: 2.4rem;
+      border-top: 1px solid rgba(17, 10, 8, 0.1);
+    }
+
+    .gallery-part-title {
+      font-size: clamp(1.7rem, 3.4vw, 2.35rem);
+      margin-bottom: 0.55rem;
     }
 
     .album-tabs {
@@ -3975,7 +3957,6 @@
       <li><a href="#venue">Venue</a></li>
       <li><a href="#attire">Attire</a></li>
       <li><a href="#gallery">Gallery</a></li>
-      <li><a href="#album">Album</a></li>
       <li><a href="#rsvp">RSVP</a></li>
     </ul>
   </nav>
@@ -4391,12 +4372,12 @@
     </div>
   </section>
 
-  <!-- Gallery: clothesline -->
+  <!-- Gallery: prenup clothesline and guest album on one page -->
   <section class="gallery" id="gallery">
     <div class="container">
       <p class="section-label reveal">Our Moments</p>
-      <h2 class="section-title reveal reveal-delay-1">Prenup Gallery</h2>
-      <p class="section-subtitle reveal reveal-delay-2">Moments pinned along a drifting line. Open one and it plays through — pause to linger, or zoom in closer.</p>
+      <h2 class="section-title reveal reveal-delay-1">Gallery</h2>
+      <p class="section-subtitle reveal reveal-delay-2">Prenup moments on the line, then the photos and videos guests share from the day. Open one and it plays through — pause to linger, or zoom in closer.</p>
     </div>
     <div class="clothesline-shell reveal reveal-delay-1">
       <svg class="clothesline-wire" id="clotheslineWire" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
@@ -4407,18 +4388,17 @@
       </div>
       <p class="gallery-hint" id="galleryHint" hidden>Drag the line, or tap a photo to play it through</p>
     </div>
-  </section>
 
-  <section class="guest-album" id="album">
+    <div class="guest-album" id="album">
     <div class="container">
       <p class="section-label reveal">From the celebration</p>
-      <h2 class="section-title reveal reveal-delay-1">Guest Album</h2>
-      <p class="section-subtitle reveal reveal-delay-2">Share a photo or short film from the day. Choose Main album, Photographer, Ceremony, or Reception, then heart a moment or leave a note.</p>
+      <h3 class="section-title gallery-part-title reveal reveal-delay-1">Guest album</h3>
+      <p class="section-subtitle reveal reveal-delay-2">Share photos and videos from the day, one or a whole set. Choose Main album, Photographer, Ceremony, or Reception, then heart a moment or leave a note.</p>
       <div class="album-tabs" id="guestAlbumTabs" role="tablist" aria-label="Albums"></div>
       <div class="album-layout">
         <form class="album-form" id="guestAlbumForm">
           <h3>Share a moment</h3>
-          <p>It is saved in the couple’s Google Drive and appears in the album right away. Photos and short films up to 48 MB.</p>
+          <p>Everything is saved in the couple’s Google Drive and appears in the album right away. Choose one photo or video, or select many at once.</p>
           <label class="form-label" for="guestAlbumName">Your name</label>
           <input class="form-input" id="guestAlbumName" name="name" maxlength="60" autocomplete="name" required placeholder="Maria Cruz" />
           <label class="form-label" for="guestAlbumPick">Album</label>
@@ -4431,8 +4411,8 @@
           <label class="form-label" for="guestAlbumCaption">Note</label>
           <input class="form-input" id="guestAlbumCaption" name="caption" maxlength="240" placeholder="The first dance" />
           <label class="album-file" for="guestAlbumFile">
-            <input id="guestAlbumFile" name="media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" required />
-            <span id="guestAlbumFileLabel">Choose a photo or short film</span>
+            <input id="guestAlbumFile" name="media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" multiple required />
+            <span id="guestAlbumFileLabel">Choose photos or videos</span>
           </label>
           <button class="form-submit" type="submit" id="guestAlbumSubmit">Share</button>
           <p class="album-status" id="guestAlbumStatus" role="status"></p>
@@ -4441,6 +4421,7 @@
           <div class="album-grid" id="guestAlbumGrid" aria-live="polite"></div>
         </div>
       </div>
+    </div>
     </div>
   </section>
   <div class="album-viewer" id="guestAlbumViewer" hidden>
@@ -4459,7 +4440,6 @@
         <video id="galleryLightboxVideo" playsinline preload="metadata" hidden></video>
       </div>
       <div class="reel-bar" aria-hidden="true"><i id="galleryReelFill"></i></div>
-      <p class="reel-badge" id="galleryReelBadge">Paused</p>
     </div>
     <button class="lightbox-next" id="galleryLightboxNext" type="button" aria-label="Next">&#8594;</button>
     <div class="reel-tools">
@@ -5888,12 +5868,10 @@
         var zoomBtn = document.getElementById("galleryReelZoom");
         var count = document.getElementById("galleryReelCount");
         var hint = document.getElementById("gallerySwipeHint");
-        var badge = document.getElementById("galleryReelBadge");
         var status = document.getElementById("galleryReelStatus");
         var item = homeGalleryItems[galleryLightboxIndex] || {};
         var total = homeGalleryItems.length;
         var zoomed = reel.zoom > 1.01;
-        if (lightbox) lightbox.classList.toggle("is-paused", !!reel.paused && !zoomed);
         if (pauseBtn) {
           pauseBtn.textContent = reel.paused ? "Play" : "Pause";
           pauseBtn.setAttribute("aria-pressed", reel.paused ? "true" : "false");
@@ -5905,7 +5883,6 @@
           zoomBtn.setAttribute("aria-label", zoomed ? "Fit photo to screen" : "Zoom in on photo");
         }
         if (count && total) count.textContent = (galleryLightboxIndex + 1) + " of " + total;
-        if (badge) badge.textContent = zoomed ? "Zoomed" : "Paused";
         if (hint) {
           if (zoomed) hint.textContent = "Drag to look around · double-tap or Fit";
           else if (reel.paused) hint.textContent = "Paused · tap the photo or press Play";
@@ -7041,6 +7018,6 @@
       window.WeddingUI.closeGalleryLightbox = closeGalleryLightbox;
     })();
   </script>
-  <script src="/js/guest-album.js?v=1"></script>
+  <script src="/js/guest-album.js?v=2"></script>
 </body>
 </html>

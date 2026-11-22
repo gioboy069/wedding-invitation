@@ -76,7 +76,7 @@
     var visible = postsForActive();
     var album = ALBUMS.find(function (item) { return item.id === activeAlbum; });
     if (!visible.length) {
-      grid.innerHTML = '<p class="album-empty">Nothing in the ' + escapeHtml(album ? album.label : "album") + ' yet. Share a photo or short film from that part of the day.</p>';
+      grid.innerHTML = '<p class="album-empty">Nothing in the ' + escapeHtml(album ? album.label : "album") + ' yet. Share a photo or video from that part of the day.</p>';
       return;
     }
     grid.innerHTML = visible.map(function (post) {
@@ -184,45 +184,108 @@
     var viewer = document.getElementById("guestAlbumViewer");
     if (!form || !grid) return;
 
+    function selectionLabel(list) {
+      if (!list || !list.length) return "Choose photos or videos";
+      if (list.length === 1) return list[0].name;
+      var photos = 0;
+      var videos = 0;
+      Array.prototype.forEach.call(list, function (item) {
+        if (String(item.type || "").indexOf("video/") === 0) videos += 1;
+        else photos += 1;
+      });
+      var parts = [];
+      if (photos) parts.push(photos + (photos === 1 ? " photo" : " photos"));
+      if (videos) parts.push(videos + (videos === 1 ? " video" : " videos"));
+      return parts.join(" and ") + " selected";
+    }
+
+    function shareOne(mediaFile, fields, onProgress) {
+      return new Promise(function (resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        var data = new FormData();
+        data.append("name", fields.name);
+        data.append("album", fields.album);
+        data.append("caption", fields.caption);
+        data.append("media", mediaFile);
+        xhr.open("POST", "/api/guest-album");
+        xhr.setRequestHeader("X-Guest-Token", guestToken());
+        xhr.upload.onprogress = function (event) {
+          if (event.lengthComputable && onProgress) onProgress(event.loaded, event.total);
+        };
+        xhr.onload = function () {
+          var body = {};
+          try { body = JSON.parse(xhr.responseText || "{}"); } catch (err) {}
+          if (xhr.status >= 200 && xhr.status < 300) resolve(body);
+          else reject(new Error(body.error || "That moment could not be shared."));
+        };
+        xhr.onerror = function () {
+          reject(new Error("The upload was interrupted. Try again."));
+        };
+        xhr.send(data);
+      });
+    }
+
     if (file) {
       file.addEventListener("change", function () {
         var label = document.getElementById("guestAlbumFileLabel");
-        var picked = file.files && file.files[0];
-        if (label) label.textContent = picked ? picked.name : "Choose a photo or short film";
+        if (label) label.textContent = selectionLabel(file.files);
       });
     }
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
       var submit = document.getElementById("guestAlbumSubmit");
-      var data = new FormData(form);
-      if (!file || !file.files || !file.files[0]) {
-        setStatus("Choose a photo or short film first.", "error");
+      var chosen = file && file.files ? Array.prototype.slice.call(file.files) : [];
+      if (!chosen.length) {
+        setStatus("Choose photos or videos first.", "error");
         return;
       }
+      var fields = {
+        name: (document.getElementById("guestAlbumName") || {}).value || "",
+        album: (document.getElementById("guestAlbumPick") || {}).value || "main",
+        caption: (document.getElementById("guestAlbumCaption") || {}).value || ""
+      };
+      var totalBytes = chosen.reduce(function (sum, item) { return sum + (item.size || 1); }, 0);
+      var finishedBytes = 0;
+      var saved = 0;
       if (submit) {
         submit.disabled = true;
-        submit.textContent = "Sharing…";
+        submit.textContent = "Sharing 0%";
+        submit.setAttribute("aria-busy", "true");
       }
-      setStatus("");
+      setStatus(chosen.length > 1 ? "Sharing 1 of " + chosen.length : "");
       try {
-        var response = await fetch("/api/guest-album", { method: "POST", headers: albumHeaders(), body: data });
-        var body = await response.json().catch(function () { return {}; });
-        if (!response.ok) throw new Error(body.error || "That moment could not be shared.");
-        activeAlbum = body.album || activeAlbum;
+        for (var i = 0; i < chosen.length; i += 1) {
+          var current = chosen[i];
+          var currentSize = current.size || 1;
+          if (chosen.length > 1) setStatus("Sharing " + (i + 1) + " of " + chosen.length);
+          var body = await shareOne(current, fields, function (loaded) {
+            var pct = Math.round(((finishedBytes + Math.min(loaded, currentSize)) / totalBytes) * 100);
+            if (submit) submit.textContent = "Sharing " + Math.min(99, Math.max(0, pct)) + "%";
+          });
+          finishedBytes += currentSize;
+          saved += 1;
+          activeAlbum = body.album || fields.album;
+          if (submit) submit.textContent = "Sharing " + Math.min(100, Math.round((finishedBytes / totalBytes) * 100)) + "%";
+        }
         form.reset();
         var label = document.getElementById("guestAlbumFileLabel");
-        if (label) label.textContent = "Choose a photo or short film";
+        if (label) label.textContent = "Choose photos or videos";
         var pick = document.getElementById("guestAlbumPick");
         if (pick) pick.value = activeAlbum;
         await loadAlbum();
-        setStatus("Shared. It is in the album now.", "ok");
+        setStatus(saved === 1 ? "Shared. It is in the album now." : "Shared " + saved + " moments. They are in the album now.", "ok");
       } catch (err) {
-        setStatus(err.message || "That moment could not be shared.", "error");
+        if (saved) await loadAlbum().catch(function () {});
+        setStatus(
+          (saved ? "Saved " + saved + " of " + chosen.length + ". " : "") + (err.message || "That moment could not be shared."),
+          "error"
+        );
       } finally {
         if (submit) {
           submit.disabled = false;
           submit.textContent = "Share";
+          submit.removeAttribute("aria-busy");
         }
       }
     });
