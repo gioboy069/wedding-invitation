@@ -2709,15 +2709,11 @@
           const media = post.type === "video"
             ? `<video src="${escapeAttr(post.src)}" controls playsinline preload="metadata" style="width:100%;max-height:240px;background:#111"></video>`
             : `<img src="${escapeAttr(post.src)}" alt="" style="width:100%;max-height:240px;object-fit:cover" />`;
-          const comments = (post.comments || []).map((comment) =>
-            `<p style="margin:0.35rem 0;font-size:0.85rem"><strong>${escapeHtml(comment.name)}</strong> ${escapeHtml(comment.text)} <button type="button" class="btn btn-ghost" data-album-comment="${escapeAttr(post.id)}" data-comment-id="${escapeAttr(comment.id)}">Remove</button></p>`
-          ).join("");
           return `<article class="card" style="margin-bottom:1rem">
             ${media}
             <p style="margin:0.7rem 0 0.2rem"><strong>${escapeHtml(albumLabels[post.album] || post.album)}</strong> · ${escapeHtml(post.name || "Guest")}</p>
             <p class="lead" style="margin:0">${escapeHtml(post.caption || "")}</p>
-            <p class="lead" style="margin:0.35rem 0 0.6rem">${post.heartCount || 0} hearts · ${(post.comments || []).length} comments</p>
-            ${comments}
+            <p class="lead" style="margin:0.35rem 0 0.6rem">${post.heartCount || 0} hearts · ${post.laughCount || 0} hahas</p>
             <button type="button" class="btn btn-ghost" data-album-del="${escapeAttr(post.id)}">Delete moment</button>
           </article>`;
         }).join("");
@@ -2812,15 +2808,8 @@
         }
       });
       document.getElementById("guestAlbumAdmin")?.addEventListener("click", async (event) => {
-        const commentBtn = event.target.closest("[data-album-comment]");
         const delBtn = event.target.closest("[data-album-del]");
         try {
-          if (commentBtn) {
-            await api("/api/admin/guest-album/" + commentBtn.dataset.albumComment + "/comments/" + commentBtn.dataset.commentId, { method: "DELETE" });
-            await loadGuestAlbum();
-            toast("Comment removed");
-            return;
-          }
           if (!delBtn) return;
           if (!confirm("Delete this guest moment? The photo or film will be removed.")) return;
           await api("/api/admin/guest-album/" + delBtn.dataset.albumDel, { method: "DELETE" });

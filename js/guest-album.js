@@ -8,9 +8,14 @@
     { id: "reception", label: "Reception" }
   ];
 
+  var PREVIEW_COUNT = 9;
   var activeAlbum = "main";
   var posts = [];
   var memoryToken = "";
+  var shown = PREVIEW_COUNT;
+  var selecting = false;
+  var picked = {};
+  var viewerId = "";
 
   function escapeHtml(value) {
     return String(value || "")
@@ -70,44 +75,76 @@
     }).join("");
   }
 
+  function tileShape(index) {
+    var spot = index % 6;
+    if (spot === 0) return " is-feature";
+    if (spot === 3) return " is-wide";
+    return "";
+  }
+
+  function syncDownloadBar(total) {
+    var bar = document.getElementById("guestAlbumToolbar");
+    var selectBtn = document.getElementById("guestAlbumSelect");
+    var selectedBtn = document.getElementById("guestAlbumDownloadSelected");
+    var allBtn = document.getElementById("guestAlbumDownloadAll");
+    var more = document.getElementById("guestAlbumMore");
+    var count = Object.keys(picked).length;
+    if (bar) bar.hidden = total < 1;
+    if (selectBtn) selectBtn.textContent = selecting ? "Done" : "Select";
+    if (selectedBtn) {
+      selectedBtn.hidden = !selecting;
+      selectedBtn.textContent = count ? "Download selected (" + count + ")" : "Download selected";
+      selectedBtn.disabled = !count;
+    }
+    if (allBtn) allBtn.hidden = total < 1;
+    if (more) {
+      var hidden = total <= shown;
+      more.hidden = hidden;
+      if (!hidden) more.textContent = "View more · " + (total - shown);
+    }
+  }
+
   function renderGrid() {
     var grid = document.getElementById("guestAlbumGrid");
     if (!grid) return;
     var visible = postsForActive();
     var album = ALBUMS.find(function (item) { return item.id === activeAlbum; });
+    grid.classList.toggle("is-selecting", selecting);
     if (!visible.length) {
       grid.innerHTML = '<p class="album-empty">Nothing in the ' + escapeHtml(album ? album.label : "album") + ' yet. Share a photo or video from that part of the day.</p>';
+      syncDownloadBar(0);
       return;
     }
-    grid.innerHTML = visible.map(function (post) {
+    var slice = visible.slice(0, shown);
+    grid.innerHTML = slice.map(function (post, index) {
       var media = post.type === "video"
-        ? '<video src="' + escapeHtml(post.src) + '" muted playsinline preload="metadata"></video><span class="album-play">Play film</span>'
+        ? '<video src="' + escapeHtml(post.src) + '" muted playsinline preload="metadata"></video><span class="album-play">Film</span>'
         : '<img src="' + escapeHtml(post.src) + '" alt="' + escapeHtml(post.caption || post.name || "Guest photo") + '" loading="lazy" />';
-      var comments = (post.comments || []).map(function (comment) {
-        return '<p class="album-comment"><strong>' + escapeHtml(comment.name) + '</strong> ' + escapeHtml(comment.text) + "</p>";
-      }).join("");
+      var caption = escapeHtml(post.name || "Guest") + (post.caption ? " · " + escapeHtml(post.caption) : "");
       return (
-        '<article class="album-card" data-post="' + escapeHtml(post.id) + '">' +
-          '<button type="button" class="album-media" data-open="' + escapeHtml(post.id) + '" aria-label="View ' + escapeHtml(post.name || "moment") + '">' + media + "</button>" +
-          '<div class="album-body">' +
-            '<h3 class="album-name">' + escapeHtml(post.name || "Guest") + "</h3>" +
-            (post.caption ? '<p class="album-caption">' + escapeHtml(post.caption) + "</p>" : '<p class="album-caption"></p>') +
-            '<div class="album-actions">' +
-              '<button type="button" class="album-heart' + (post.liked ? " is-on" : "") + '" data-heart="' + escapeHtml(post.id) + '" aria-pressed="' + (post.liked ? "true" : "false") + '" aria-label="Heart this moment">' +
-                '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 4.6-7 9-7 9z" stroke-width="1.6"/></svg>' +
-                "<span>" + Number(post.heartCount || 0) + "</span>" +
-              "</button>" +
-            "</div>" +
-            '<div class="album-comments">' + comments + "</div>" +
-            '<form class="album-comment-form" data-comment="' + escapeHtml(post.id) + '">' +
-              '<input class="form-input" name="name" maxlength="60" placeholder="Your name" required />' +
-              '<input class="form-input" name="text" maxlength="400" placeholder="Leave a note" required />' +
-              '<button class="album-comment-submit" type="submit">Comment</button>' +
-            "</form>" +
+        '<article class="album-tile' + tileShape(index) + '">' +
+          '<button type="button" class="album-tile-open" data-open="' + escapeHtml(post.id) + '" aria-label="View ' + escapeHtml(post.name || "moment") + '">' +
+            media +
+            '<span class="album-tile-caption">' + caption + "</span>" +
+          "</button>" +
+          '<label class="album-pick"><input type="checkbox" data-pick="' + escapeHtml(post.id) + '"' + (picked[post.id] ? " checked" : "") + ' aria-label="Select ' + escapeHtml(post.name || "moment") + '" /></label>' +
+          '<button type="button" class="album-save" data-save="' + escapeHtml(post.id) + '" aria-label="Download this file">' +
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 19h14" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          "</button>" +
+          '<div class="album-reacts">' +
+            '<button type="button" class="album-heart' + (post.liked ? " is-on" : "") + '" data-heart="' + escapeHtml(post.id) + '" aria-pressed="' + (post.liked ? "true" : "false") + '" aria-label="Heart">' +
+              '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 4.6-7 9-7 9z" stroke-width="1.6"/></svg>' +
+              "<span>" + Number(post.heartCount || 0) + "</span>" +
+            "</button>" +
+            '<button type="button" class="album-laugh' + (post.laughed ? " is-on" : "") + '" data-laugh="' + escapeHtml(post.id) + '" aria-pressed="' + (post.laughed ? "true" : "false") + '" aria-label="Haha">' +
+              '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke-width="1.6"/><path d="M8.6 13.2c.7 1.5 2 2.3 3.4 2.3s2.7-.8 3.4-2.3" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.2" cy="10" r=".8" fill="currentColor" stroke="none"/><circle cx="14.8" cy="10" r=".8" fill="currentColor" stroke="none"/></svg>' +
+              "<span>" + Number(post.laughCount || 0) + "</span>" +
+            "</button>" +
           "</div>" +
         "</article>"
       );
     }).join("");
+    syncDownloadBar(visible.length);
   }
 
   function render() {
@@ -173,7 +210,67 @@
       img.alt = post.caption || post.name || "Guest photo";
     }
     if (caption) caption.textContent = [post.name, post.caption].filter(Boolean).join(" — ");
+    viewerId = post.id;
     viewer.hidden = false;
+  }
+
+  function filenameFromResponse(response, fallback) {
+    var header = response.headers.get("content-disposition") || "";
+    var match = header.match(/filename="([^"]+)"/);
+    return match ? match[1] : fallback;
+  }
+
+  async function saveResponse(response, fallback) {
+    if (!response.ok) {
+      var body = await response.json().catch(function () { return {}; });
+      throw new Error(body.error || "The download could not be prepared.");
+    }
+    var blob = await response.blob();
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = filenameFromResponse(response, fallback);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+  }
+
+  async function downloadOne(id, button) {
+    if (button) button.disabled = true;
+    setStatus("Preparing the download…");
+    try {
+      var response = await fetch("/api/guest-album/" + encodeURIComponent(id) + "/file", { headers: albumHeaders() });
+      await saveResponse(response, "guest-photo");
+      setStatus("Download started.", "ok");
+    } catch (err) {
+      setStatus(err.message || "That file could not be downloaded.", "error");
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  async function downloadMany(payload, button, label) {
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Preparing…";
+    }
+    setStatus("Preparing the download…");
+    try {
+      var response = await fetch("/api/guest-album/download", {
+        method: "POST",
+        headers: albumHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(payload)
+      });
+      await saveResponse(response, "gio-augiela-guest-album.zip");
+      setStatus("Download started.", "ok");
+    } catch (err) {
+      setStatus(err.message || "The download could not be prepared.", "error");
+    } finally {
+      if (button) button.disabled = false;
+      if (label) button.textContent = label;
+      syncDownloadBar(postsForActive().length);
+    }
   }
 
   function bind() {
@@ -295,59 +392,90 @@
         var button = event.target.closest("[data-album]");
         if (!button) return;
         activeAlbum = button.getAttribute("data-album");
+        shown = PREVIEW_COUNT;
+        selecting = false;
+        picked = {};
         render();
       });
     }
 
+    grid.addEventListener("change", function (event) {
+      var box = event.target.closest("[data-pick]");
+      if (!box) return;
+      var id = box.getAttribute("data-pick");
+      if (box.checked) picked[id] = true;
+      else delete picked[id];
+      syncDownloadBar(postsForActive().length);
+    });
+
     grid.addEventListener("click", async function (event) {
+      var save = event.target.closest("[data-save]");
+      if (save) {
+        downloadOne(save.getAttribute("data-save"), save);
+        return;
+      }
       var opener = event.target.closest("[data-open]");
       if (opener) {
         openViewer(opener.getAttribute("data-open"));
         return;
       }
       var heart = event.target.closest("[data-heart]");
-      if (!heart) return;
-      heart.disabled = true;
+      var laugh = event.target.closest("[data-laugh]");
+      var reaction = heart || laugh;
+      if (!reaction) return;
+      var kind = heart ? "heart" : "laugh";
+      reaction.disabled = true;
       try {
-        var response = await fetch("/api/guest-album/" + encodeURIComponent(heart.getAttribute("data-heart")) + "/heart", {
+        var response = await fetch("/api/guest-album/" + encodeURIComponent(reaction.getAttribute(heart ? "data-heart" : "data-laugh")) + "/" + kind, {
           method: "POST",
           headers: albumHeaders({ "Content-Type": "application/json" }),
           body: "{}"
         });
         var body = await response.json().catch(function () { return {}; });
-        if (!response.ok) throw new Error(body.error || "The heart could not be saved.");
+        if (!response.ok) throw new Error(body.error || "The reaction could not be saved.");
         replacePost(body);
       } catch (err) {
         setStatus(err.message, "error");
       } finally {
-        heart.disabled = false;
+        reaction.disabled = false;
       }
     });
 
-    grid.addEventListener("submit", async function (event) {
-      var commentForm = event.target.closest("[data-comment]");
-      if (!commentForm) return;
-      event.preventDefault();
-      var payload = {
-        name: commentForm.elements.name.value,
-        text: commentForm.elements.text.value
-      };
-      var button = commentForm.querySelector("button");
-      if (button) button.disabled = true;
-      try {
-        var response = await fetch("/api/guest-album/" + encodeURIComponent(commentForm.getAttribute("data-comment")) + "/comments", {
-          method: "POST",
-          headers: albumHeaders({ "Content-Type": "application/json" }),
-          body: JSON.stringify(payload)
-        });
-        var body = await response.json().catch(function () { return {}; });
-        if (!response.ok) throw new Error(body.error || "The note could not be saved.");
-        replacePost(body);
-      } catch (err) {
-        setStatus(err.message, "error");
-        if (button) button.disabled = false;
-      }
-    });
+    var selectBtn = document.getElementById("guestAlbumSelect");
+    var selectedBtn = document.getElementById("guestAlbumDownloadSelected");
+    var allBtn = document.getElementById("guestAlbumDownloadAll");
+    var more = document.getElementById("guestAlbumMore");
+    if (selectBtn) {
+      selectBtn.addEventListener("click", function () {
+        selecting = !selecting;
+        if (!selecting) picked = {};
+        render();
+      });
+    }
+    if (selectedBtn) {
+      selectedBtn.addEventListener("click", function () {
+        var ids = Object.keys(picked);
+        if (!ids.length) return;
+        downloadMany({ ids: ids }, selectedBtn, "Download selected");
+      });
+    }
+    if (allBtn) {
+      allBtn.addEventListener("click", function () {
+        downloadMany({ album: activeAlbum }, allBtn, "Download all");
+      });
+    }
+    if (more) {
+      more.addEventListener("click", function () {
+        shown += PREVIEW_COUNT;
+        render();
+      });
+    }
+    var viewerSave = document.getElementById("guestAlbumViewerSave");
+    if (viewerSave) {
+      viewerSave.addEventListener("click", function () {
+        if (viewerId) downloadOne(viewerId, viewerSave);
+      });
+    }
 
     var closeBtn = document.getElementById("guestAlbumViewerClose");
     if (closeBtn) closeBtn.addEventListener("click", closeViewer);

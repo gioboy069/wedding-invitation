@@ -1581,7 +1581,7 @@ function safeGuestFile(src) {
 
 function publicGuestPost(post, tokenHash) {
   const hearts = Array.isArray(post.hearts) ? post.hearts : [];
-  const comments = Array.isArray(post.comments) ? post.comments : [];
+  const laughs = Array.isArray(post.laughs) ? post.laughs : [];
   return {
     id: post.id,
     album: post.album,
@@ -1592,13 +1592,71 @@ function publicGuestPost(post, tokenHash) {
     createdAt: post.createdAt,
     heartCount: hearts.length,
     liked: !!(tokenHash && hearts.includes(tokenHash)),
-    comments: comments.map((comment) => ({
-      id: comment.id,
-      name: comment.name || "",
-      text: comment.text || "",
-      createdAt: comment.createdAt,
-    })),
+    laughCount: laughs.length,
+    laughed: !!(tokenHash && laughs.includes(tokenHash)),
   };
+}
+
+function guestFileExt(contentType, type) {
+  const kind = String(contentType || "").toLowerCase();
+  if (kind.includes("png")) return ".png";
+  if (kind.includes("webp")) return ".webp";
+  if (kind.includes("gif")) return ".gif";
+  if (kind.includes("webm")) return ".webm";
+  if (kind.includes("quicktime")) return ".mov";
+  if (kind.startsWith("video/") || type === "video") return ".mp4";
+  return ".jpg";
+}
+
+function guestFileType(ext, fallback) {
+  return {
+    ".jpg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+    ".mp4": "video/mp4",
+    ".webm": "video/webm",
+    ".mov": "video/quicktime",
+  }[ext] || fallback || "application/octet-stream";
+}
+
+function guestDownloadName(post, ext, used) {
+  const base = clipText(post.name, 40).replace(/[^\w.-]+/g, "-").replace(/^-+|-+$/g, "") || "guest";
+  let name = `${base}${ext}`;
+  if (used.has(name.toLowerCase())) name = `${base}-${String(post.id).replace(/[^\w.-]+/g, "").slice(-8)}${ext}`;
+  used.add(name.toLowerCase());
+  return name;
+}
+
+async function readGuestMedia(post) {
+  const local = safeGuestFile(post.src);
+  if (local) {
+    const ext = extname(local).toLowerCase() || guestFileExt("", post.type);
+    return {
+      buffer: readFileSync(local),
+      contentType: guestFileType(ext, post.type === "video" ? "video/mp4" : "image/jpeg"),
+      ext,
+    };
+  }
+  const driveId = post.driveId || driveIdFromSrc(post.src);
+  if (!driveId) return null;
+  if (!driveAlbum.connected()) {
+    const error = new Error("Google Drive is not connected yet, so these files cannot be downloaded.");
+    error.status = 503;
+    throw error;
+  }
+  const owned = await driveAlbum.downloadFile(driveId);
+  if (!owned) return null;
+  const ext = guestFileExt(owned.contentType, post.type);
+  return { buffer: owned.buffer, contentType: guestFileType(ext, owned.contentType), ext };
+}
+
+function sendAttachment(res, buffer, filename, contentType) {
+  const safe = String(filename || "photo").replace(/["\r\n]/g, "");
+  res.setHeader("Content-Type", contentType || "application/octet-stream");
+  res.setHeader("Content-Disposition", `attachment; filename="${safe}"`);
+  res.setHeader("Content-Length", buffer.length);
+  res.send(buffer);
 }
 
 function sortedGuestPosts(posts) {
@@ -1663,7 +1721,7 @@ app.post("/api/guest-album", guestUpload.single("media"), async (req, res) => {
       name,
       caption,
       hearts: [],
-      comments: [],
+      laughs: [],
       createdAt: new Date().toISOString(),
     };
     const album = readGuestAlbum();
@@ -1677,44 +1735,88 @@ app.post("/api/guest-album", guestUpload.single("media"), async (req, res) => {
   }
 });
 
-app.post("/api/guest-album/:id/heart", (req, res) => {
-  if (!allowGuestAction(req, "heart", 80, 60 * 60 * 1000)) {
+function toggleGuestReaction(req, res, field) {
+  if (!allowGuestAction(req, field, 80, 60 * 60 * 1000)) {
     return res.status(429).json({ error: "Too many reactions. Try again in a little while." });
   }
   const tokenHash = readGuestToken(req);
-  if (!tokenHash) return res.status(400).json({ error: "This browser could not leave a heart. Refresh and try again." });
+  if (!tokenHash) return res.status(400).json({ error: "This browser could not leave a reaction. Refresh and try again." });
   const album = readGuestAlbum();
   const post = album.posts.find((item) => item.id === req.params.id);
   if (!post) return res.status(404).json({ error: "That moment is no longer in the album." });
-  const hearts = Array.isArray(post.hearts) ? post.hearts : [];
-  post.hearts = hearts.includes(tokenHash) ? hearts.filter((heart) => heart !== tokenHash) : hearts.concat(tokenHash);
+  const current = Array.isArray(post[field]) ? post[field] : [];
+  post[field] = current.includes(tokenHash) ? current.filter((id) => id !== tokenHash) : current.concat(tokenHash);
   writeGuestAlbum(album);
   res.json(publicGuestPost(post, tokenHash));
-});
+}
 
-app.post("/api/guest-album/:id/comments", (req, res) => {
-  if (!allowGuestAction(req, "comment", 40, 60 * 60 * 1000)) {
-    return res.status(429).json({ error: "Too many comments. Try again in a little while." });
-  }
-  const name = clipText(req.body?.name, 60);
-  const text = clipText(req.body?.text, 400);
-  if (name.length < 2 || text.length < 1) {
-    return res.status(400).json({ error: "Add your name and a short note." });
+app.post("/api/guest-album/:id/heart", (req, res) => toggleGuestReaction(req, res, "hearts"));
+app.post("/api/guest-album/:id/laugh", (req, res) => toggleGuestReaction(req, res, "laughs"));
+
+app.get("/api/guest-album/:id/file", async (req, res) => {
+  if (!allowGuestAction(req, "download", 120, 60 * 60 * 1000)) {
+    return res.status(429).json({ error: "Too many downloads. Try again in a little while." });
   }
   const album = readGuestAlbum();
   const post = album.posts.find((item) => item.id === req.params.id);
   if (!post) return res.status(404).json({ error: "That moment is no longer in the album." });
-  const comments = Array.isArray(post.comments) ? post.comments : [];
-  if (comments.length >= 80) return res.status(400).json({ error: "This moment already has a full comment thread." });
-  comments.push({
-    id: `c_${Date.now().toString(36)}${randomBytes(3).toString("hex")}`,
-    name,
-    text,
-    createdAt: new Date().toISOString(),
-  });
-  post.comments = comments;
-  writeGuestAlbum(album);
-  res.status(201).json(publicGuestPost(post, readGuestToken(req)));
+  try {
+    const file = await readGuestMedia(post);
+    if (!file) return res.status(404).json({ error: "That file is not available to download." });
+    sendAttachment(res, file.buffer, guestDownloadName(post, file.ext, new Set()), file.contentType);
+  } catch (err) {
+    res.status(err.status || 502).json({ error: err.message || "That file could not be downloaded." });
+  }
+});
+
+app.post("/api/guest-album/download", async (req, res) => {
+  if (!allowGuestAction(req, "download-zip", 12, 60 * 60 * 1000)) {
+    return res.status(429).json({ error: "Too many downloads. Try again in a little while." });
+  }
+  const album = readGuestAlbum();
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids.map((id) => String(id)) : [];
+  const albumId = String(req.body?.album || "").trim();
+  let chosen = sortedGuestPosts(album.posts);
+  if (ids.length) {
+    const wanted = new Set(ids);
+    chosen = chosen.filter((post) => wanted.has(post.id));
+  } else if (GUEST_ALBUMS.includes(albumId)) {
+    chosen = chosen.filter((post) => post.album === albumId);
+  }
+  if (!chosen.length) return res.status(404).json({ error: "Choose at least one photo or video to download." });
+  if (chosen.length > 200) return res.status(400).json({ error: "That is a very large set. Download a smaller selection." });
+  const dir = mkdtempSync(join(tmpdir(), "guest-download-"));
+  const zipPath = join(tmpdir(), `guest-download-${Date.now()}.zip`);
+  try {
+    const used = new Set();
+    let saved = 0;
+    for (const post of chosen) {
+      const file = await readGuestMedia(post);
+      if (!file) continue;
+      const folderName = GUEST_ALBUM_LABELS[post.album] || "Main album";
+      const folder = join(dir, folderName);
+      if (!existsSync(folder)) mkdirSync(folder, { recursive: true });
+      writeFileSync(join(folder, guestDownloadName(post, file.ext, used)), file.buffer);
+      saved += 1;
+    }
+    if (!saved) {
+      rmSync(dir, { recursive: true, force: true });
+      return res.status(404).json({ error: "Those files are not available to download." });
+    }
+    await new Promise((resolvePromise, reject) => {
+      const child = spawn("zip", ["-r", "-q", zipPath, "."], { cwd: dir });
+      child.on("error", reject);
+      child.on("close", (code) => (code === 0 ? resolvePromise() : reject(new Error("Could not package the download"))));
+    });
+    res.download(zipPath, "gio-augiela-guest-album.zip", () => {
+      rmSync(dir, { recursive: true, force: true });
+      rmSync(zipPath, { force: true });
+    });
+  } catch (err) {
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(zipPath, { force: true });
+    if (!res.headersSent) res.status(err.status || 502).json({ error: err.message || "The download could not be prepared." });
+  }
 });
 
 app.get("/api/admin/guest-album", requireAdmin, (_req, res) => {
