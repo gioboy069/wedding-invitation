@@ -49,7 +49,7 @@ Drive files stay permanent. If Render redeploys and clears `data/gallery.json`, 
 
 Guests post their own photos and videos from the celebration on the home **Gallery** page, under **Guest album**. The old `/#album` address still opens that part of the same page. They can select one file or many at once. Each post goes into Main album, Photographer, Ceremony, or Reception, and is uploaded to the connected Google Drive account. The album shows a collage, with **View more** once there are more than nine moments. Anyone can leave a heart or a haha, and download one file, a selection, or the whole album.
 
-In **Admin → Guest album**, connect Google Drive, open the album folder, or download a ZIP of the photos, films, captions, and reactions.
+In **Admin → Guest album**, connect Google Drive, open the album folder, or download a ZIP of the photos, films, captions, and reactions. Connecting, reconnecting, or pressing Refresh reads the files already in those Drive folders and shows them in the album.
 
 ### Connect Google Drive
 

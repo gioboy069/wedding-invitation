@@ -1819,11 +1819,103 @@ app.post("/api/guest-album/download", async (req, res) => {
   }
 });
 
-app.get("/api/admin/guest-album", requireAdmin, (_req, res) => {
+function guestMediaKind(file) {
+  const mime = String(file.mimeType || "").toLowerCase();
+  if (/^image\/(jpeg|jpg|pjpeg|png|webp|gif)$/.test(mime)) return "photo";
+  if (/^video\/(mp4|webm|quicktime|mov)$/.test(mime)) return "video";
+  const name = String(file.name || "").toLowerCase();
+  if (/\.(jpe?g|png|webp|gif)$/.test(name)) return "photo";
+  if (/\.(mp4|webm|mov)$/.test(name)) return "video";
+  return "";
+}
+
+function guestNameFromDrive(file) {
+  const description = String(file.description || "").trim();
+  if (description.includes(" — ")) {
+    const [name, ...rest] = description.split(" — ");
+    return { name: clipText(name, 60), caption: clipText(rest.join(" — "), 240) };
+  }
+  if (description) return { name: clipText(description, 60), caption: "" };
+  const stripped = String(file.name || "")
+    .replace(/\.[a-z0-9]+$/i, "")
+    .replace(/\s+\d{4}-\d{2}-\d{2}t[\d-]+z?$/i, "")
+    .trim();
+  return { name: clipText(stripped, 60) || "Guest", caption: "" };
+}
+
+async function syncGuestAlbumFromDrive() {
+  if (!driveAlbum.connected()) return { connected: false, added: 0, total: 0 };
+  const files = await driveAlbum.listAlbumFiles();
+  const album = readGuestAlbum();
+  const byDrive = new Map();
+  for (const post of album.posts) {
+    const driveId = post.driveId || driveIdFromSrc(post.src);
+    if (driveId) byDrive.set(driveId, post);
+  }
+  let added = 0;
+  let changed = false;
+  for (const file of files) {
+    const kind = guestMediaKind(file);
+    if (!kind || !file.id) continue;
+    const src = `/api/media/drive/${file.id}${kind === "video" ? "?type=video" : ""}`;
+    const existing = byDrive.get(file.id);
+    if (existing) {
+      if (!existing.driveId) {
+        existing.driveId = file.id;
+        changed = true;
+      }
+      if (existing.src !== src) {
+        existing.src = src;
+        changed = true;
+      }
+      if (existing.type !== kind) {
+        existing.type = kind;
+        changed = true;
+      }
+      if (existing.album !== file.albumId && GUEST_ALBUMS.includes(file.albumId)) {
+        existing.album = file.albumId;
+        changed = true;
+      }
+      continue;
+    }
+    const named = guestNameFromDrive(file);
+    const post = {
+      id: `p_${file.id}`,
+      album: GUEST_ALBUMS.includes(file.albumId) ? file.albumId : "main",
+      type: kind,
+      src,
+      driveId: file.id,
+      name: named.name || "Guest",
+      caption: named.caption,
+      hearts: [],
+      laughs: [],
+      createdAt: file.createdTime || new Date().toISOString(),
+    };
+    album.posts.push(post);
+    byDrive.set(file.id, post);
+    added += 1;
+    changed = true;
+  }
+  if (changed) writeGuestAlbum(album);
+  const mediaCount = files.filter((file) => guestMediaKind(file)).length;
+  return { connected: true, added, total: mediaCount };
+}
+
+app.get("/api/admin/guest-album", requireAdmin, async (_req, res) => {
+  let drive = { connected: driveAlbum.connected(), added: 0, total: 0 };
+  if (drive.connected) {
+    try {
+      drive = await syncGuestAlbumFromDrive();
+    } catch (err) {
+      console.error("Drive album sync failed:", err.detail || err.message);
+      drive = { connected: true, added: 0, total: 0, error: "Google Drive is connected, but the album files could not be loaded. Try Refresh." };
+    }
+  }
   const album = readGuestAlbum();
   res.json({
     albums: GUEST_ALBUMS.map((id) => ({ id, label: GUEST_ALBUM_LABELS[id] })),
     posts: sortedGuestPosts(album.posts).map((post) => publicGuestPost(post, "")),
+    drive,
   });
 });
 
@@ -1943,7 +2035,16 @@ app.get("/api/admin/drive/callback", async (req, res) => {
   if (req.query.error) return res.redirect("/admin/?drive=error");
   try {
     await driveAlbum.finishAuth(req);
-    res.redirect("/admin/?drive=connected");
+    let added = 0;
+    let total = 0;
+    try {
+      const sync = await syncGuestAlbumFromDrive();
+      added = sync.added || 0;
+      total = sync.total || 0;
+    } catch (err) {
+      console.error("Drive album sync failed:", err.detail || err.message);
+    }
+    res.redirect(`/admin/?drive=connected&driveAdded=${added}&driveTotal=${total}`);
   } catch (err) {
     console.error("Drive connect failed:", err.detail || err.message);
     res.redirect("/admin/?drive=error");

@@ -1154,7 +1154,7 @@
       <!-- Guest album -->
       <section class="panel" id="panel-album">
         <h2>Guest album</h2>
-        <p class="lead">Guest photos and short films upload straight into your Google Drive, in folders for Main album, Photographer, Ceremony, and Reception.</p>
+        <p class="lead">Guest photos and videos are kept in your Google Drive. Connecting, reconnecting, or refreshing loads whatever is already in those folders.</p>
         <div class="card" id="driveCard" style="margin-bottom:1.25rem">
           <h3>Google Drive</h3>
           <p class="lead" id="driveStatus">Checking the connection…</p>
@@ -1364,7 +1364,13 @@
         const driveFlag = new URLSearchParams(location.search).get("drive");
         if (driveFlag === "connected") {
           switchPanel("album");
-          toast("Google Drive connected");
+          const added = Number(new URLSearchParams(location.search).get("driveAdded") || 0);
+          const total = Number(new URLSearchParams(location.search).get("driveTotal") || 0);
+          toast(added
+            ? `Google Drive connected. Brought in ${added} from your Drive.`
+            : total
+              ? `Google Drive connected. ${total} from your Drive are already in the album.`
+              : "Google Drive connected. The album folders are ready.");
         } else if (driveFlag === "error") {
           switchPanel("album");
           toast("Google Drive could not be connected. Try again.", true);
@@ -1372,6 +1378,8 @@
         if (driveFlag) {
           const params = new URLSearchParams(location.search);
           params.delete("drive");
+          params.delete("driveAdded");
+          params.delete("driveTotal");
           const next = params.toString();
           history.replaceState({}, "", "/admin/" + (next ? "?" + next : ""));
         }
@@ -2750,6 +2758,8 @@
         const stat = document.getElementById("statAlbum");
         if (stat) stat.textContent = String(guestAlbum.length);
         renderGuestAlbumAdmin();
+        if (data.drive?.error) toast(data.drive.error, true);
+        else if (data.drive?.added) toast(`Brought in ${data.drive.added} from Google Drive.`);
       }
 
       async function loadAll() {
