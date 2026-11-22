@@ -45,6 +45,23 @@ On Render Free, uploaded files can disappear. Prefer Google Drive links:
 
 Drive files stay permanent. If Render redeploys and clears `data/gallery.json`, just re-add the same Drive links (or commit an updated `data/gallery.json` to GitHub).
 
+## Guest album
+
+Guests post their own photos and short films from the celebration on the home page under **Album** (`/#album`). Each post goes into Main album, Photographer, Ceremony, or Reception, and is uploaded to the connected Google Drive account. Anyone can leave a heart or a short comment.
+
+In **Admin → Guest album**, connect Google Drive, open the album folder, or download a ZIP of the photos, films, captions, hearts, and comments.
+
+### Connect Google Drive
+
+1. In Google Cloud, create a project and enable the **Google Drive API**.
+2. Configure the OAuth consent screen as **External** and **Testing**, and add the Gmail address that owns the Drive.
+3. Create an OAuth client of type **Web application**.
+4. Add this redirect URI (use the real site address): `https://YOUR-SITE/api/admin/drive/callback`
+5. Save the client id and client secret as the app secrets `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+6. Open **Admin → Guest album** and choose **Connect Google Drive**. Pick the Google account, and if Google warns that the app is unverified, continue to allow access.
+
+New guest photos and films then land in a Drive folder named **Augiela & Gio — Guest album**, with a folder for each album. Until Drive is connected, guests see a message and the photo is not stored on the server.
+
 ## Our Story photos (Google Drive)
 
 Same Drive method works for **Admin → Details → timeline years**:

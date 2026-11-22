@@ -796,6 +796,7 @@
       <button type="button" class="nav-btn active" data-panel="overview">Overview</button>
       <button type="button" class="nav-btn" data-panel="content">Edit Details</button>
       <button type="button" class="nav-btn" data-panel="gallery">Gallery</button>
+      <button type="button" class="nav-btn" data-panel="album">Guest album</button>
       <button type="button" class="nav-btn" data-panel="guests">Guest List</button>
       <button type="button" class="nav-btn" data-panel="rsvps">RSVPs</button>
       <div class="sidebar-footer">
@@ -814,6 +815,7 @@
           <div class="stat"><strong id="statYes">0</strong><span>Guests attending</span></div>
           <div class="stat"><strong id="statNo">0</strong><span>Declined</span></div>
           <div class="stat"><strong id="statPhotos">0</strong><span>Gallery Media</span></div>
+          <div class="stat"><strong id="statAlbum">0</strong><span>Guest moments</span></div>
           <div class="stat"><strong id="statGuests">0</strong><span>Guest List</span></div>
         </div>
 
@@ -1149,6 +1151,33 @@
         <div class="gallery-admin" id="galleryAdmin"></div>
       </section>
 
+      <!-- Guest album -->
+      <section class="panel" id="panel-album">
+        <h2>Guest album</h2>
+        <p class="lead">Guest photos and short films upload straight into your Google Drive, in folders for Main album, Photographer, Ceremony, and Reception.</p>
+        <div class="card" id="driveCard" style="margin-bottom:1.25rem">
+          <h3>Google Drive</h3>
+          <p class="lead" id="driveStatus">Checking the connection…</p>
+          <p class="lead" id="driveRedirect" style="word-break:break-all"></p>
+          <div class="toolbar" style="margin-bottom:0">
+            <a class="btn btn-primary" id="connectDrive" href="/api/admin/drive/connect">Connect Google Drive</a>
+            <button type="button" class="btn btn-ghost" id="disconnectDrive" hidden>Disconnect</button>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button type="button" class="btn btn-primary" id="downloadGuestAlbum">Download album</button>
+          <button type="button" class="btn btn-ghost" id="refreshGuestAlbum">Refresh</button>
+          <select id="guestAlbumFilter">
+            <option value="">All albums</option>
+            <option value="main">Main album</option>
+            <option value="photographer">Photographer</option>
+            <option value="ceremony">Ceremony</option>
+            <option value="reception">Reception</option>
+          </select>
+        </div>
+        <div id="guestAlbumAdmin"></div>
+      </section>
+
       <!-- Guest List -->
       <section class="panel" id="panel-guests">
         <h2>Guest List</h2>
@@ -1292,6 +1321,7 @@
       let gallery = [];
       let rsvps = [];
       let guests = [];
+      let guestAlbum = [];
       const Names = window.WeddingNames;
 
       function toast(msg, isError) {
@@ -1331,6 +1361,20 @@
         document.getElementById("menuToggle").classList.remove("hidden");
         await loadAll();
         startLiveMonitor();
+        const driveFlag = new URLSearchParams(location.search).get("drive");
+        if (driveFlag === "connected") {
+          switchPanel("album");
+          toast("Google Drive connected");
+        } else if (driveFlag === "error") {
+          switchPanel("album");
+          toast("Google Drive could not be connected. Try again.", true);
+        }
+        if (driveFlag) {
+          const params = new URLSearchParams(location.search);
+          params.delete("drive");
+          const next = params.toString();
+          history.replaceState({}, "", "/admin/" + (next ? "?" + next : ""));
+        }
       }
 
       async function checkAuth() {
@@ -2645,6 +2689,73 @@
         a.click();
       });
 
+      const albumLabels = {
+        main: "Main album",
+        photographer: "Photographer",
+        ceremony: "Ceremony",
+        reception: "Reception",
+      };
+
+      function renderGuestAlbumAdmin() {
+        const root = document.getElementById("guestAlbumAdmin");
+        if (!root) return;
+        const filter = document.getElementById("guestAlbumFilter")?.value || "";
+        const visible = guestAlbum.filter((post) => !filter || post.album === filter);
+        if (!visible.length) {
+          root.innerHTML = '<p class="lead">No guest moments in this album yet.</p>';
+          return;
+        }
+        root.innerHTML = visible.map((post) => {
+          const media = post.type === "video"
+            ? `<video src="${escapeAttr(post.src)}" controls playsinline preload="metadata" style="width:100%;max-height:240px;background:#111"></video>`
+            : `<img src="${escapeAttr(post.src)}" alt="" style="width:100%;max-height:240px;object-fit:cover" />`;
+          const comments = (post.comments || []).map((comment) =>
+            `<p style="margin:0.35rem 0;font-size:0.85rem"><strong>${escapeHtml(comment.name)}</strong> ${escapeHtml(comment.text)} <button type="button" class="btn btn-ghost" data-album-comment="${escapeAttr(post.id)}" data-comment-id="${escapeAttr(comment.id)}">Remove</button></p>`
+          ).join("");
+          return `<article class="card" style="margin-bottom:1rem">
+            ${media}
+            <p style="margin:0.7rem 0 0.2rem"><strong>${escapeHtml(albumLabels[post.album] || post.album)}</strong> · ${escapeHtml(post.name || "Guest")}</p>
+            <p class="lead" style="margin:0">${escapeHtml(post.caption || "")}</p>
+            <p class="lead" style="margin:0.35rem 0 0.6rem">${post.heartCount || 0} hearts · ${(post.comments || []).length} comments</p>
+            ${comments}
+            <button type="button" class="btn btn-ghost" data-album-del="${escapeAttr(post.id)}">Delete moment</button>
+          </article>`;
+        }).join("");
+      }
+
+      async function loadDriveStatus() {
+        const status = await api("/api/admin/drive");
+        const line = document.getElementById("driveStatus");
+        const redirect = document.getElementById("driveRedirect");
+        const disconnect = document.getElementById("disconnectDrive");
+        const connect = document.getElementById("connectDrive");
+        if (!line) return;
+        if (status.connected) {
+          line.textContent = "Connected" + (status.email ? " as " + status.email : "") + ". New guest photos and films go into your Drive.";
+          if (redirect) {
+            redirect.innerHTML = status.folderUrl
+              ? `<a href="${escapeAttr(status.folderUrl)}" target="_blank" rel="noopener">Open the guest album folder</a>`
+              : "";
+          }
+        } else if (!status.configured) {
+          line.textContent = "Add the Google client id and secret, then connect the Drive account that should keep the photos.";
+          if (redirect) redirect.textContent = status.redirectUri ? "Redirect URI to register: " + status.redirectUri : "";
+        } else {
+          line.textContent = "The Google client is ready. Connect the Drive account that should keep the guest photos and films.";
+          if (redirect) redirect.textContent = status.redirectUri ? "Redirect URI registered in Google: " + status.redirectUri : "";
+        }
+        if (disconnect) disconnect.hidden = !status.connected;
+        if (connect) connect.textContent = status.connected ? "Connect again" : "Connect Google Drive";
+      }
+
+      async function loadGuestAlbum() {
+        const data = await api("/api/admin/guest-album");
+        guestAlbum = data.posts || [];
+        const stat = document.getElementById("statAlbum");
+        if (stat) stat.textContent = String(guestAlbum.length);
+        renderGuestAlbumAdmin();
+      }
+
       async function loadAll() {
         content = await api("/api/content");
         gallery = await api("/api/gallery");
@@ -2654,7 +2765,71 @@
         renderGalleryAdmin();
         renderGuests();
         renderRsvps();
+        try { await loadGuestAlbum(); } catch (ex) { toast(ex.message, true); }
+        try { await loadDriveStatus(); } catch (ex) { toast(ex.message, true); }
       }
+
+      document.getElementById("disconnectDrive")?.addEventListener("click", async () => {
+        if (!confirm("Disconnect Google Drive? New guest uploads will wait until you connect it again.")) return;
+        try {
+          await api("/api/admin/drive/disconnect", { method: "POST" });
+          await loadDriveStatus();
+          toast("Google Drive disconnected");
+        } catch (ex) {
+          toast(ex.message, true);
+        }
+      });
+
+      document.getElementById("refreshGuestAlbum")?.addEventListener("click", () => {
+        loadGuestAlbum().catch((ex) => toast(ex.message, true));
+      });
+      document.getElementById("guestAlbumFilter")?.addEventListener("change", renderGuestAlbumAdmin);
+      document.getElementById("downloadGuestAlbum")?.addEventListener("click", async () => {
+        const button = document.getElementById("downloadGuestAlbum");
+        button.disabled = true;
+        try {
+          const headers = {};
+          if (adminToken) {
+            headers.Authorization = "Bearer " + adminToken;
+            headers["X-Admin-Token"] = adminToken;
+          }
+          const res = await fetch("/api/admin/guest-album/download", { credentials: "include", headers });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || "Could not download the album");
+          }
+          const blob = await res.blob();
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "gio-augiela-guest-album.zip";
+          a.click();
+          URL.revokeObjectURL(a.href);
+          toast("Album download started");
+        } catch (ex) {
+          toast(ex.message, true);
+        } finally {
+          button.disabled = false;
+        }
+      });
+      document.getElementById("guestAlbumAdmin")?.addEventListener("click", async (event) => {
+        const commentBtn = event.target.closest("[data-album-comment]");
+        const delBtn = event.target.closest("[data-album-del]");
+        try {
+          if (commentBtn) {
+            await api("/api/admin/guest-album/" + commentBtn.dataset.albumComment + "/comments/" + commentBtn.dataset.commentId, { method: "DELETE" });
+            await loadGuestAlbum();
+            toast("Comment removed");
+            return;
+          }
+          if (!delBtn) return;
+          if (!confirm("Delete this guest moment? The photo or film will be removed.")) return;
+          await api("/api/admin/guest-album/" + delBtn.dataset.albumDel, { method: "DELETE" });
+          await loadGuestAlbum();
+          toast("Moment deleted");
+        } catch (ex) {
+          toast(ex.message, true);
+        }
+      });
 
       function escapeHtml(s) {
         return String(s)

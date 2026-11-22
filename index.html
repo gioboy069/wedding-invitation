@@ -1302,11 +1302,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
+      padding: 4.5rem 4.5rem 7.5rem;
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.4s, visibility 0.4s;
-      touch-action: pan-y;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .lightbox.open {
@@ -1314,14 +1316,157 @@
       visibility: visible;
     }
 
+    .reel-frame {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-width: min(960px, 86vw);
+      max-height: min(68vh, 760px);
+    }
+
+    .reel-stage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 100%;
+      max-height: min(68vh, 760px);
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    .reel-stage.reel-next { animation: reelNext 0.42s ease; }
+    .reel-stage.reel-prev { animation: reelPrev 0.42s ease; }
+
+    @keyframes reelNext {
+      from { opacity: 0.15; transform: translateX(7%); }
+      to { opacity: 1; transform: none; }
+    }
+
+    @keyframes reelPrev {
+      from { opacity: 0.15; transform: translateX(-7%); }
+      to { opacity: 1; transform: none; }
+    }
+
     .lightbox img,
     .lightbox video {
-      max-width: min(960px, 92vw);
-      max-height: 78vh;
+      max-width: min(960px, 86vw);
+      max-height: min(68vh, 760px);
       object-fit: contain;
       box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
       background: #0a1f30;
       touch-action: none;
+      transform-origin: center center;
+      cursor: pointer;
+    }
+
+    .lightbox.is-zoomed img,
+    .lightbox.is-zoomed video,
+    .lightbox.is-zoomed .reel-stage {
+      cursor: grab;
+    }
+
+    .reel-bar {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      bottom: 0.7rem;
+      height: 3px;
+      border-radius: 99px;
+      background: rgba(13, 43, 69, 0.45);
+      box-shadow: 0 0 0 1px rgba(247, 245, 241, 0.38);
+      overflow: hidden;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .reel-bar i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: #f7f5f1;
+    }
+
+    .reel-badge {
+      position: absolute;
+      z-index: 3;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      padding: 0.65rem 1rem;
+      border-radius: 999px;
+      background: rgba(13, 43, 69, 0.5);
+      border: 1px solid rgba(247, 245, 241, 0.35);
+      color: #f7f5f1;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .lightbox.is-paused .reel-badge,
+    .lightbox.is-zoomed .reel-badge {
+      opacity: 1;
+    }
+
+    .reel-tools {
+      position: absolute;
+      left: 50%;
+      bottom: 2.15rem;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      z-index: 4;
+      max-width: calc(100% - 2rem);
+    }
+
+    .reel-tool {
+      appearance: none;
+      -webkit-appearance: none;
+      border-radius: 999px;
+      border: 1px solid rgba(247, 245, 241, 0.55);
+      background: rgba(247, 245, 241, 0.16);
+      color: #f7f5f1;
+      font: inherit;
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.55rem 0.95rem;
+      min-height: 44px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .reel-tool:hover,
+    .reel-tool:focus-visible {
+      background: rgba(247, 245, 241, 0.32);
+      outline: none;
+    }
+
+    .reel-count {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(247, 245, 241, 0.78);
+      white-space: nowrap;
+    }
+
+    .reel-live {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .lightbox-close,
@@ -1377,7 +1522,7 @@
 
     .lightbox-caption {
       position: absolute;
-      bottom: 2rem;
+      bottom: 5.15rem;
       left: 50%;
       transform: translateX(-50%);
       font-family: var(--font-serif);
@@ -1392,13 +1537,15 @@
 
     .lightbox-swipe-hint {
       position: absolute;
-      bottom: 0.65rem;
+      bottom: 0.45rem;
       left: 50%;
       transform: translateX(-50%);
+      width: min(40rem, calc(100% - 2rem));
       font-size: 0.68rem;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: rgba(247, 245, 241, 0.45);
+      text-align: center;
+      color: rgba(247, 245, 241, 0.5);
       pointer-events: none;
     }
 
@@ -1428,6 +1575,21 @@
           inset 0 0 0 4px rgba(247, 245, 241, 0.55),
           inset 0 1px 3px rgba(0, 0, 0, 0.18),
           0 10px 24px rgba(0, 0, 0, 0.32);
+      }
+
+      .reel-tool {
+        box-shadow:
+          inset 0 0 0 3px rgba(13, 43, 69, 0.42),
+          inset 0 0 0 4px rgba(247, 245, 241, 0.38),
+          inset 0 1px 3px rgba(0, 0, 0, 0.22),
+          0 8px 22px rgba(0, 0, 0, 0.28);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reel-stage.reel-next,
+      .reel-stage.reel-prev {
+        animation: none;
       }
     }
 
@@ -1517,6 +1679,7 @@
     #story,
     #venue,
     #gallery,
+    #album,
     #attire,
     #rsvp,
     #wedding-day,
@@ -1525,6 +1688,291 @@
     #calendar,
     #countdown-section {
       scroll-margin-top: clamp(5.5rem, 12vw, 7rem);
+    }
+
+    .guest-album {
+      background: #eef6f8;
+      text-align: center;
+    }
+
+    .album-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.45rem;
+      margin: 1.35rem auto 1.5rem;
+      max-width: 44rem;
+    }
+
+    .album-tab {
+      appearance: none;
+      border: 1px solid rgba(13, 43, 69, 0.18);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--deep);
+      border-radius: 999px;
+      min-height: 44px;
+      padding: 0.45rem 0.95rem;
+      font: inherit;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .album-tab.is-active {
+      background: var(--deep);
+      border-color: var(--deep);
+      color: #f7f5f1;
+    }
+
+    .album-layout {
+      display: grid;
+      grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+      gap: 1.35rem;
+      align-items: start;
+      text-align: left;
+    }
+
+    .album-form,
+    .album-card {
+      background: rgba(255, 253, 248, 0.92);
+      border: 1px solid rgba(107, 167, 160, 0.28);
+    }
+
+    .album-form {
+      padding: 1.15rem 1.15rem 1.25rem;
+      position: sticky;
+      top: 5.6rem;
+    }
+
+    .album-form .form-label { display: block; margin-top: 0.9rem; }
+    .album-form .form-input,
+    .album-form .form-select { width: 100%; display: block; }
+
+    .album-form h3 {
+      font-family: var(--font-serif);
+      font-weight: 500;
+      font-size: 1.55rem;
+      color: var(--deep);
+      margin: 0 0 0.35rem;
+    }
+
+    .album-form p,
+    .album-note,
+    .album-empty,
+    .album-error {
+      color: var(--text-soft);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .album-file {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      margin: 0.35rem 0 0.8rem;
+      padding: 0.55rem 0.75rem;
+      border: 1px dashed rgba(30, 90, 110, 0.45);
+      cursor: pointer;
+      color: var(--teal);
+      font-size: 0.92rem;
+    }
+
+    .album-file input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    .album-status {
+      min-height: 1.3em;
+      margin: 0.7rem 0 0;
+      font-size: 0.88rem;
+    }
+
+    .album-status.is-error { color: #8d3a3a; }
+    .album-status.is-ok { color: var(--teal); }
+
+    .album-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.9rem;
+    }
+
+    .album-card { overflow: hidden; }
+
+    .album-media {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: #d7e3ea;
+      cursor: pointer;
+      position: relative;
+      aspect-ratio: 4 / 5;
+    }
+
+    .album-media img,
+    .album-media video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+
+    .album-play {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(13, 43, 69, 0.18);
+      color: white;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .album-body { padding: 0.8rem 0.85rem 0.9rem; }
+
+    .album-name {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      color: var(--deep);
+      margin: 0;
+    }
+
+    .album-caption {
+      margin: 0.25rem 0 0.65rem;
+      color: var(--text-soft);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .album-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .album-heart {
+      appearance: none;
+      border: 1px solid rgba(13, 43, 69, 0.16);
+      background: transparent;
+      color: var(--deep);
+      border-radius: 999px;
+      min-height: 40px;
+      padding: 0.3rem 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.85rem;
+    }
+
+    .album-heart svg { width: 16px; height: 16px; fill: none; stroke: currentColor; }
+    .album-heart.is-on { color: #9a3b4a; border-color: rgba(154, 59, 74, 0.35); }
+    .album-heart.is-on svg { fill: currentColor; }
+
+    .album-comments {
+      margin-top: 0.75rem;
+      display: grid;
+      gap: 0.45rem;
+      max-height: 11rem;
+      overflow: auto;
+    }
+
+    .album-comment {
+      margin: 0;
+      font-size: 0.86rem;
+      line-height: 1.4;
+      color: var(--text);
+    }
+
+    .album-comment strong {
+      font-weight: 600;
+      color: var(--deep);
+    }
+
+    .album-comment-form {
+      display: grid;
+      gap: 0.35rem;
+      margin-top: 0.7rem;
+    }
+
+    .album-comment-form .form-input { font-size: 0.95rem; }
+
+    .album-comment-submit {
+      justify-self: start;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: var(--teal);
+      font: inherit;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      min-height: 36px;
+      padding: 0;
+    }
+
+    .album-viewer {
+      position: fixed;
+      inset: 0;
+      z-index: 480;
+      background: rgba(13, 43, 69, 0.94);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4.5rem 1.25rem 2rem;
+    }
+
+    .album-viewer[hidden] { display: none; }
+
+    .album-viewer img,
+    .album-viewer video {
+      max-width: min(960px, 92vw);
+      max-height: 78vh;
+      object-fit: contain;
+      background: #0a1f30;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+    }
+
+    .album-viewer-close {
+      position: absolute;
+      top: 1.25rem;
+      left: max(0.75rem, env(safe-area-inset-left));
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 1px solid rgba(247, 245, 241, 0.55);
+      background: rgba(247, 245, 241, 0.18);
+      color: #f7f5f1;
+      font-size: 1.6rem;
+      cursor: pointer;
+    }
+
+    .album-viewer-caption {
+      position: absolute;
+      bottom: 1.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0;
+      max-width: 36rem;
+      text-align: center;
+      color: rgba(247, 245, 241, 0.88);
+      font-family: var(--font-serif);
+      font-style: italic;
+    }
+
+    @media (max-width: 800px) {
+      .album-layout { grid-template-columns: 1fr; }
+      .album-form { position: static; }
     }
 
     .attire-expand-btn {
@@ -2704,7 +3152,7 @@
       }
 
       .lightbox {
-        padding: 1rem 3.4rem;
+        padding: 4.2rem 3.2rem 7.2rem;
       }
 
       .lightbox-prev,
@@ -2719,8 +3167,23 @@
       .lightbox-next { right: 0.45rem; }
 
       .lightbox-caption {
-        bottom: 2.6rem;
+        bottom: 5.75rem;
         font-size: 0.95rem;
+      }
+
+      .reel-tools {
+        bottom: 2.55rem;
+      }
+
+      .lightbox-swipe-hint {
+        bottom: 0.4rem;
+        font-size: 0.58rem;
+        letter-spacing: 0.06em;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: calc(100% - 6.5rem);
       }
 
       .attire-teaser-card {
@@ -3512,6 +3975,7 @@
       <li><a href="#venue">Venue</a></li>
       <li><a href="#attire">Attire</a></li>
       <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#album">Album</a></li>
       <li><a href="#rsvp">RSVP</a></li>
     </ul>
   </nav>
@@ -3932,7 +4396,7 @@
     <div class="container">
       <p class="section-label reveal">Our Moments</p>
       <h2 class="section-title reveal reveal-delay-1">Prenup Gallery</h2>
-      <p class="section-subtitle reveal reveal-delay-2">Moments pinned along a drifting line — drag to wander through vineyards, coastlines, and quiet golden hours.</p>
+      <p class="section-subtitle reveal reveal-delay-2">Moments pinned along a drifting line. Open one and it plays through — pause to linger, or zoom in closer.</p>
     </div>
     <div class="clothesline-shell reveal reveal-delay-1">
       <svg class="clothesline-wire" id="clotheslineWire" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
@@ -3941,18 +4405,71 @@
       <div class="clothesline-viewport" id="clotheslineViewport">
         <div class="clothesline-track" id="homeGallery" aria-label="Prenup photo and video gallery"></div>
       </div>
-      <p class="gallery-hint" id="galleryHint" hidden>Drag or swipe the line</p>
+      <p class="gallery-hint" id="galleryHint" hidden>Drag the line, or tap a photo to play it through</p>
     </div>
   </section>
 
-  <div class="lightbox" id="galleryLightbox" role="dialog" aria-modal="true" aria-label="Gallery viewer" hidden>
+  <section class="guest-album" id="album">
+    <div class="container">
+      <p class="section-label reveal">From the celebration</p>
+      <h2 class="section-title reveal reveal-delay-1">Guest Album</h2>
+      <p class="section-subtitle reveal reveal-delay-2">Share a photo or short film from the day. Choose Main album, Photographer, Ceremony, or Reception, then heart a moment or leave a note.</p>
+      <div class="album-tabs" id="guestAlbumTabs" role="tablist" aria-label="Albums"></div>
+      <div class="album-layout">
+        <form class="album-form" id="guestAlbumForm">
+          <h3>Share a moment</h3>
+          <p>It is saved in the couple’s Google Drive and appears in the album right away. Photos and short films up to 48 MB.</p>
+          <label class="form-label" for="guestAlbumName">Your name</label>
+          <input class="form-input" id="guestAlbumName" name="name" maxlength="60" autocomplete="name" required placeholder="Maria Cruz" />
+          <label class="form-label" for="guestAlbumPick">Album</label>
+          <select class="form-select" id="guestAlbumPick" name="album">
+            <option value="main">Main album</option>
+            <option value="photographer">Photographer</option>
+            <option value="ceremony">Ceremony</option>
+            <option value="reception">Reception</option>
+          </select>
+          <label class="form-label" for="guestAlbumCaption">Note</label>
+          <input class="form-input" id="guestAlbumCaption" name="caption" maxlength="240" placeholder="The first dance" />
+          <label class="album-file" for="guestAlbumFile">
+            <input id="guestAlbumFile" name="media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" required />
+            <span id="guestAlbumFileLabel">Choose a photo or short film</span>
+          </label>
+          <button class="form-submit" type="submit" id="guestAlbumSubmit">Share</button>
+          <p class="album-status" id="guestAlbumStatus" role="status"></p>
+        </form>
+        <div>
+          <div class="album-grid" id="guestAlbumGrid" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="album-viewer" id="guestAlbumViewer" hidden>
+    <button type="button" class="album-viewer-close" id="guestAlbumViewerClose" aria-label="Close">&times;</button>
+    <img id="guestAlbumViewerImg" alt="" hidden />
+    <video id="guestAlbumViewerVideo" controls playsinline hidden></video>
+    <p class="album-viewer-caption" id="guestAlbumViewerCaption"></p>
+  </div>
+
+  <div class="lightbox" id="galleryLightbox" role="dialog" aria-modal="true" aria-label="Gallery reel" hidden>
     <button class="lightbox-close" id="galleryLightboxClose" type="button" aria-label="Close">&times;</button>
     <button class="lightbox-prev" id="galleryLightboxPrev" type="button" aria-label="Previous">&#8592;</button>
-    <img id="galleryLightboxImg" src="" alt="" hidden />
-    <video id="galleryLightboxVideo" controls playsinline hidden></video>
+    <div class="reel-frame">
+      <div class="reel-stage" id="galleryReelStage">
+        <img id="galleryLightboxImg" src="" alt="" hidden draggable="false" />
+        <video id="galleryLightboxVideo" playsinline preload="metadata" hidden></video>
+      </div>
+      <div class="reel-bar" aria-hidden="true"><i id="galleryReelFill"></i></div>
+      <p class="reel-badge" id="galleryReelBadge">Paused</p>
+    </div>
     <button class="lightbox-next" id="galleryLightboxNext" type="button" aria-label="Next">&#8594;</button>
+    <div class="reel-tools">
+      <button type="button" class="reel-tool" id="galleryReelPause" aria-pressed="false">Pause</button>
+      <button type="button" class="reel-tool" id="galleryReelZoom" aria-pressed="false" aria-label="Zoom in on photo">Zoom</button>
+      <span class="reel-count" id="galleryReelCount"></span>
+    </div>
     <p class="lightbox-caption" id="galleryLightboxCaption"></p>
-    <p class="lightbox-swipe-hint" id="gallerySwipeHint">Swipe or use arrows</p>
+    <p class="lightbox-swipe-hint" id="gallerySwipeHint">Auto-plays · tap to pause · double-tap to zoom</p>
+    <p class="reel-live" id="galleryReelStatus" aria-live="polite"></p>
   </div>
 
   <!-- Details note on a silver tray -->
@@ -5290,30 +5807,278 @@
         });
       }
 
+      var reel = {
+        paused: false,
+        reduce: false,
+        zoom: 1,
+        panX: 0,
+        panY: 0,
+        photoMs: 5200,
+        started: 0,
+        elapsed: 0,
+        raf: 0,
+        dir: 1,
+        lock: false,
+        advancedAt: 0,
+        ignoreMedia: false,
+        forceTimer: false,
+        pinching: false,
+        lastTap: 0,
+        tapTimer: 0,
+        pointers: new Map(),
+        gesture: null
+      };
+
+      function activeReelMedia() {
+        var item = homeGalleryItems[galleryLightboxIndex];
+        if (isGalleryVideo(item)) return document.getElementById("galleryLightboxVideo");
+        return document.getElementById("galleryLightboxImg");
+      }
+
+      function setReelFill(amount) {
+        var fill = document.getElementById("galleryReelFill");
+        if (!fill) return;
+        fill.style.width = (Math.max(0, Math.min(1, amount)) * 100).toFixed(2) + "%";
+      }
+
+      function clampReelPan() {
+        var media = activeReelMedia();
+        if (!media || reel.zoom <= 1.01) {
+          reel.panX = 0;
+          reel.panY = 0;
+          return;
+        }
+        var maxX = (media.clientWidth * (reel.zoom - 1)) / 2;
+        var maxY = (media.clientHeight * (reel.zoom - 1)) / 2;
+        reel.panX = Math.max(-maxX, Math.min(maxX, reel.panX));
+        reel.panY = Math.max(-maxY, Math.min(maxY, reel.panY));
+      }
+
+      function applyReelTransform(instant) {
+        var img = document.getElementById("galleryLightboxImg");
+        var video = document.getElementById("galleryLightboxVideo");
+        var active = activeReelMedia();
+        [img, video].forEach(function (el) {
+          if (!el) return;
+          if (el !== active) {
+            el.style.transform = "";
+            el.style.transition = "";
+            return;
+          }
+          el.style.transition = instant ? "none" : "transform 0.28s ease";
+          el.style.transform = reel.zoom <= 1.01
+            ? ""
+            : "translate3d(" + reel.panX.toFixed(1) + "px," + reel.panY.toFixed(1) + "px,0) scale(" + reel.zoom.toFixed(3) + ")";
+        });
+        var lightbox = document.getElementById("galleryLightbox");
+        if (lightbox) lightbox.classList.toggle("is-zoomed", reel.zoom > 1.01);
+      }
+
+      function resetReelZoom() {
+        reel.zoom = 1;
+        reel.panX = 0;
+        reel.panY = 0;
+        reel.pinching = false;
+        applyReelTransform(true);
+      }
+
+      function updateReelChrome() {
+        var lightbox = document.getElementById("galleryLightbox");
+        var pauseBtn = document.getElementById("galleryReelPause");
+        var zoomBtn = document.getElementById("galleryReelZoom");
+        var count = document.getElementById("galleryReelCount");
+        var hint = document.getElementById("gallerySwipeHint");
+        var badge = document.getElementById("galleryReelBadge");
+        var status = document.getElementById("galleryReelStatus");
+        var item = homeGalleryItems[galleryLightboxIndex] || {};
+        var total = homeGalleryItems.length;
+        var zoomed = reel.zoom > 1.01;
+        if (lightbox) lightbox.classList.toggle("is-paused", !!reel.paused && !zoomed);
+        if (pauseBtn) {
+          pauseBtn.textContent = reel.paused ? "Play" : "Pause";
+          pauseBtn.setAttribute("aria-pressed", reel.paused ? "true" : "false");
+          pauseBtn.setAttribute("aria-label", reel.paused ? "Play the reel" : "Pause the reel");
+        }
+        if (zoomBtn) {
+          zoomBtn.textContent = zoomed ? "Fit" : "Zoom";
+          zoomBtn.setAttribute("aria-pressed", zoomed ? "true" : "false");
+          zoomBtn.setAttribute("aria-label", zoomed ? "Fit photo to screen" : "Zoom in on photo");
+        }
+        if (count && total) count.textContent = (galleryLightboxIndex + 1) + " of " + total;
+        if (badge) badge.textContent = zoomed ? "Zoomed" : "Paused";
+        if (hint) {
+          if (zoomed) hint.textContent = "Drag to look around · double-tap or Fit";
+          else if (reel.paused) hint.textContent = "Paused · tap the photo or press Play";
+          else hint.textContent = "Auto-plays · tap to pause · double-tap to zoom";
+        }
+        if (status && total) {
+          var kind = isGalleryVideo(item) ? "film" : "photo";
+          var text = (reel.paused || zoomed ? "Paused on " : "Playing ") + kind + " " + (galleryLightboxIndex + 1) + " of " + total;
+          if (item.caption) text += ", " + item.caption;
+          if (status.textContent !== text) status.textContent = text;
+        }
+      }
+
+      function releaseGalleryVideo(video) {
+        if (!video) return;
+        reel.ignoreMedia = true;
+        try { video.pause(); } catch (err) {}
+        video.removeAttribute("src");
+        if (video.load) video.load();
+        video.hidden = true;
+        window.setTimeout(function () { reel.ignoreMedia = false; }, 0);
+      }
+
+      function syncVideoPlayback() {
+        var video = document.getElementById("galleryLightboxVideo");
+        var item = homeGalleryItems[galleryLightboxIndex];
+        if (!video || !item || !isGalleryVideo(item) || video.hidden) return;
+        reel.ignoreMedia = true;
+        if (reel.paused || reel.zoom > 1.01) {
+          try { video.pause(); } catch (err) {}
+          window.setTimeout(function () { reel.ignoreMedia = false; }, 0);
+          return;
+        }
+        var pending = video.play();
+        if (pending && typeof pending.catch === "function") {
+          pending.catch(function () {
+            video.muted = true;
+            var retry = video.play();
+            if (retry && typeof retry.catch === "function") {
+              retry.catch(function () { reel.forceTimer = true; });
+            }
+          });
+        }
+        window.setTimeout(function () { reel.ignoreMedia = false; }, 0);
+      }
+
+      function zoomAt(next, clientX, clientY) {
+        next = Math.max(1, Math.min(4, next));
+        var stage = document.getElementById("galleryReelStage");
+        if (next <= 1.01) {
+          reel.zoom = 1;
+          reel.panX = 0;
+          reel.panY = 0;
+        } else {
+          if (stage && clientX != null && reel.zoom > 0) {
+            var rect = stage.getBoundingClientRect();
+            var ox = clientX - (rect.left + rect.width / 2);
+            var oy = clientY - (rect.top + rect.height / 2);
+            var scale = next / reel.zoom;
+            reel.panX = ox - (ox - reel.panX) * scale;
+            reel.panY = oy - (oy - reel.panY) * scale;
+          }
+          reel.zoom = next;
+          clampReelPan();
+          if (!reel.paused) setReelPaused(true);
+        }
+        applyReelTransform(!!reel.pinching);
+        updateReelChrome();
+      }
+
+      function setReelPaused(paused) {
+        paused = !!paused;
+        if (!paused && reel.zoom > 1.01) zoomAt(1);
+        if (paused === reel.paused) {
+          updateReelChrome();
+          return;
+        }
+        if (paused) reel.elapsed += performance.now() - reel.started;
+        reel.paused = paused;
+        if (!paused) reel.started = performance.now();
+        syncVideoPlayback();
+        updateReelChrome();
+      }
+
+      function stopReelLoop() {
+        if (reel.raf) cancelAnimationFrame(reel.raf);
+        reel.raf = 0;
+      }
+
+      function ensureReelLoop() {
+        if (reel.raf) return;
+        reel.started = performance.now();
+        reel.raf = requestAnimationFrame(reelLoop);
+      }
+
+      function playReelMotion(dir) {
+        var stage = document.getElementById("galleryReelStage");
+        if (!stage || reel.reduce) return;
+        stage.classList.remove("reel-next", "reel-prev");
+        void stage.offsetWidth;
+        stage.classList.add(dir < 0 ? "reel-prev" : "reel-next");
+      }
+
+      function advanceReel(dir) {
+        var now = performance.now();
+        if (reel.lock || (reel.advancedAt && now - reel.advancedAt < 200)) return;
+        if (homeGalleryItems.length < 2) {
+          setReelFill(1);
+          setReelPaused(true);
+          return;
+        }
+        reel.lock = true;
+        reel.advancedAt = now;
+        shiftGalleryLightbox(dir || 1);
+        reel.lock = false;
+      }
+
+      function reelLoop(now) {
+        reel.raf = requestAnimationFrame(reelLoop);
+        if (!isGalleryLightboxOpen()) return;
+        if (reel.paused || reel.zoom > 1.01) return;
+        if (reel.gesture && reel.gesture.moved) return;
+        var item = homeGalleryItems[galleryLightboxIndex];
+        var video = document.getElementById("galleryLightboxVideo");
+        if (isGalleryVideo(item) && video && !video.hidden && !reel.forceTimer) {
+          if (video.ended) {
+            advanceReel(1);
+            return;
+          }
+          if (isFinite(video.duration) && video.duration > 0 && video.readyState >= 1) {
+            setReelFill(video.currentTime / video.duration);
+            return;
+          }
+          var waiting = reel.elapsed + (now - reel.started);
+          setReelFill(Math.min(0.95, waiting / 12000));
+          if (waiting >= 12000) advanceReel(1);
+          return;
+        }
+        var elapsed = reel.elapsed + (now - reel.started);
+        var progress = elapsed / reel.photoMs;
+        setReelFill(progress);
+        if (progress >= 1) advanceReel(1);
+      }
+
       function openGalleryLightbox(index) {
         if (!homeGalleryItems.length) return;
-        galleryLightboxIndex = (index + homeGalleryItems.length) % homeGalleryItems.length;
-        var item = homeGalleryItems[galleryLightboxIndex];
         var lightbox = document.getElementById("galleryLightbox");
+        var fresh = !(lightbox && lightbox.classList.contains("open"));
+        var total = homeGalleryItems.length;
+        galleryLightboxIndex = ((index % total) + total) % total;
+        var item = homeGalleryItems[galleryLightboxIndex];
         var img = document.getElementById("galleryLightboxImg");
         var video = document.getElementById("galleryLightboxVideo");
         var caption = document.getElementById("galleryLightboxCaption");
-        if (!lightbox || !img || !video) return;
+        if (!lightbox || !img || !video || !item) return;
 
         clothesline.auto = false;
+        resetReelZoom();
+        reel.elapsed = 0;
+        reel.started = performance.now();
+        reel.forceTimer = false;
+        if (fresh) reel.paused = !!reel.reduce;
 
         if (isGalleryVideo(item)) {
           img.hidden = true;
           img.removeAttribute("src");
           video.hidden = false;
+          video.muted = false;
           video.src = galleryMediaSrc(item);
-          video.play().catch(function () {});
         } else {
-          video.pause();
-          video.removeAttribute("src");
-          video.hidden = true;
+          releaseGalleryVideo(video);
           img.hidden = false;
-          img.src = item.src;
+          img.src = item.src || "";
           img.alt = item.alt || item.caption || "";
         }
         if (caption) caption.textContent = item.caption || "";
@@ -5321,24 +6086,31 @@
         lightbox.classList.add("open");
         lightbox.style.pointerEvents = "";
         document.body.style.overflow = "hidden";
+        playReelMotion(fresh ? 1 : (reel.dir || 1));
+        setReelFill(0);
+        syncVideoPlayback();
+        updateReelChrome();
+        ensureReelLoop();
       }
 
       function closeGalleryLightbox() {
+        stopReelLoop();
+        if (reel.tapTimer) clearTimeout(reel.tapTimer);
+        reel.tapTimer = 0;
+        reel.pointers.clear();
+        reel.gesture = null;
+        reel.elapsed = 0;
+        resetReelZoom();
         var lightbox = document.getElementById("galleryLightbox");
         var video = document.getElementById("galleryLightboxVideo");
         var img = document.getElementById("galleryLightboxImg");
-        if (video) {
-          try { video.pause(); } catch (err) {}
-          video.removeAttribute("src");
-          video.load && video.load();
-          video.hidden = true;
-        }
+        releaseGalleryVideo(video);
         if (img) {
           img.removeAttribute("src");
           img.hidden = true;
         }
         if (lightbox) {
-          lightbox.classList.remove("open");
+          lightbox.classList.remove("open", "is-paused", "is-zoomed");
           lightbox.hidden = true;
           lightbox.style.pointerEvents = "none";
         }
@@ -5348,7 +6120,6 @@
           clothesline.auto = !clothesline.reduceMotion;
           clothesline.dragging = false;
         }
-        // Re-enable pointer events next frame so a following nav scroll works
         if (lightbox) {
           requestAnimationFrame(function () {
             lightbox.style.pointerEvents = "";
@@ -5361,7 +6132,12 @@
       window.WeddingUI.closeGalleryLightbox = closeGalleryLightbox;
 
       function shiftGalleryLightbox(dir) {
-        openGalleryLightbox(galleryLightboxIndex + dir);
+        reel.dir = dir < 0 ? -1 : 1;
+        if (reel.tapTimer) {
+          clearTimeout(reel.tapTimer);
+          reel.tapTimer = 0;
+        }
+        openGalleryLightbox(galleryLightboxIndex + (dir || 1));
       }
 
       (function bindHomeGallery() {
@@ -5370,6 +6146,7 @@
         var lightbox = document.getElementById("galleryLightbox");
         clothesline.reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         clothesline.auto = !clothesline.reduceMotion;
+        reel.reduce = !!clothesline.reduceMotion;
 
         if (viewport && track) {
           viewport.addEventListener("pointerdown", function (e) {
@@ -5463,7 +6240,13 @@
         var closeBtn = document.getElementById("galleryLightboxClose");
         var prevBtn = document.getElementById("galleryLightboxPrev");
         var nextBtn = document.getElementById("galleryLightboxNext");
-        if (closeBtn) closeBtn.addEventListener("click", closeGalleryLightbox);
+        var pauseBtn = document.getElementById("galleryReelPause");
+        var zoomBtn = document.getElementById("galleryReelZoom");
+        var reelVideo = document.getElementById("galleryLightboxVideo");
+        if (closeBtn) closeBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          closeGalleryLightbox();
+        });
         if (prevBtn) prevBtn.addEventListener("click", function (e) {
           e.stopPropagation();
           shiftGalleryLightbox(-1);
@@ -5472,54 +6255,202 @@
           e.stopPropagation();
           shiftGalleryLightbox(1);
         });
-        if (lightbox) {
-          lightbox.addEventListener("click", function (e) {
-            if (e.target === lightbox) closeGalleryLightbox();
+        if (pauseBtn) pauseBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          setReelPaused(!reel.paused);
+        });
+        if (zoomBtn) zoomBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (reel.zoom > 1.05) zoomAt(1);
+          else zoomAt(2.4);
+        });
+        if (reelVideo) {
+          reelVideo.addEventListener("ended", function () {
+            if (reel.ignoreMedia || reel.paused || !isGalleryLightboxOpen()) return;
+            if (reelVideo.hidden) return;
+            if (!isGalleryVideo(homeGalleryItems[galleryLightboxIndex])) return;
+            advanceReel(1);
           });
-
-          // Swipe left/right inside the enlarged viewer
-          var swipe = { active: false, x: 0, y: 0, dx: 0, dy: 0, id: null };
-          function swipeTargetOk(target) {
-            if (!target || !target.closest) return true;
-            if (target.closest(".lightbox-close, .lightbox-prev, .lightbox-next")) return false;
-            // Allow scrubbing video controls without changing slides
-            if (target.closest("video")) return false;
-            return true;
+          reelVideo.addEventListener("error", function () {
+            if (reel.ignoreMedia || !isGalleryLightboxOpen() || reelVideo.hidden) return;
+            reel.forceTimer = true;
+          });
+        }
+        if (lightbox) {
+          function reelControlTarget(target) {
+            return !!(target && target.closest && target.closest(".lightbox-close, .lightbox-prev, .lightbox-next, .reel-tools"));
           }
+          function onReelMedia(target) {
+            return !!(target && target.closest && target.closest("#galleryReelStage, #galleryLightboxImg, #galleryLightboxVideo"));
+          }
+
           lightbox.addEventListener("pointerdown", function (e) {
             if (!lightbox.classList.contains("open")) return;
             if (e.button != null && e.button !== 0) return;
-            if (!swipeTargetOk(e.target)) return;
-            swipe.active = true;
-            swipe.id = e.pointerId;
-            swipe.x = e.clientX;
-            swipe.y = e.clientY;
-            swipe.dx = 0;
-            swipe.dy = 0;
-            try { lightbox.setPointerCapture(e.pointerId); } catch (err) {}
+            if (reelControlTarget(e.target)) return;
+            reel.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (reel.pointers.size === 1) {
+              reel.gesture = {
+                id: e.pointerId,
+                x: e.clientX,
+                y: e.clientY,
+                lastX: e.clientX,
+                lastY: e.clientY,
+                dx: 0,
+                dy: 0,
+                moved: false,
+                pinch: false,
+                pinchDist: 1,
+                pinchZoom: reel.zoom
+              };
+            } else if (reel.pointers.size === 2 && reel.gesture) {
+              var pts = Array.from(reel.pointers.values());
+              reel.gesture.pinch = true;
+              reel.gesture.pinchDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+              reel.gesture.pinchZoom = Math.max(1, reel.zoom);
+              reel.pinching = true;
+            }
+            if (onReelMedia(e.target)) e.preventDefault();
           });
+
           lightbox.addEventListener("pointermove", function (e) {
-            if (!swipe.active || e.pointerId !== swipe.id) return;
-            swipe.dx = e.clientX - swipe.x;
-            swipe.dy = e.clientY - swipe.y;
+            if (!reel.pointers.has(e.pointerId)) return;
+            reel.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            var g = reel.gesture;
+            if (!g) return;
+            if (reel.pointers.size >= 2 && g.pinch) {
+              var pts = Array.from(reel.pointers.values());
+              var dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+              reel.zoom = Math.max(1, Math.min(4, g.pinchZoom * (dist / g.pinchDist)));
+              if (reel.zoom > 1.01 && !reel.paused) setReelPaused(true);
+              clampReelPan();
+              applyReelTransform(true);
+              return;
+            }
+            if (e.pointerId !== g.id) return;
+            g.dx = e.clientX - g.x;
+            g.dy = e.clientY - g.y;
+            if (Math.hypot(g.dx, g.dy) > 8) g.moved = true;
+            if (reel.zoom > 1.01 && g.moved) {
+              reel.panX += e.clientX - g.lastX;
+              reel.panY += e.clientY - g.lastY;
+              g.lastX = e.clientX;
+              g.lastY = e.clientY;
+              clampReelPan();
+              applyReelTransform(true);
+            }
           });
-          function endLightboxSwipe(e) {
-            if (!swipe.active) return;
-            if (e && swipe.id != null && e.pointerId !== swipe.id) return;
-            var dx = swipe.dx;
-            var dy = swipe.dy;
-            swipe.active = false;
-            swipe.id = null;
-            if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
-            if (dx < 0) shiftGalleryLightbox(1);
-            else shiftGalleryLightbox(-1);
+
+          function endReelPointer(e) {
+            if (!reel.pointers.has(e.pointerId)) return;
+            reel.pointers.delete(e.pointerId);
+            var g = reel.gesture;
+            if (!g) return;
+            if (reel.pointers.size > 0) {
+              if (reel.pointers.size < 2) {
+                g.pinch = false;
+                reel.pinching = false;
+                var remaining = reel.pointers.values().next().value;
+                if (remaining) {
+                  g.lastX = remaining.x;
+                  g.lastY = remaining.y;
+                  g.x = remaining.x;
+                  g.y = remaining.y;
+                  g.dx = 0;
+                  g.dy = 0;
+                  g.moved = true;
+                }
+              }
+              return;
+            }
+            reel.gesture = null;
+            reel.pinching = false;
+            if (g.pinch) {
+              if (reel.zoom <= 1.05) zoomAt(1);
+              else updateReelChrome();
+              return;
+            }
+            if (reel.zoom > 1.01 && g.moved) return;
+            if (g.moved && reel.zoom <= 1.01 && Math.abs(g.dx) >= 56 && Math.abs(g.dx) > Math.abs(g.dy) * 1.2) {
+              advanceReel(g.dx < 0 ? 1 : -1);
+              return;
+            }
+            if (g.moved) return;
+            if (!onReelMedia(e.target)) {
+              if (e.target === lightbox) closeGalleryLightbox();
+              return;
+            }
+            var now = performance.now();
+            if (reel.zoom > 1.01) {
+              if (now - reel.lastTap < 300) {
+                reel.lastTap = 0;
+                if (reel.tapTimer) clearTimeout(reel.tapTimer);
+                reel.tapTimer = 0;
+                zoomAt(1);
+              } else {
+                reel.lastTap = now;
+              }
+              return;
+            }
+            if (now - reel.lastTap < 300) {
+              reel.lastTap = 0;
+              if (reel.tapTimer) clearTimeout(reel.tapTimer);
+              reel.tapTimer = 0;
+              zoomAt(2.4, e.clientX, e.clientY);
+              return;
+            }
+            reel.lastTap = now;
+            reel.tapTimer = window.setTimeout(function () {
+              reel.tapTimer = 0;
+              if (!isGalleryLightboxOpen() || reel.zoom > 1.01) return;
+              setReelPaused(!reel.paused);
+            }, 280);
           }
-          lightbox.addEventListener("pointerup", endLightboxSwipe);
-          lightbox.addEventListener("pointercancel", endLightboxSwipe);
+
+          lightbox.addEventListener("pointerup", endReelPointer);
+          lightbox.addEventListener("pointercancel", function (e) {
+            if (!reel.pointers.has(e.pointerId)) return;
+            reel.pointers.delete(e.pointerId);
+            if (reel.pointers.size === 0) {
+              reel.gesture = null;
+              reel.pinching = false;
+            }
+          });
+          lightbox.addEventListener("wheel", function (e) {
+            if (!lightbox.classList.contains("open")) return;
+            if (!onReelMedia(e.target) && !(e.target.closest && e.target.closest(".reel-frame"))) return;
+            e.preventDefault();
+            var next = reel.zoom * (e.deltaY < 0 ? 1.08 : 0.92);
+            if (next <= 1.02) zoomAt(1);
+            else zoomAt(next, e.clientX, e.clientY);
+          }, { passive: false });
         }
         document.addEventListener("keydown", function (e) {
           if (!lightbox || !lightbox.classList.contains("open")) return;
-          if (e.key === "Escape") closeGalleryLightbox();
+          var tag = e.target && e.target.tagName;
+          if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+          if (e.key === "Escape") {
+            if (reel.zoom > 1.01) zoomAt(1);
+            else closeGalleryLightbox();
+            return;
+          }
+          if (e.key === " " || e.key === "Spacebar") {
+            if (e.target && e.target.closest && e.target.closest("button, a")) return;
+            e.preventDefault();
+            setReelPaused(!reel.paused);
+            return;
+          }
+          if (reel.zoom > 1.01 && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown")) {
+            e.preventDefault();
+            var step = 48;
+            if (e.key === "ArrowLeft") reel.panX += step;
+            if (e.key === "ArrowRight") reel.panX -= step;
+            if (e.key === "ArrowUp") reel.panY += step;
+            if (e.key === "ArrowDown") reel.panY -= step;
+            clampReelPan();
+            applyReelTransform(true);
+            return;
+          }
           if (e.key === "ArrowLeft") shiftGalleryLightbox(-1);
           if (e.key === "ArrowRight") shiftGalleryLightbox(1);
         });
@@ -6110,5 +7041,6 @@
       window.WeddingUI.closeGalleryLightbox = closeGalleryLightbox;
     })();
   </script>
+  <script src="/js/guest-album.js?v=1"></script>
 </body>
 </html>

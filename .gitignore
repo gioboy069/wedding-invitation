@@ -7,3 +7,5 @@ data/rsvps.json
 .env
 data/sessions.json
 data/admin.json
+data/guest-album.json
+data/drive-token.json

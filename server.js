@@ -4,9 +4,12 @@ import multer from "multer";
 import cookieParser from "cookie-parser";
 import ExcelJS from "exceljs";
 import { randomBytes, timingSafeEqual, scryptSync, createHash } from "crypto";
-import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from "fs";
-import { join, dirname, extname } from "path";
+import { spawn } from "child_process";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, mkdtempSync, rmSync, copyFileSync } from "fs";
+import { tmpdir } from "os";
+import { join, dirname, extname, basename, resolve } from "path";
 import { fileURLToPath } from "url";
+import { createDriveAlbum } from "./lib/drive-album.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
@@ -274,7 +277,7 @@ function sessionCookieOptions(req) {
 }
 
 // Block private paths from static serving
-app.use(["/data", "/server.js", "/package.json", "/package-lock.json", "/.git", "/.env"], (_req, res) => {
+app.use(["/data", "/lib", "/server.js", "/package.json", "/package-lock.json", "/.git", "/.env"], (_req, res) => {
   res.status(404).end();
 });
 
@@ -1220,6 +1223,25 @@ function rewriteDriveUrlsInContent(content) {
   return next;
 }
 
+const driveAlbum = createDriveAlbum({ dataDir: DATA_DIR, publicBaseUrl });
+
+function driveIdFromSrc(src) {
+  const match = String(src || "").match(/\/api\/media\/drive\/([a-zA-Z0-9_-]+)/i);
+  return match ? match[1] : "";
+}
+
+function sendDriveBuffer(res, buffer, contentType, preferVideo) {
+  const type = String(contentType || "").toLowerCase();
+  const head = buffer.slice(0, 32).toString("utf8").trim().toLowerCase();
+  if (type.includes("text/html") || head.startsWith("<!doctype") || head.startsWith("<html")) return false;
+  let outType = preferVideo ? "video/mp4" : "image/jpeg";
+  if (type.startsWith("image/") || type.startsWith("video/")) outType = type.split(";")[0];
+  res.setHeader("Content-Type", outType);
+  res.setHeader("Cache-Control", "private, max-age=3600");
+  res.send(buffer);
+  return true;
+}
+
 // Proxy Google Drive media so photos and short videos display reliably
 app.get("/api/media/drive/:id", async (req, res) => {
   const id = String(req.params.id || "").trim();
@@ -1228,6 +1250,14 @@ app.get("/api/media/drive/:id", async (req, res) => {
   }
 
   const preferVideo = String(req.query.type || "").toLowerCase() === "video";
+  if (driveAlbum.connected()) {
+    try {
+      const owned = await driveAlbum.downloadFile(id);
+      if (owned && sendDriveBuffer(res, owned.buffer, owned.contentType, preferVideo)) return;
+    } catch (err) {
+      console.error("Drive account fetch failed:", err.message);
+    }
+  }
   const candidates = preferVideo
     ? [
         `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`,
@@ -1461,6 +1491,370 @@ app.delete("/api/admin/rsvps/:id", requireAdmin, (req, res) => {
   const next = rsvps.filter((r) => r.id !== req.params.id);
   if (next.length === rsvps.length) return res.status(404).json({ error: "Not found" });
   writeJson("rsvps.json", next);
+  res.json({ ok: true });
+});
+
+// ── Guest album: photos and short films from the day ──
+
+const GUEST_ALBUMS = ["main", "photographer", "ceremony", "reception"];
+const GUEST_ALBUM_LABELS = {
+  main: "Main album",
+  photographer: "Photographer",
+  ceremony: "Ceremony",
+  reception: "Reception",
+};
+const guestRateBuckets = new Map();
+
+const guestStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
+  filename: (_req, file, cb) => {
+    const ext = extname(file.originalname || "").toLowerCase();
+    const allowed = {
+      ".jpg": ".jpg",
+      ".jpeg": ".jpg",
+      ".png": ".png",
+      ".webp": ".webp",
+      ".gif": ".gif",
+      ".mp4": ".mp4",
+      ".webm": ".webm",
+      ".mov": ".mov",
+    };
+    const safe = allowed[ext] || (VIDEO_MIME.test(file.mimetype) ? ".mp4" : ".jpg");
+    cb(null, `guest-${Date.now()}-${randomBytes(4).toString("hex")}${safe}`);
+  },
+});
+
+const guestUpload = multer({
+  storage: guestStorage,
+  limits: { fileSize: 48 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (IMAGE_MIME.test(file.mimetype) || VIDEO_MIME.test(file.mimetype)) cb(null, true);
+    else cb(new Error("Only photo (JPEG/PNG/WebP/GIF) or short video (MP4/WebM/MOV) uploads are allowed"));
+  },
+});
+
+function clipText(value, max) {
+  return String(value || "").replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, max);
+}
+
+function guestTokenHash(token) {
+  const value = String(token || "").trim();
+  if (!/^[a-zA-Z0-9_-]{16,80}$/.test(value)) return "";
+  return createHash("sha256").update(`guest-album:${value}`).digest("hex");
+}
+
+function readGuestToken(req) {
+  return guestTokenHash(req.get("x-guest-token") || req.body?.token || "");
+}
+
+function allowGuestAction(req, action, limit, windowMs) {
+  const now = Date.now();
+  const key = `${action}:${req.ip || "unknown"}`;
+  const bucket = guestRateBuckets.get(key) || { count: 0, reset: now + windowMs };
+  if (now > bucket.reset) {
+    bucket.count = 0;
+    bucket.reset = now + windowMs;
+  }
+  bucket.count += 1;
+  guestRateBuckets.set(key, bucket);
+  return bucket.count <= limit;
+}
+
+function readGuestAlbum() {
+  const saved = readJson("guest-album.json", { posts: [] });
+  const posts = Array.isArray(saved.posts) ? saved.posts : [];
+  return { posts };
+}
+
+function writeGuestAlbum(album) {
+  writeJson("guest-album.json", { posts: album.posts });
+}
+
+function safeGuestFile(src) {
+  const base = basename(String(src || ""));
+  if (!/^guest-\d+-[a-f0-9]+\.(jpg|png|webp|gif|mp4|webm|mov)$/i.test(base)) return null;
+  const full = resolve(UPLOAD_DIR, base);
+  const root = resolve(UPLOAD_DIR);
+  if (!full.startsWith(root + "/") && full !== root) return null;
+  if (!existsSync(full)) return null;
+  return full;
+}
+
+function publicGuestPost(post, tokenHash) {
+  const hearts = Array.isArray(post.hearts) ? post.hearts : [];
+  const comments = Array.isArray(post.comments) ? post.comments : [];
+  return {
+    id: post.id,
+    album: post.album,
+    type: post.type === "video" ? "video" : "photo",
+    src: post.src,
+    name: post.name || "",
+    caption: post.caption || "",
+    createdAt: post.createdAt,
+    heartCount: hearts.length,
+    liked: !!(tokenHash && hearts.includes(tokenHash)),
+    comments: comments.map((comment) => ({
+      id: comment.id,
+      name: comment.name || "",
+      text: comment.text || "",
+      createdAt: comment.createdAt,
+    })),
+  };
+}
+
+function sortedGuestPosts(posts) {
+  return posts.slice().sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+}
+
+app.get("/api/guest-album", (req, res) => {
+  const album = readGuestAlbum();
+  const tokenHash = readGuestToken(req);
+  const filter = String(req.query.album || "").trim();
+  let posts = sortedGuestPosts(album.posts);
+  if (GUEST_ALBUMS.includes(filter)) posts = posts.filter((post) => post.album === filter);
+  const counts = {};
+  GUEST_ALBUMS.forEach((id) => {
+    counts[id] = album.posts.filter((post) => post.album === id).length;
+  });
+  res.json({
+    albums: GUEST_ALBUMS.map((id) => ({ id, label: GUEST_ALBUM_LABELS[id], count: counts[id] })),
+    posts: posts.map((post) => publicGuestPost(post, tokenHash)),
+  });
+});
+
+function removeUpload(file) {
+  if (!file?.path) return;
+  try { unlinkSync(file.path); } catch { /* ignore */ }
+}
+
+app.post("/api/guest-album", guestUpload.single("media"), async (req, res) => {
+  if (!allowGuestAction(req, "upload", 8, 60 * 60 * 1000)) {
+    removeUpload(req.file);
+    return res.status(429).json({ error: "Too many uploads from this connection. Try again in a little while." });
+  }
+  if (!req.file) return res.status(400).json({ error: "Choose a photo or short film to share." });
+  const name = clipText(req.body?.name, 60);
+  const caption = clipText(req.body?.caption, 240);
+  const albumId = String(req.body?.album || "main").trim();
+  if (name.length < 2) {
+    removeUpload(req.file);
+    return res.status(400).json({ error: "Add your name so guests know who shared this." });
+  }
+  if (!GUEST_ALBUMS.includes(albumId)) {
+    removeUpload(req.file);
+    return res.status(400).json({ error: "Choose Main album, Photographer, Ceremony, or Reception." });
+  }
+  if (!driveAlbum.configured() || !driveAlbum.connected()) {
+    removeUpload(req.file);
+    return res.status(503).json({ error: "Google Drive is not connected yet. The couple can connect it from the admin page, then try again." });
+  }
+  try {
+    const type = VIDEO_MIME.test(req.file.mimetype) || isVideoSrc(req.file.filename, req.file.mimetype) ? "video" : "photo";
+    const driveId = await driveAlbum.uploadGuestFile({
+      filePath: req.file.path,
+      mimeType: req.file.mimetype,
+      originalName: req.file.originalname,
+      guestName: name,
+      caption,
+      albumId,
+    });
+    removeUpload(req.file);
+    const post = {
+      id: `p_${Date.now().toString(36)}${randomBytes(3).toString("hex")}`,
+      album: albumId,
+      type: type === "video" ? "video" : "photo",
+      src: `/api/media/drive/${driveId}${type === "video" ? "?type=video" : ""}`,
+      driveId,
+      name,
+      caption,
+      hearts: [],
+      comments: [],
+      createdAt: new Date().toISOString(),
+    };
+    const album = readGuestAlbum();
+    album.posts.push(post);
+    writeGuestAlbum(album);
+    res.status(201).json(publicGuestPost(post, readGuestToken(req)));
+  } catch (err) {
+    removeUpload(req.file);
+    console.error("Guest Drive upload failed:", err.detail || err.message);
+    res.status(502).json({ error: "That moment could not be saved to Google Drive. Try again in a moment." });
+  }
+});
+
+app.post("/api/guest-album/:id/heart", (req, res) => {
+  if (!allowGuestAction(req, "heart", 80, 60 * 60 * 1000)) {
+    return res.status(429).json({ error: "Too many reactions. Try again in a little while." });
+  }
+  const tokenHash = readGuestToken(req);
+  if (!tokenHash) return res.status(400).json({ error: "This browser could not leave a heart. Refresh and try again." });
+  const album = readGuestAlbum();
+  const post = album.posts.find((item) => item.id === req.params.id);
+  if (!post) return res.status(404).json({ error: "That moment is no longer in the album." });
+  const hearts = Array.isArray(post.hearts) ? post.hearts : [];
+  post.hearts = hearts.includes(tokenHash) ? hearts.filter((heart) => heart !== tokenHash) : hearts.concat(tokenHash);
+  writeGuestAlbum(album);
+  res.json(publicGuestPost(post, tokenHash));
+});
+
+app.post("/api/guest-album/:id/comments", (req, res) => {
+  if (!allowGuestAction(req, "comment", 40, 60 * 60 * 1000)) {
+    return res.status(429).json({ error: "Too many comments. Try again in a little while." });
+  }
+  const name = clipText(req.body?.name, 60);
+  const text = clipText(req.body?.text, 400);
+  if (name.length < 2 || text.length < 1) {
+    return res.status(400).json({ error: "Add your name and a short note." });
+  }
+  const album = readGuestAlbum();
+  const post = album.posts.find((item) => item.id === req.params.id);
+  if (!post) return res.status(404).json({ error: "That moment is no longer in the album." });
+  const comments = Array.isArray(post.comments) ? post.comments : [];
+  if (comments.length >= 80) return res.status(400).json({ error: "This moment already has a full comment thread." });
+  comments.push({
+    id: `c_${Date.now().toString(36)}${randomBytes(3).toString("hex")}`,
+    name,
+    text,
+    createdAt: new Date().toISOString(),
+  });
+  post.comments = comments;
+  writeGuestAlbum(album);
+  res.status(201).json(publicGuestPost(post, readGuestToken(req)));
+});
+
+app.get("/api/admin/guest-album", requireAdmin, (_req, res) => {
+  const album = readGuestAlbum();
+  res.json({
+    albums: GUEST_ALBUMS.map((id) => ({ id, label: GUEST_ALBUM_LABELS[id] })),
+    posts: sortedGuestPosts(album.posts).map((post) => publicGuestPost(post, "")),
+  });
+});
+
+app.delete("/api/admin/guest-album/:id/comments/:commentId", requireAdmin, (req, res) => {
+  const album = readGuestAlbum();
+  const post = album.posts.find((item) => item.id === req.params.id);
+  if (!post) return res.status(404).json({ error: "Not found" });
+  const before = (post.comments || []).length;
+  post.comments = (post.comments || []).filter((comment) => comment.id !== req.params.commentId);
+  if (post.comments.length === before) return res.status(404).json({ error: "Comment not found" });
+  writeGuestAlbum(album);
+  res.json(publicGuestPost(post, ""));
+});
+
+app.delete("/api/admin/guest-album/:id", requireAdmin, async (req, res) => {
+  const album = readGuestAlbum();
+  const idx = album.posts.findIndex((item) => item.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: "Not found" });
+  const [removed] = album.posts.splice(idx, 1);
+  writeGuestAlbum(album);
+  const filePath = safeGuestFile(removed.src);
+  if (filePath) {
+    try { unlinkSync(filePath); } catch { /* ignore */ }
+  }
+  const driveId = removed.driveId || driveIdFromSrc(removed.src);
+  if (driveId) {
+    try { await driveAlbum.deleteFile(driveId); } catch (err) { console.error(err.message); }
+  }
+  res.json({ ok: true });
+});
+
+app.get("/api/admin/guest-album/download", requireAdmin, async (_req, res) => {
+  const album = readGuestAlbum();
+  const dir = mkdtempSync(join(tmpdir(), "guest-album-"));
+  const zipPath = join(tmpdir(), `guest-album-${Date.now()}.zip`);
+  try {
+    const rows = [["Album", "Name", "Caption", "Type", "File", "Hearts", "Comments", "Posted"]];
+    for (const post of sortedGuestPosts(album.posts)) {
+      const label = GUEST_ALBUM_LABELS[post.album] || "Main album";
+      const folder = join(dir, label);
+      if (!existsSync(folder)) mkdirSync(folder, { recursive: true });
+      const source = safeGuestFile(post.src);
+      const driveId = post.driveId || driveIdFromSrc(post.src);
+      let fileName = "";
+      if (driveId && driveAlbum.connected()) {
+        const owned = await driveAlbum.downloadFile(driveId);
+        if (owned) {
+          const kind = String(owned.contentType || "");
+          const ext = kind.includes("png") ? ".png"
+            : kind.includes("webp") ? ".webp"
+            : kind.includes("gif") ? ".gif"
+            : kind.includes("webm") ? ".webm"
+            : kind.includes("quicktime") ? ".mov"
+            : kind.startsWith("video/") ? ".mp4"
+            : ".jpg";
+          fileName = `${post.id}${ext}`;
+          writeFileSync(join(folder, fileName), owned.buffer);
+        }
+      } else if (source) {
+        fileName = basename(source);
+        copyFileSync(source, join(folder, fileName));
+      }
+      const comments = (post.comments || []).map((comment) => `${comment.name}: ${comment.text}`).join(" | ");
+      rows.push([
+        label,
+        post.name || "",
+        post.caption || "",
+        post.type || "photo",
+        fileName,
+        String((post.hearts || []).length),
+        comments,
+        post.createdAt || "",
+      ]);
+    }
+    const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    writeFileSync(join(dir, "guest-album.csv"), csv);
+    await new Promise((resolvePromise, reject) => {
+      const child = spawn("zip", ["-r", "-q", zipPath, "."], { cwd: dir });
+      child.on("error", reject);
+      child.on("close", (code) => (code === 0 ? resolvePromise() : reject(new Error("Could not package the album"))));
+    });
+    res.download(zipPath, "gio-augiela-guest-album.zip", () => {
+      rmSync(dir, { recursive: true, force: true });
+      rmSync(zipPath, { force: true });
+    });
+  } catch (err) {
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(zipPath, { force: true });
+    console.error(err);
+    if (!res.headersSent) res.status(500).json({ error: "Could not package the album" });
+  }
+});
+
+app.get("/api/admin/drive", requireAdmin, (req, res) => {
+  res.json(driveAlbum.status(req));
+});
+
+app.get("/api/admin/drive/connect", (req, res) => {
+  if (!sessions.has(getSessionToken(req))) return res.redirect("/admin/");
+  try {
+    res.redirect(driveAlbum.authUrl(req));
+  } catch (err) {
+    const uri = driveAlbum.redirectUri(req);
+    res.status(400).type("html").send(
+      "<!doctype html><meta charset=\"utf-8\"><title>Connect Google Drive</title>" +
+      "<body style=\"font-family:Georgia,serif;padding:2rem;max-width:38rem;line-height:1.5\">" +
+      "<h1>Connect Google Drive</h1>" +
+      "<p>The Google client is not ready yet. Add the client id and secret, then open this page again.</p>" +
+      "<p>In Google Cloud, use this redirect URI:</p>" +
+      `<p><code>${uri.replace(/[&<>"]/g, "")}</code></p>` +
+      "<p><a href=\"/admin/\">Back to admin</a></p></body>"
+    );
+  }
+});
+
+app.get("/api/admin/drive/callback", async (req, res) => {
+  if (req.query.error) return res.redirect("/admin/?drive=error");
+  try {
+    await driveAlbum.finishAuth(req);
+    res.redirect("/admin/?drive=connected");
+  } catch (err) {
+    console.error("Drive connect failed:", err.detail || err.message);
+    res.redirect("/admin/?drive=error");
+  }
+});
+
+app.post("/api/admin/drive/disconnect", requireAdmin, (_req, res) => {
+  driveAlbum.disconnect();
   res.json({ ok: true });
 });
 
