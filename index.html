@@ -11,7 +11,7 @@
   <link rel="preload" as="image" href="/img/couple/where-love-felt-easy.webp" type="image/webp" />
   <link href="https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,500;1,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/shared.css?v=perf-1" />
-  <script src="/js/shared.js?v=nav-first-1" defer></script>
+  <script src="/js/shared.js?v=nav-album-close" defer></script>
   <style>
     :root {
       --deep: #0d2b45;
@@ -1817,7 +1817,7 @@
     .album-board {
       position: relative;
       margin-top: 0.4rem;
-      padding: 1.7rem 0.7rem 1.8rem;
+      padding: 0.85rem 0.65rem 0.7rem;
       overflow: hidden;
       border-radius: 1.4rem;
       background:
@@ -1867,11 +1867,12 @@
       display: grid;
       grid-auto-flow: column;
       grid-template-rows: repeat(3, auto);
-      grid-auto-columns: var(--album-tile, 16rem);
+      grid-auto-columns: var(--album-tile, 11rem);
       align-items: start;
-      gap: 2.6rem 1.35rem;
+      gap: 0.55rem 0.75rem;
       width: max-content;
-      padding: 0.9rem 0.2rem 0.7rem;
+      max-height: var(--album-fit, none);
+      padding: 0.35rem 0.1rem 0.2rem;
       will-change: transform;
       user-select: none;
     }
@@ -1884,21 +1885,21 @@
 
     .album-tile {
       position: relative;
-      width: var(--album-tile, 16rem);
+      width: var(--album-tile, 11rem);
       min-width: 0;
-      padding: 0.7rem 0.7rem 0.55rem;
+      padding: 0.4rem 0.4rem 0.3rem;
       background: #fffdf8;
-      box-shadow: 0 22px 36px rgba(72, 48, 28, 0.2);
-      transform: rotate(var(--tilt, -2deg));
+      box-shadow: 0 14px 24px rgba(72, 48, 28, 0.16);
+      transform: rotate(var(--tilt, -1.2deg));
       transition: transform 0.25s ease;
     }
 
-    .album-tile:nth-child(6n + 1) { --tilt: -2.5deg; }
-    .album-tile:nth-child(6n + 2) { --tilt: 2deg; }
-    .album-tile:nth-child(6n + 3) { --tilt: -1.5deg; }
-    .album-tile:nth-child(6n + 4) { --tilt: 2.5deg; }
-    .album-tile:nth-child(6n + 5) { --tilt: -2deg; }
-    .album-tile:nth-child(6n + 6) { --tilt: 1.5deg; }
+    .album-tile:nth-child(6n + 1) { --tilt: -1.4deg; }
+    .album-tile:nth-child(6n + 2) { --tilt: 1.2deg; }
+    .album-tile:nth-child(6n + 3) { --tilt: -1deg; }
+    .album-tile:nth-child(6n + 4) { --tilt: 1.3deg; }
+    .album-tile:nth-child(6n + 5) { --tilt: -1.1deg; }
+    .album-tile:nth-child(6n + 6) { --tilt: 1deg; }
 
     .album-tile:hover,
     .album-tile:focus-within {
@@ -1914,7 +1915,8 @@
       position: relative;
       display: block;
       width: 100%;
-      aspect-ratio: 4 / 5;
+      height: var(--album-photo, 22vh);
+      aspect-ratio: auto;
       margin: 0;
       padding: 0;
       border: 0;
@@ -1958,13 +1960,13 @@
     }
 
     .album-polaroid-note {
-      margin: 0.7rem 0.2rem 0.2rem;
-      min-height: 1.45rem;
+      margin: 0.28rem 0.1rem 0.05rem;
+      min-height: 1.1rem;
       text-align: center;
       font-family: var(--font-serif);
       font-style: italic;
-      font-size: 1.2rem;
-      line-height: 1.2;
+      font-size: clamp(0.85rem, 2vw, 1.05rem);
+      line-height: 1.15;
       color: #3d3428;
     }
 
@@ -2164,7 +2166,13 @@
       font-style: italic;
     }
 
-    .album-reel { z-index: 520; }
+    .album-reel { z-index: 520; transition: none; }
+    .lightbox.album-reel[hidden] {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
     .album-reel .reel-bar.is-off { visibility: hidden; }
     .album-reel-save {
       position: absolute;
@@ -2187,7 +2195,7 @@
     }
 
     @media (min-width: 860px) {
-      .album-board { padding: 2.2rem 1.4rem 2.4rem; }
+      .album-board { padding: 1rem 1.1rem 0.85rem; }
     }
 
     @media (max-width: 720px) {
@@ -5279,6 +5287,9 @@
         else if (window.WeddingUI && typeof window.WeddingUI.closeGalleryLightbox === "function") {
           window.WeddingUI.closeGalleryLightbox();
         }
+        if (window.WeddingUI && typeof window.WeddingUI.closeGuestAlbum === "function") {
+          window.WeddingUI.closeGuestAlbum();
+        }
         // First visit keeps the page locked under the envelope until the animation ends.
         // Unlock immediately so the first nav click can reach the section.
         document.body.classList.remove("intro-locked");
@@ -5347,6 +5358,9 @@
         if (typeof closeGalleryLightbox === "function") closeGalleryLightbox();
         else if (window.WeddingUI && typeof window.WeddingUI.closeGalleryLightbox === "function") {
           window.WeddingUI.closeGalleryLightbox();
+        }
+        if (window.WeddingUI && typeof window.WeddingUI.closeGuestAlbum === "function") {
+          window.WeddingUI.closeGuestAlbum();
         }
       }, true);
 
@@ -7342,6 +7356,6 @@
     })();
   </script>
   <script src="/js/prepare-upload.js?v=1"></script>
-  <script src="/js/guest-album.js?v=14"></script>
+  <script src="/js/guest-album.js?v=21"></script>
 </body>
 </html>

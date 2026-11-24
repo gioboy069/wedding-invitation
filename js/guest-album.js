@@ -157,11 +157,43 @@
       grid.style.transform = "";
       return;
     }
-    var width = strip.clientWidth || 1;
-    var count = width < 680 ? 1 : width < 1080 ? 2 : 3;
-    var gap = 22;
-    var tile = (width - gap * (count - 1)) / count;
+    var view = window.visualViewport;
+    var viewH = (view && view.height) || window.innerHeight || 700;
+    var nav = document.getElementById("nav");
+    var navH = Math.max(72, nav ? Math.min(96, nav.getBoundingClientRect().height || 72) : 72);
+    var available = Math.max(150, viewH - navH - 80);
+    var gap = 8;
+    strip.style.setProperty("--album-fit", available.toFixed(2) + "px");
+    var trial = Math.max(40, available / 4.2);
+    strip.style.setProperty("--album-photo", trial.toFixed(2) + "px");
+    strip.style.setProperty("--album-tile", (trial * 0.8 + 12).toFixed(2) + "px");
+    var sample = grid.querySelector(".album-tile");
+    var photoEl = sample && sample.querySelector(".album-tile-open");
+    var extra = 52;
+    if (sample && photoEl) extra = Math.max(24, sample.offsetHeight - photoEl.offsetHeight);
+    var photo = (available - gap * 2 - extra * 3) / 3;
+    if (photo < 28) photo = 28;
+    var tile = photo * 0.8 + 12;
+    strip.style.setProperty("--album-photo", photo.toFixed(2) + "px");
     strip.style.setProperty("--album-tile", tile.toFixed(2) + "px");
+    var tilesNow = grid.querySelectorAll(".album-tile");
+    var used = 0;
+    if (tilesNow.length) {
+      var minTop = Infinity;
+      var maxBottom = -Infinity;
+      Array.prototype.forEach.call(tilesNow, function (el) {
+        var box = el.getBoundingClientRect();
+        if (box.top < minTop) minTop = box.top;
+        if (box.bottom > maxBottom) maxBottom = box.bottom;
+      });
+      used = maxBottom - minTop;
+    }
+    if (used > available - 8 && used > 0) {
+      photo = Math.max(24, photo * ((available - 8) / used));
+      tile = photo * 0.8 + 12;
+      strip.style.setProperty("--album-photo", photo.toFixed(2) + "px");
+      strip.style.setProperty("--album-tile", tile.toFixed(2) + "px");
+    }
     applyAlbumLine();
   }
 
@@ -250,6 +282,9 @@
     window.addEventListener("pointerup", endDrag);
     window.addEventListener("pointercancel", endDrag);
     window.addEventListener("resize", layoutAlbumLine);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", layoutAlbumLine);
+    }
     if (window.ResizeObserver) new ResizeObserver(layoutAlbumLine).observe(strip);
     albumLine.raf = requestAnimationFrame(albumLineTick);
   }
@@ -435,6 +470,26 @@
     stage.classList.add(dir < 0 ? "reel-prev" : "reel-next");
   }
 
+  function hideAlbumViewerNow(viewer) {
+    if (!viewer) return;
+    viewer.classList.remove("open", "is-zoomed");
+    viewer.hidden = true;
+    viewer.style.setProperty("display", "none", "important");
+    viewer.style.setProperty("visibility", "hidden", "important");
+    viewer.style.setProperty("opacity", "0", "important");
+    viewer.style.setProperty("pointer-events", "none", "important");
+  }
+
+  function showAlbumViewerNow(viewer) {
+    if (!viewer) return;
+    viewer.style.removeProperty("display");
+    viewer.style.removeProperty("visibility");
+    viewer.style.removeProperty("opacity");
+    viewer.style.removeProperty("pointer-events");
+    viewer.hidden = false;
+    viewer.classList.add("open");
+  }
+
   function closeViewer() {
     var viewer = document.getElementById("guestAlbumViewer");
     var video = document.getElementById("guestAlbumViewerVideo");
@@ -454,12 +509,39 @@
       img.removeAttribute("src");
       img.hidden = true;
     }
-    if (viewer) {
-      viewer.classList.remove("open", "is-zoomed");
-      viewer.hidden = true;
-    }
+    hideAlbumViewerNow(viewer);
     document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
   }
+
+  function navEventTarget(event) {
+    var node = event.target;
+    if (node && node.nodeType === 3) node = node.parentElement;
+    return node && node.closest ? node : null;
+  }
+
+  function navAnchor(event) {
+    var node = navEventTarget(event);
+    return node ? node.closest("#nav a[href]") : null;
+  }
+
+  function visibleNavLinkAt(x, y) {
+    if (x == null || y == null) return null;
+    var links = document.querySelectorAll("#nav a[href]");
+    for (var i = 0; i < links.length; i++) {
+      var link = links[i];
+      var style = window.getComputedStyle(link);
+      if (style.display === "none" || style.visibility === "hidden" || style.pointerEvents === "none") continue;
+      if (parseFloat(style.opacity) < 0.05) continue;
+      var rect = link.getBoundingClientRect();
+      if (rect.width < 2 || rect.height < 2) continue;
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) return link;
+    }
+    return null;
+  }
+
+  window.WeddingUI = window.WeddingUI || {};
+  window.WeddingUI.closeGuestAlbum = closeViewer;
 
   function showAlbumReel(index, animate) {
     var list = albumReelList();
@@ -513,8 +595,7 @@
     var next = document.getElementById("guestAlbumNext");
     if (prev) prev.hidden = list.length < 2;
     if (next) next.hidden = list.length < 2;
-    viewer.hidden = false;
-    viewer.classList.add("open");
+    showAlbumViewerNow(viewer);
     document.body.style.overflow = "hidden";
     if (animate) playAlbumMotion(animate);
     syncAlbumPause();
@@ -597,6 +678,7 @@
     var tabs = document.getElementById("guestAlbumTabs");
     var file = document.getElementById("guestAlbumFile");
     var viewer = document.getElementById("guestAlbumViewer");
+    if (viewer && viewer.parentElement !== document.body) document.body.appendChild(viewer);
     if (!form || !grid) return;
 
     function selectionLabel(list) {
@@ -1104,10 +1186,45 @@
       if (event.key === "ArrowLeft") shiftAlbumReel(-1);
       if (event.key === "ArrowRight") shiftAlbumReel(1);
     });
+    var navPress = null;
+    var blockPageClick = false;
+    function navLinkForEvent(event) {
+      if (!albumReelOpen()) return null;
+      if (event.button != null && event.button !== 0) return null;
+      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return null;
+      var direct = navAnchor(event);
+      var link = direct || visibleNavLinkAt(event.clientX, event.clientY);
+      return link ? { link: link, direct: !!direct } : null;
+    }
+    document.addEventListener("pointerdown", function (event) {
+      var hit = navLinkForEvent(event);
+      navPress = null;
+      if (!hit) return;
+      navPress = { id: event.pointerId, x: event.clientX, y: event.clientY, link: hit.link, direct: hit.direct };
+      blockPageClick = true;
+      closeViewer();
+      window.setTimeout(function () { blockPageClick = false; }, 500);
+    }, true);
     document.addEventListener("click", function (event) {
-      var link = event.target.closest && event.target.closest("#navLinks a, #navLogo");
-      if (link) closeViewer();
-    });
+      if (!blockPageClick || navAnchor(event)) return;
+      event.preventDefault();
+      event.stopPropagation();
+    }, true);
+    document.addEventListener("pointerup", function (event) {
+      var press = navPress;
+      navPress = null;
+      if (!press || press.id !== event.pointerId || press.direct) return;
+      if (Math.hypot(event.clientX - press.x, event.clientY - press.y) > 12) return;
+      event.preventDefault();
+      event.stopPropagation();
+      press.link.click();
+    }, true);
+    document.addEventListener("pointercancel", function () {
+      navPress = null;
+    }, true);
+    document.addEventListener("click", function (event) {
+      if (navAnchor(event)) closeViewer();
+    }, true);
 
     loadAlbum().catch(function () {
       grid.innerHTML = '<p class="album-error">The album could not be loaded. Refresh the page and try again.</p>';

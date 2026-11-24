@@ -244,6 +244,9 @@
         if (window.WeddingUI && typeof window.WeddingUI.closeGalleryLightbox === "function") {
           window.WeddingUI.closeGalleryLightbox();
         }
+        if (window.WeddingUI && typeof window.WeddingUI.closeGuestAlbum === "function") {
+          window.WeddingUI.closeGuestAlbum();
+        }
         if (history.pushState) {
           history.pushState(null, "", window.location.pathname + window.location.search);
         }
@@ -256,6 +259,9 @@
         e.preventDefault();
         if (window.WeddingUI && typeof window.WeddingUI.closeGalleryLightbox === "function") {
           window.WeddingUI.closeGalleryLightbox();
+        }
+        if (window.WeddingUI && typeof window.WeddingUI.closeGuestAlbum === "function") {
+          window.WeddingUI.closeGuestAlbum();
         }
         if (history.pushState) {
           history.pushState(null, "", href);
@@ -271,6 +277,9 @@
         e.preventDefault();
         if (window.WeddingUI && typeof window.WeddingUI.closeGalleryLightbox === "function") {
           window.WeddingUI.closeGalleryLightbox();
+        }
+        if (window.WeddingUI && typeof window.WeddingUI.closeGuestAlbum === "function") {
+          window.WeddingUI.closeGuestAlbum();
         }
         var url = new URL(anchor.href, window.location.href);
         if (history.pushState) {
