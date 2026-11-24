@@ -1664,13 +1664,20 @@
       scroll-margin-top: clamp(5.5rem, 12vw, 7rem);
     }
 
+    .gallery-more {
+      display: block;
+      margin: 0.85rem auto 0.15rem;
+    }
+
     .guest-album {
       background: transparent;
       text-align: center;
-      margin-top: 2.75rem;
+      margin-top: 1.75rem;
       padding-top: 2.4rem;
       border-top: 1px solid rgba(17, 10, 8, 0.1);
     }
+
+    .guest-album[hidden] { display: none; }
 
     .gallery-part-title {
       font-size: clamp(1.7rem, 3.4vw, 2.35rem);
@@ -4472,9 +4479,10 @@
         <div class="clothesline-track" id="homeGallery" aria-label="Prenup photo and video gallery"></div>
       </div>
       <p class="gallery-hint" id="galleryHint" hidden>Drag the line, or tap a photo to play it through</p>
+      <button type="button" class="album-more gallery-more" id="galleryViewMore" aria-expanded="false" aria-controls="album">View more</button>
     </div>
 
-    <div class="guest-album" id="album">
+    <div class="guest-album" id="album" hidden>
     <div class="container">
       <p class="section-label reveal">From the celebration</p>
       <h3 class="section-title gallery-part-title reveal reveal-delay-1">Guest album</h3>
@@ -7108,6 +7116,6 @@
       window.WeddingUI.closeGalleryLightbox = closeGalleryLightbox;
     })();
   </script>
-  <script src="/js/guest-album.js?v=3"></script>
+  <script src="/js/guest-album.js?v=4"></script>
 </body>
 </html>

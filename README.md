@@ -51,6 +51,8 @@ Guests post their own photos and videos from the celebration on the home **Galle
 
 In **Admin → Guest album**, connect Google Drive, open the album folder, or download a ZIP of the photos, films, captions, and reactions. Connecting, reconnecting, or pressing Refresh reads the files already in those Drive folders and shows them in the album.
 
+Guests can also open a short upload page at `/share`. **Admin → Guest album** shows a QR code for that page, and `/share-card` is the printable table card. On the live site the code points at `https://wedding-invitation-gomez-2027.onrender.com/share`.
+
 ### Connect Google Drive
 
 1. In Google Cloud, create a project and enable the **Google Drive API**.

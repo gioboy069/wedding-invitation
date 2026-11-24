@@ -477,6 +477,37 @@
       });
     }
 
+    var albumSection = document.getElementById("album");
+    var galleryMore = document.getElementById("galleryViewMore");
+
+    function setAlbumOpen(open) {
+      if (!albumSection) return;
+      albumSection.hidden = !open;
+      if (galleryMore) {
+        galleryMore.setAttribute("aria-expanded", open ? "true" : "false");
+        galleryMore.textContent = open ? "View less" : "View more";
+      }
+    }
+
+    if (galleryMore) {
+      galleryMore.addEventListener("click", function () {
+        var open = !!albumSection.hidden;
+        setAlbumOpen(open);
+        if (open && albumSection) {
+          albumSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    }
+
+    document.addEventListener("click", function (event) {
+      var link = event.target.closest && event.target.closest("a[href]");
+      if (!link) return;
+      var href = link.getAttribute("href") || "";
+      if (href === "#album" || href.slice(-6) === "#album") setAlbumOpen(true);
+    }, true);
+
+    if ((location.hash || "") === "#album") setAlbumOpen(true);
+
     var closeBtn = document.getElementById("guestAlbumViewerClose");
     if (closeBtn) closeBtn.addEventListener("click", closeViewer);
     if (viewer) {

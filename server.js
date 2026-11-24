@@ -9,6 +9,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, mkdtemp
 import { tmpdir } from "os";
 import { join, dirname, extname, basename, resolve } from "path";
 import { fileURLToPath } from "url";
+import QRCode from "qrcode";
 import { createDriveAlbum } from "./lib/drive-album.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -281,6 +282,34 @@ app.use(["/data", "/lib", "/server.js", "/package.json", "/package-lock.json", "
   res.status(404).end();
 });
 
+
+function sharePageUrl(req) {
+  const base = publicBaseUrl(req);
+  let host = "";
+  try { host = new URL(base).hostname; } catch { host = ""; }
+  if (!host || host === "localhost" || host === "127.0.0.1" || host.endsWith(".local")) {
+    return "https://wedding-invitation-gomez-2027.onrender.com/share";
+  }
+  return `${base.replace(/\/$/, "")}/share`;
+}
+
+app.get("/share/qr.svg", async (req, res) => {
+  try {
+    const svg = await QRCode.toString(sharePageUrl(req), {
+      type: "svg",
+      margin: 1,
+      errorCorrectionLevel: "M",
+      color: { dark: "#0D2B45", light: "#F7F5F1" },
+    });
+    res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("X-Share-Url", sharePageUrl(req));
+    res.send(svg);
+  } catch (err) {
+    console.error(err);
+    res.status(500).type("text").send("Could not draw the code");
+  }
+});
 
 // Force download of project ZIP (avoids preview proxy hang on static zip)
 app.get(["/download", "/download.zip"], (_req, res) => {
