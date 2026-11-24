@@ -25,6 +25,12 @@
       .replace(/"/g, "&quot;");
   }
 
+  function previewSrc(src, width) {
+    var value = String(src || "");
+    if (value.indexOf("/api/media/drive/") !== 0 || /[?&]w=\d+/.test(value)) return value;
+    return value + (value.indexOf("?") === -1 ? "?" : "&") + "w=" + (width || 720);
+  }
+
   function guestToken() {
     var key = "wedding-guest-album";
     try {
@@ -117,9 +123,11 @@
     }
     var slice = visible.slice(0, shown);
     grid.innerHTML = slice.map(function (post, index) {
-      var media = post.type === "video"
-        ? '<video src="' + escapeHtml(post.src) + '" muted playsinline preload="metadata"></video><span class="album-play">Film</span>'
-        : '<img src="' + escapeHtml(post.src) + '" alt="' + escapeHtml(post.caption || post.name || "Guest photo") + '" loading="lazy" />';
+      var shape = tileShape(index);
+      var thumb = previewSrc(post.src, shape.indexOf("is-feature") !== -1 ? 960 : 640);
+      var eager = index < 4;
+      var media = '<img src="' + escapeHtml(thumb) + '" alt="' + escapeHtml(post.caption || post.name || "Guest photo") + '" loading="' + (eager ? "eager" : "lazy") + '" decoding="async" />' +
+        (post.type === "video" ? '<span class="album-play">Film</span>' : "");
       var caption = escapeHtml(post.name || "Guest") + (post.caption ? " · " + escapeHtml(post.caption) : "");
       return (
         '<article class="album-tile' + tileShape(index) + '">' +
@@ -196,21 +204,34 @@
     var img = document.getElementById("guestAlbumViewerImg");
     var caption = document.getElementById("guestAlbumViewerCaption");
     if (!post || !viewer || !video || !img) return;
+    viewerId = post.id;
     if (post.type === "video") {
       img.hidden = true;
       img.removeAttribute("src");
       video.hidden = false;
+      video.poster = previewSrc(post.src, 1200);
+      video.preload = "auto";
       video.src = post.src;
     } else {
       try { video.pause(); } catch (err) {}
       video.removeAttribute("src");
+      video.removeAttribute("poster");
       video.hidden = true;
       img.hidden = false;
-      img.src = post.src;
+      var full = post.src;
+      var preview = previewSrc(full, 1400);
+      img.src = preview;
       img.alt = post.caption || post.name || "Guest photo";
+      if (preview !== full) {
+        var shownId = post.id;
+        var loader = new Image();
+        loader.onload = function () {
+          if (viewerId === shownId && !img.hidden) img.src = full;
+        };
+        loader.src = full;
+      }
     }
     if (caption) caption.textContent = [post.name, post.caption].filter(Boolean).join(" — ");
-    viewerId = post.id;
     viewer.hidden = false;
   }
 

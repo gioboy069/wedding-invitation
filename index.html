@@ -5319,11 +5319,11 @@
         var heroSrc = (content && content.heroPhoto) || (first && first.src);
         var heroAlt = (content && content.heroPhotoAlt) || (first && (first.alt || first.caption)) || "Gio Anthony and Augiela Shane";
         if (heroSrc && hero) {
-          hero.src = heroSrc;
+          hero.src = fastSrc(heroSrc, 1200);
           hero.alt = heroAlt;
         }
         if (second && second.src && foot) {
-          foot.src = second.src;
+          foot.src = fastSrc(second.src, 900);
           foot.alt = second.alt || second.caption || "The couple";
         }
       }
@@ -5593,7 +5593,7 @@
             const img = document.getElementById(attirePhotoMap[key]);
             if (!img || !entry) return;
             if (entry.photo) {
-              img.src = entry.photo;
+              img.src = fastSrc(entry.photo, 1400);
               img.setAttribute("referrerpolicy", "no-referrer");
             }
             if (entry.photoAlt) img.alt = entry.photoAlt;
@@ -5626,7 +5626,7 @@
             const photo = (item.photo || "").trim();
             const alt = escapeHtml(item.photoAlt || (year + (heading ? " — " + heading : "")));
             const photoHtml = photo
-              ? '<div class="timeline-photo"><img src="' + escapeHtml(photo) + '" alt="' + alt + '" loading="lazy" /></div>'
+              ? '<div class="timeline-photo"><img src="' + escapeHtml(fastSrc(photo, 900)) + '" alt="' + alt + '" loading="lazy" decoding="async" /></div>'
               : '<div class="timeline-photo is-empty"><span class="timeline-photo-placeholder">Add photo<br />Admin → Details</span></div>';
 
             return '<article class="timeline-item reveal' + delay + '">' +
@@ -5664,7 +5664,7 @@
               }
             }
             if (mapEl && place.mapUrl) mapEl.href = place.mapUrl;
-            if (photoEl && photoUrl) photoEl.src = photoUrl;
+            if (photoEl && photoUrl) photoEl.src = fastSrc(photoUrl, 1400);
           }
 
           fillPlace("ceremony", {
@@ -5752,6 +5752,19 @@
           return src + (src.indexOf("?") === -1 ? "?" : "&") + "type=video";
         }
         return src;
+      }
+
+      function fastSrc(src, width) {
+        var value = String(src || "");
+        var size = width || 720;
+        if (value.indexOf("images.unsplash.com/") !== -1) {
+          var current = /[?&]w=(\d+)/.exec(value);
+          var next = current ? Math.min(Number(current[1]), size) : size;
+          if (current) return value.replace(/([?&]w=)\d+/, "$1" + next);
+          return value + (value.indexOf("?") === -1 ? "?" : "&") + "w=" + next;
+        }
+        if (value.indexOf("/api/media/drive/") !== 0 || /[?&]w=\d+/.test(value)) return value;
+        return value + (value.indexOf("?") === -1 ? "?" : "&") + "w=" + size;
       }
 
       function clotheslineBounds() {
@@ -5861,10 +5874,13 @@
         track.innerHTML = homeGalleryItems.map(function (p, i) {
           var video = isGalleryVideo(p);
           var label = escapeHtml(p.caption || (video ? "Play video" : "View photo"));
-          var media = video
-            ? '<span class="clothe-media"><video src="' + escapeHtml(galleryMediaSrc(p)) + '" muted playsinline preload="metadata"></video>' +
-              '<span class="clothe-play" aria-hidden="true"><span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></span></span>'
-            : '<span class="clothe-media"><img src="' + escapeHtml(p.src) + '" alt="' + escapeHtml(p.alt || p.caption || "") + '" loading="lazy" draggable="false" /></span>';
+          var eager = i < 2;
+          var media =
+            '<span class="clothe-media"><img src="' + escapeHtml(fastSrc(p.src, 720)) + '" alt="' + escapeHtml(p.alt || p.caption || "") + '" loading="' + (eager ? "eager" : "lazy") + '" fetchpriority="' + (eager ? "high" : "low") + '" decoding="async" draggable="false" />' +
+            (video
+              ? '<span class="clothe-play" aria-hidden="true"><span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></span>'
+              : "") +
+            "</span>";
           return (
             '<button class="clothe-card" type="button" data-index="' + i + '" aria-label="' + label + '">' +
               '<span class="clothe-clip" aria-hidden="true"></span>' +
@@ -6149,12 +6165,24 @@
           img.removeAttribute("src");
           video.hidden = false;
           video.muted = false;
+          video.poster = fastSrc(item.src, 1200);
+          video.preload = "auto";
           video.src = galleryMediaSrc(item);
         } else {
           releaseGalleryVideo(video);
           img.hidden = false;
-          img.src = item.src || "";
           img.alt = item.alt || item.caption || "";
+          var full = item.src || "";
+          var preview = fastSrc(full, 1400);
+          img.src = preview;
+          if (preview !== full) {
+            var shownAt = galleryLightboxIndex;
+            var loader = new Image();
+            loader.onload = function () {
+              if (galleryLightboxIndex === shownAt && !img.hidden) img.src = full;
+            };
+            loader.src = full;
+          }
         }
         if (caption) caption.textContent = item.caption || "";
         lightbox.hidden = false;
@@ -7116,6 +7144,6 @@
       window.WeddingUI.closeGalleryLightbox = closeGalleryLightbox;
     })();
   </script>
-  <script src="/js/guest-album.js?v=4"></script>
+  <script src="/js/guest-album.js?v=5"></script>
 </body>
 </html>

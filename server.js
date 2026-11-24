@@ -6,11 +6,13 @@ import ExcelJS from "exceljs";
 import { randomBytes, timingSafeEqual, scryptSync, createHash } from "crypto";
 import { spawn } from "child_process";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, mkdtempSync, rmSync, copyFileSync } from "fs";
+import { Readable } from "stream";
 import { tmpdir } from "os";
 import { join, dirname, extname, basename, resolve } from "path";
 import { fileURLToPath } from "url";
 import QRCode from "qrcode";
 import { createDriveAlbum } from "./lib/drive-album.js";
+import { prepareUpload } from "./lib/prepare-media.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
@@ -1271,6 +1273,137 @@ function sendDriveBuffer(res, buffer, contentType, preferVideo) {
   return true;
 }
 
+const thumbCache = new Map();
+const THUMB_CACHE_MAX = 120;
+
+function bucketThumbWidth(value) {
+  const width = Number(value);
+  if (!Number.isFinite(width) || width <= 0) return 0;
+  if (width <= 560) return 480;
+  if (width <= 880) return 720;
+  return 1200;
+}
+
+function rememberThumb(key, value) {
+  if (thumbCache.has(key)) thumbCache.delete(key);
+  thumbCache.set(key, { ...value, at: Date.now() });
+  while (thumbCache.size > THUMB_CACHE_MAX) {
+    const oldest = thumbCache.keys().next().value;
+    thumbCache.delete(oldest);
+  }
+}
+
+function cachedThumb(key) {
+  const hit = thumbCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.at > 1000 * 60 * 60 * 6) {
+    thumbCache.delete(key);
+    return null;
+  }
+  thumbCache.delete(key);
+  thumbCache.set(key, hit);
+  return hit;
+}
+
+function sendThumbBuffer(res, buffer, contentType) {
+  res.setHeader("Content-Type", contentType || "image/jpeg");
+  res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
+  res.setHeader("Content-Length", buffer.length);
+  res.end(buffer);
+}
+
+function sendThumbPlaceholder(res) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><rect width="4" height="5" fill="#d8d4ce"/></svg>`;
+  res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=60");
+  res.send(svg);
+}
+
+async function fetchPublicThumb(id, width) {
+  const urls = [
+    `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${width}`,
+    `https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=s${width}`,
+  ];
+  for (const url of urls) {
+    try {
+      const upstream = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(8000) });
+      if (!upstream.ok) continue;
+      const contentType = (upstream.headers.get("content-type") || "").toLowerCase();
+      if (!contentType.startsWith("image/")) continue;
+      const buffer = Buffer.from(await upstream.arrayBuffer());
+      if (buffer.length < 32) continue;
+      return { buffer, contentType: contentType.split(";")[0] };
+    } catch (err) {
+      console.error("Drive thumbnail fetch failed:", err.message);
+    }
+  }
+  return null;
+}
+
+async function sendDriveThumb(res, id, width) {
+  const key = `${id}:${width}`;
+  const cached = cachedThumb(key);
+  if (cached) {
+    sendThumbBuffer(res, cached.buffer, cached.contentType);
+    return;
+  }
+  let thumb = null;
+  if (driveAlbum.connected()) {
+    try {
+      thumb = await driveAlbum.fetchThumbnail(id, width);
+    } catch (err) {
+      console.error("Drive thumbnail failed:", err.message);
+    }
+  }
+  if (!thumb) thumb = await fetchPublicThumb(id, width);
+  if (!thumb) {
+    sendThumbPlaceholder(res);
+    return;
+  }
+  rememberThumb(key, thumb);
+  sendThumbBuffer(res, thumb.buffer, thumb.contentType);
+}
+
+async function streamOwnedDrive(req, res, id, preferVideo) {
+  let upstream;
+  try {
+    upstream = await driveAlbum.openFile(id, req.headers.range);
+  } catch (err) {
+    console.error("Drive stream failed:", err.message);
+    return false;
+  }
+  if (!upstream) return false;
+  const contentType = (upstream.headers.get("content-type") || "").toLowerCase();
+  if (contentType.includes("text/html")) {
+    await upstream.body?.cancel?.();
+    return false;
+  }
+  let outType = contentType.split(";")[0];
+  if (!outType.startsWith("image/") && !outType.startsWith("video/")) {
+    outType = preferVideo ? "video/mp4" : "image/jpeg";
+  }
+  res.status(upstream.status === 206 || upstream.status === 416 ? upstream.status : 200);
+  res.setHeader("Content-Type", outType);
+  res.setHeader("Accept-Ranges", "bytes");
+  res.setHeader("Cache-Control", "public, max-age=86400");
+  const length = upstream.headers.get("content-length");
+  const range = upstream.headers.get("content-range");
+  if (length) res.setHeader("Content-Length", length);
+  if (range) res.setHeader("Content-Range", range);
+  if (!upstream.body) {
+    res.end();
+    return true;
+  }
+  const stream = Readable.fromWeb(upstream.body);
+  stream.on("error", () => {
+    if (!res.headersSent) res.status(502).end();
+    else res.destroy();
+  });
+  res.on("close", () => stream.destroy());
+  stream.pipe(res);
+  return true;
+}
+
 // Proxy Google Drive media so photos and short videos display reliably
 app.get("/api/media/drive/:id", async (req, res) => {
   const id = String(req.params.id || "").trim();
@@ -1279,13 +1412,14 @@ app.get("/api/media/drive/:id", async (req, res) => {
   }
 
   const preferVideo = String(req.query.type || "").toLowerCase() === "video";
+  const thumbWidth = bucketThumbWidth(req.query.w);
+  if (thumbWidth) {
+    await sendDriveThumb(res, id, thumbWidth);
+    return;
+  }
   if (driveAlbum.connected()) {
-    try {
-      const owned = await driveAlbum.downloadFile(id);
-      if (owned && sendDriveBuffer(res, owned.buffer, owned.contentType, preferVideo)) return;
-    } catch (err) {
-      console.error("Drive account fetch failed:", err.message);
-    }
+    const streamed = await streamOwnedDrive(req, res, id, preferVideo);
+    if (streamed) return;
   }
   const candidates = preferVideo
     ? [
@@ -1349,8 +1483,9 @@ app.get("/api/media/drive/:id", async (req, res) => {
     .send("Drive media unavailable. Check sharing is set to Anyone with the link.");
 });
 
-app.post("/api/admin/gallery", requireAdmin, galleryUpload.single("photo"), (req, res) => {
+app.post("/api/admin/gallery", requireAdmin, galleryUpload.single("photo"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Photo or video file is required" });
+  await prepareUpload(req.file);
 
   const src = `/uploads/${req.file.filename}`;
   const type = galleryItemType({ type: req.body?.type, src }, req.file.mimetype);
@@ -1731,6 +1866,7 @@ app.post("/api/guest-album", guestUpload.single("media"), async (req, res) => {
     return res.status(503).json({ error: "Google Drive is not connected yet. The couple can connect it from the admin page, then try again." });
   }
   try {
+    await prepareUpload(req.file);
     const type = VIDEO_MIME.test(req.file.mimetype) || isVideoSrc(req.file.filename, req.file.mimetype) ? "video" : "photo";
     const driveId = await driveAlbum.uploadGuestFile({
       filePath: req.file.path,

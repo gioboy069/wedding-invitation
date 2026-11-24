@@ -2138,6 +2138,12 @@
         return String(g?.type || "").toLowerCase() === "video" ? "video" : "photo";
       }
 
+      function previewMedia(src) {
+        const value = String(src || "");
+        if (!value.includes("/api/media/drive/") || /[?&]w=\d+/.test(value)) return value;
+        return value + (value.includes("?") ? "&" : "?") + "w=480";
+      }
+
       function renderGalleryAdmin() {
         document.getElementById("statPhotos").textContent = gallery.length;
         const wrap = document.getElementById("galleryAdmin");
@@ -2148,8 +2154,8 @@
         wrap.innerHTML = gallery.map((g) => {
           const type = galleryMediaType(g);
           const media = type === "video"
-            ? `<video src="${escapeAttr(g.src)}" muted playsinline preload="metadata" controls></video>`
-            : `<img src="${escapeAttr(g.src)}" alt="${escapeAttr(g.alt || "")}" onerror="this.style.opacity=0.3" />`;
+            ? `<video src="${escapeAttr(g.src)}" poster="${escapeAttr(previewMedia(g.src))}" muted playsinline preload="none" controls></video>`
+            : `<img src="${escapeAttr(previewMedia(g.src))}" alt="${escapeAttr(g.alt || "")}" onerror="this.style.opacity=0.3" />`;
           return `
           <div class="gallery-admin-item" data-id="${g.id}">
             ${media}
@@ -2724,8 +2730,8 @@
         }
         root.innerHTML = visible.map((post) => {
           const media = post.type === "video"
-            ? `<video src="${escapeAttr(post.src)}" controls playsinline preload="metadata" style="width:100%;max-height:240px;background:#111"></video>`
-            : `<img src="${escapeAttr(post.src)}" alt="" style="width:100%;max-height:240px;object-fit:cover" />`;
+            ? `<video src="${escapeAttr(post.src)}" poster="${escapeAttr(previewMedia(post.src))}" controls playsinline preload="none" style="width:100%;max-height:240px;background:#111"></video>`
+            : `<img src="${escapeAttr(previewMedia(post.src))}" alt="" style="width:100%;max-height:240px;object-fit:cover" />`;
           return `<article class="card" style="margin-bottom:1rem">
             ${media}
             <p style="margin:0.7rem 0 0.2rem"><strong>${escapeHtml(albumLabels[post.album] || post.album)}</strong> · ${escapeHtml(post.name || "Guest")}</p>
