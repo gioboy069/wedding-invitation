@@ -2018,6 +2018,70 @@
 
     .album-more[hidden] { display: none; }
 
+    .album-leave {
+      position: fixed;
+      inset: 0;
+      z-index: 520;
+      display: none;
+      place-items: center;
+      padding: 1.25rem;
+      background: rgba(13, 43, 69, 0.46);
+    }
+
+    .album-leave.is-on { display: grid; }
+
+    .album-leave-card {
+      width: min(24rem, 100%);
+      background: var(--paper, #f7f5f1);
+      border-radius: 1.15rem;
+      padding: 1.35rem 1.15rem 1.15rem;
+      text-align: center;
+      box-shadow: 0 18px 40px rgba(13, 43, 69, 0.18);
+    }
+
+    .album-leave-card h2 {
+      margin: 0 0 0.45rem;
+      font-family: "Cormorant Garamond", serif;
+      font-weight: 500;
+      font-size: 2rem;
+      color: var(--deep);
+    }
+
+    .album-leave-card p {
+      margin: 0;
+      color: var(--teal, #3d5a6c);
+      line-height: 1.45;
+    }
+
+    .album-leave-actions {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+
+    .album-leave-actions button {
+      flex: 1;
+      min-height: 44px;
+      border-radius: 999px;
+      font: inherit;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .album-leave-actions .stay {
+      border: 0;
+      background: var(--deep);
+      color: var(--paper, #f7f5f1);
+    }
+
+    .album-leave-actions .leave {
+      background: transparent;
+      color: var(--deep);
+      border: 1px solid rgba(13, 43, 69, 0.28);
+    }
+
     .album-viewer {
       position: fixed;
       inset: 0;
@@ -4594,12 +4658,21 @@
           </svg>
           <div class="album-collage" id="guestAlbumGrid" aria-live="polite"></div>
         </div>
-        <button type="button" class="album-more" id="guestAlbumMore" hidden>View more</button>
         <button type="button" class="album-more gallery-less" id="galleryViewLess">View less</button>
       </div>
     </div>
     </div>
   </section>
+  <div class="album-leave" id="albumLeave" role="dialog" aria-modal="true" aria-labelledby="albumLeaveTitle" hidden>
+    <div class="album-leave-card">
+      <h2 id="albumLeaveTitle">Leave this page?</h2>
+      <p id="albumLeaveText">Sharing is still in progress. Stay to let it finish, or leave and stop it.</p>
+      <div class="album-leave-actions">
+        <button type="button" class="stay" id="albumLeaveStay">Stay</button>
+        <button type="button" class="leave" id="albumLeaveGo">Leave</button>
+      </div>
+    </div>
+  </div>
   <div class="lightbox album-reel" id="guestAlbumViewer" role="dialog" aria-modal="true" aria-label="Guest album reel" hidden>
     <button type="button" class="lightbox-close" id="guestAlbumViewerClose" aria-label="Close">&times;</button>
     <button type="button" class="album-reel-save" id="guestAlbumViewerSave">Download</button>
@@ -7237,6 +7310,6 @@
     })();
   </script>
   <script src="/js/prepare-upload.js?v=1"></script>
-  <script src="/js/guest-album.js?v=9"></script>
+  <script src="/js/guest-album.js?v=11"></script>
 </body>
 </html>

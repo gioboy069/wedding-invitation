@@ -8,14 +8,16 @@
     { id: "reception", label: "Reception" }
   ];
 
-  var PREVIEW_COUNT = 9;
   var activeAlbum = "main";
   var posts = [];
   var memoryToken = "";
-  var shown = PREVIEW_COUNT;
+  var warmed = {};
   var selecting = false;
   var picked = {};
   var viewerId = "";
+  var uploading = false;
+  var allowLeave = false;
+  var activeXhr = null;
 
   function escapeHtml(value) {
     return String(value || "")
@@ -93,7 +95,6 @@
     var selectBtn = document.getElementById("guestAlbumSelect");
     var selectedBtn = document.getElementById("guestAlbumDownloadSelected");
     var allBtn = document.getElementById("guestAlbumDownloadAll");
-    var more = document.getElementById("guestAlbumMore");
     var count = Object.keys(picked).length;
     if (bar) bar.hidden = total < 1;
     if (selectBtn) selectBtn.textContent = selecting ? "Done" : "Select";
@@ -103,11 +104,15 @@
       selectedBtn.disabled = !count;
     }
     if (allBtn) allBtn.hidden = total < 1;
-    if (more) {
-      var hidden = total <= shown;
-      more.hidden = hidden;
-      if (!hidden) more.textContent = "View more · " + (total - shown);
-    }
+  }
+
+  function warmPost(post) {
+    var src = previewSrc(post.src, post.type === "video" ? 900 : 720);
+    if (!src || warmed[src]) return;
+    warmed[src] = true;
+    var img = new Image();
+    img.decoding = "async";
+    img.src = src;
   }
 
   function renderGrid() {
@@ -121,12 +126,11 @@
       syncDownloadBar(0);
       return;
     }
-    var slice = visible.slice(0, shown);
-    grid.innerHTML = slice.map(function (post, index) {
+    grid.innerHTML = visible.map(function (post, index) {
+      warmPost(post);
       var shape = tileShape(index);
       var thumb = previewSrc(post.src, shape.indexOf("is-tall") !== -1 ? 900 : 640);
-      var eager = index < 4;
-      var media = '<img src="' + escapeHtml(thumb) + '" alt="' + escapeHtml(post.caption || post.name || "Guest photo") + '" loading="' + (eager ? "eager" : "lazy") + '" decoding="async" />' +
+      var media = '<img src="' + escapeHtml(thumb) + '" alt="' + escapeHtml(post.caption || post.name || "Guest photo") + '" loading="eager" decoding="async" />' +
         (post.type === "video" ? '<span class="album-play">Film</span>' : "");
       var caption = escapeHtml(post.name || "Guest") + (post.caption ? " · " + escapeHtml(post.caption) : "");
       return (
@@ -478,17 +482,27 @@
         data.append("media", mediaFile);
         xhr.open("POST", "/api/guest-album");
         xhr.setRequestHeader("X-Guest-Token", guestToken());
+        activeXhr = xhr;
         xhr.upload.onprogress = function (event) {
           if (event.lengthComputable && onProgress) onProgress(event.loaded, event.total);
         };
+        function finish() {
+          if (activeXhr === xhr) activeXhr = null;
+        }
         xhr.onload = function () {
+          finish();
           var body = {};
           try { body = JSON.parse(xhr.responseText || "{}"); } catch (err) {}
           if (xhr.status >= 200 && xhr.status < 300) resolve(body);
           else reject(new Error(body.error || "That moment could not be shared."));
         };
         xhr.onerror = function () {
+          finish();
           reject(new Error("The upload was interrupted. Try again."));
+        };
+        xhr.onabort = function () {
+          finish();
+          reject(new Error("The upload was stopped."));
         };
         xhr.send(data);
       });
@@ -514,6 +528,7 @@
         album: (document.getElementById("guestAlbumPick") || {}).value || "main",
         caption: (document.getElementById("guestAlbumCaption") || {}).value || ""
       };
+      uploading = true;
       if (submit) {
         submit.disabled = true;
         submit.textContent = "Preparing";
@@ -525,6 +540,7 @@
         }
         chosen = prepared;
       } catch (err) {
+        uploading = false;
         if (submit) {
           submit.disabled = false;
           submit.textContent = "Share";
@@ -569,6 +585,7 @@
           "error"
         );
       } finally {
+        uploading = false;
         if (submit) {
           submit.disabled = false;
           submit.textContent = "Share";
@@ -577,12 +594,65 @@
       }
     });
 
+    var leaveLayer = document.getElementById("albumLeave");
+    var leaveKind = "";
+
+    function openAlbumLeave(kind) {
+      if (!leaveLayer || !uploading || allowLeave) return;
+      leaveKind = kind || "reload";
+      leaveLayer.hidden = false;
+      leaveLayer.classList.add("is-on");
+      var stay = document.getElementById("albumLeaveStay");
+      if (stay) stay.focus();
+    }
+
+    function closeAlbumLeave() {
+      leaveKind = "";
+      if (!leaveLayer) return;
+      leaveLayer.classList.remove("is-on");
+      leaveLayer.hidden = true;
+    }
+
+    function blockAlbumUnload(event) {
+      if (!uploading || allowLeave) return;
+      var message = "Sharing is still in progress. Stay to let it finish.";
+      event.preventDefault();
+      event.returnValue = message;
+      return message;
+    }
+
+    window.addEventListener("beforeunload", blockAlbumUnload);
+    window.onbeforeunload = blockAlbumUnload;
+    window.addEventListener("keydown", function (event) {
+      if (!uploading || allowLeave) return;
+      var key = event.key;
+      var reloadKey = key === "F5" || ((event.ctrlKey || event.metaKey) && !event.altKey && (key === "r" || key === "R"));
+      if (!reloadKey) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openAlbumLeave("reload");
+    }, true);
+
+    var stayBtn = document.getElementById("albumLeaveStay");
+    var goBtn = document.getElementById("albumLeaveGo");
+    if (stayBtn) stayBtn.addEventListener("click", closeAlbumLeave);
+    if (goBtn) {
+      goBtn.addEventListener("click", function () {
+        var kind = leaveKind;
+        allowLeave = true;
+        if (activeXhr) {
+          try { activeXhr.abort(); } catch (err) {}
+        }
+        closeAlbumLeave();
+        if (kind === "reload") window.location.reload();
+      });
+    }
+
     if (tabs) {
       tabs.addEventListener("click", function (event) {
         var button = event.target.closest("[data-album]");
         if (!button) return;
         activeAlbum = button.getAttribute("data-album");
-        shown = PREVIEW_COUNT;
         selecting = false;
         picked = {};
         render();
@@ -634,7 +704,6 @@
     var selectBtn = document.getElementById("guestAlbumSelect");
     var selectedBtn = document.getElementById("guestAlbumDownloadSelected");
     var allBtn = document.getElementById("guestAlbumDownloadAll");
-    var more = document.getElementById("guestAlbumMore");
     if (selectBtn) {
       selectBtn.addEventListener("click", function () {
         selecting = !selecting;
@@ -652,12 +721,6 @@
     if (allBtn) {
       allBtn.addEventListener("click", function () {
         downloadMany({ album: activeAlbum }, allBtn, "Download all");
-      });
-    }
-    if (more) {
-      more.addEventListener("click", function () {
-        shown += PREVIEW_COUNT;
-        render();
       });
     }
     var viewerSave = document.getElementById("guestAlbumViewerSave");

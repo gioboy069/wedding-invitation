@@ -263,7 +263,7 @@
       var uploading = false;
       var allowLeave = false;
       var guardPushed = false;
-      var leaveBack = false;
+      var leaveKind = "";
       var leaveHref = "/";
 
       function needsGuard() {
@@ -290,8 +290,8 @@
         guardPushed = true;
       }
 
-      function openLeaveNote(fromBack) {
-        leaveBack = !!fromBack;
+      function openLeaveNote(kind) {
+        leaveKind = kind || "link";
         document.getElementById("shareLeaveText").textContent = uploading
           ? "Sharing is still in progress. Stay to let it finish, or leave and stop it."
           : "Your photos or videos are not shared yet. Stay to continue, or leave and lose this upload.";
@@ -303,17 +303,34 @@
       function closeLeaveNote() {
         leaveLayer.classList.remove("is-on");
         leaveLayer.hidden = true;
-        leaveBack = false;
+        leaveKind = "";
+      }
+
+      function blockUnload(event) {
+        if (!needsGuard()) return;
+        var message = uploading
+          ? "Sharing is still in progress. Stay to let it finish."
+          : "Your photos or videos are not shared yet.";
+        event.preventDefault();
+        event.returnValue = message;
+        return message;
       }
 
       form.addEventListener("input", armGuard);
       form.addEventListener("change", armGuard);
 
-      window.addEventListener("beforeunload", function (event) {
+      window.addEventListener("beforeunload", blockUnload);
+      window.onbeforeunload = blockUnload;
+
+      window.addEventListener("keydown", function (event) {
         if (!needsGuard()) return;
+        var key = event.key;
+        var reloadKey = key === "F5" || ((event.ctrlKey || event.metaKey) && !event.altKey && (key === "r" || key === "R"));
+        if (!reloadKey) return;
         event.preventDefault();
-        event.returnValue = "";
-      });
+        event.stopPropagation();
+        openLeaveNote("reload");
+      }, true);
 
       window.addEventListener("popstate", function () {
         if (allowLeave || !needsGuard()) {
@@ -322,23 +339,24 @@
         }
         history.pushState({ shareGuard: 1 }, "");
         guardPushed = true;
-        openLeaveNote(true);
+        openLeaveNote("back");
       });
 
       document.getElementById("shareStay").addEventListener("click", closeLeaveNote);
       document.getElementById("shareLeaveBtn").addEventListener("click", function () {
-        var goBack = leaveBack;
+        var kind = leaveKind;
         var href = leaveHref;
         allowLeave = true;
         closeLeaveNote();
-        if (goBack) history.go(-2);
+        if (kind === "reload") window.location.reload();
+        else if (kind === "back") history.go(-2);
         else window.location.href = href || "/";
       });
       document.querySelector(".foot a").addEventListener("click", function (event) {
         if (!needsGuard()) return;
         event.preventDefault();
         leaveHref = this.getAttribute("href") || "/";
-        openLeaveNote(false);
+        openLeaveNote("link");
       });
       document.addEventListener("keydown", function (event) {
         if (event.key === "Escape" && leaveLayer.classList.contains("is-on")) closeLeaveNote();
