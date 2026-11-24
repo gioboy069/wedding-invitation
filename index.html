@@ -1669,6 +1669,11 @@
       margin: 0.85rem auto 0.15rem;
     }
 
+    .gallery-less {
+      margin-top: 1.6rem;
+      margin-bottom: 0.35rem;
+    }
+
     .guest-album {
       background: transparent;
       text-align: center;
@@ -1809,42 +1814,92 @@
     .album-tool:disabled { opacity: 0.55; cursor: wait; }
     .album-tool.is-primary { background: var(--deep); color: #f7f5f1; border-color: var(--deep); }
 
+    .album-board {
+      position: relative;
+      margin-top: 0.4rem;
+      padding: 1.7rem 0.7rem 1.8rem;
+      overflow: hidden;
+      border-radius: 1.4rem;
+      background:
+        radial-gradient(420px 220px at 8% 12%, rgba(143, 168, 122, 0.22), transparent 70%),
+        radial-gradient(380px 240px at 96% 88%, rgba(196, 154, 122, 0.2), transparent 68%),
+        linear-gradient(165deg, #f7f3ea 0%, #efe4d2 48%, #f4efe6 100%);
+      box-shadow: inset 0 0 0 1px rgba(92, 64, 38, 0.08);
+    }
+
+    .album-sprig {
+      position: absolute;
+      z-index: 0;
+      pointer-events: none;
+      color: #6d8a62;
+      opacity: 0.85;
+    }
+
+    .album-sprig.is-top { top: -0.4rem; right: -0.2rem; width: 9rem; transform: rotate(12deg); }
+    .album-sprig.is-bottom { left: -0.6rem; bottom: -0.8rem; width: 8rem; transform: rotate(-18deg); color: #8fa07a; }
+    .album-sprig.is-bloom { right: 8%; bottom: 6%; width: 4.2rem; color: #c4a27a; }
+
     .album-collage {
+      position: relative;
+      z-index: 1;
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      grid-auto-rows: clamp(112px, 15vw, 170px);
-      grid-auto-flow: dense;
-      gap: 0.4rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.7rem 0.75rem;
+      align-items: start;
     }
 
     .album-tile {
       position: relative;
       min-width: 0;
-      border-radius: 1.05rem;
-      overflow: hidden;
-      background: #d5e2ea;
-      box-shadow: 0 12px 28px rgba(13, 43, 69, 0.1);
+      padding: 0.55rem 0.55rem 0.45rem;
+      background: #fffdf8;
+      box-shadow: 0 16px 28px rgba(72, 48, 28, 0.16);
+      transform: rotate(var(--tilt, -2deg));
+      transition: transform 0.25s ease;
     }
 
-    .album-tile.is-feature { grid-column: span 2; grid-row: span 2; }
-    .album-tile.is-wide { grid-column: span 2; }
+    .album-tile:nth-child(6n + 1) { --tilt: -5deg; margin-top: 0.35rem; }
+    .album-tile:nth-child(6n + 2) { --tilt: 4.5deg; }
+    .album-tile:nth-child(6n + 3) { --tilt: 2deg; margin-top: 1rem; }
+    .album-tile:nth-child(6n + 4) { --tilt: -3.5deg; }
+    .album-tile:nth-child(6n + 5) { --tilt: 6deg; margin-top: -0.35rem; }
+    .album-tile:nth-child(6n + 6) { --tilt: -4deg; margin-top: 0.7rem; }
+
+    .album-tile:hover,
+    .album-tile:focus-within {
+      transform: rotate(0deg) scale(1.03);
+      z-index: 3;
+    }
+
+    .album-collage.is-selecting .album-tile { transform: none; }
 
     .album-tile-open {
-      position: absolute;
-      inset: 0;
+      position: relative;
       display: block;
       width: 100%;
-      height: 100%;
+      aspect-ratio: 1;
       margin: 0;
       padding: 0;
       border: 0;
-      background: transparent;
+      overflow: hidden;
+      background: #e7dfd2;
       cursor: pointer;
-      color: #f7f5f1;
+      color: var(--deep);
     }
 
+    .album-tile.is-tall .album-tile-open { aspect-ratio: 3 / 4; }
+    .album-tile.is-wide .album-tile-open { aspect-ratio: 5 / 4; }
+
     .album-empty,
-    .album-error { grid-column: 1 / -1; }
+    .album-error {
+      grid-column: 1 / -1;
+      margin: 0;
+      padding: 1.2rem 0.4rem;
+      text-align: center;
+      background: transparent;
+      box-shadow: none;
+      transform: none;
+    }
 
     .album-tile-open img,
     .album-tile-open video {
@@ -1855,18 +1910,10 @@
       pointer-events: none;
     }
 
-    .album-tile-open::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(13, 43, 69, 0.05) 30%, rgba(13, 43, 69, 0.72) 100%);
-      pointer-events: none;
-    }
-
     .album-play {
       position: absolute;
-      top: 0.7rem;
-      left: 0.7rem;
+      top: 0.55rem;
+      left: 0.55rem;
       z-index: 1;
       padding: 0.28rem 0.5rem;
       border-radius: 999px;
@@ -1877,20 +1924,16 @@
       text-transform: uppercase;
     }
 
-    .album-tile-caption {
-      position: absolute;
-      left: 0.7rem;
-      right: 0.7rem;
-      bottom: 2.7rem;
-      z-index: 1;
-      text-align: left;
+    .album-polaroid-note {
+      margin: 0.55rem 0.2rem 0.15rem;
+      min-height: 1.35rem;
+      text-align: center;
       font-family: var(--font-serif);
-      font-size: 1rem;
+      font-style: italic;
+      font-size: 1.02rem;
       line-height: 1.2;
-      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+      color: #3d3428;
     }
-
-    .album-tile.is-feature .album-tile-caption { font-size: 1.25rem; }
 
     .album-reacts,
     .album-save,
@@ -1900,11 +1943,11 @@
     }
 
     .album-reacts {
-      left: 0.45rem;
-      right: 3.2rem;
-      bottom: 0.45rem;
+      position: static;
       display: flex;
+      justify-content: center;
       gap: 0.35rem;
+      margin-top: 0.15rem;
     }
 
     .album-heart,
@@ -1936,15 +1979,15 @@
     .album-laugh.is-on svg { fill: currentColor; }
 
     .album-save {
-      top: 0.45rem;
-      right: 0.45rem;
+      top: 0.85rem;
+      right: 0.85rem;
       width: 36px;
       padding: 0;
     }
 
     .album-pick {
-      top: 0.45rem;
-      left: 0.45rem;
+      top: 0.85rem;
+      left: 0.85rem;
       display: none;
       width: 28px;
       height: 28px;
@@ -2024,10 +2067,13 @@
       font-style: italic;
     }
 
-    .album-viewer-save {
+    .album-reel { z-index: 520; }
+    .album-reel .reel-bar.is-off { visibility: hidden; }
+    .album-reel-save {
       position: absolute;
-      top: 1.25rem;
+      top: 1.35rem;
       right: max(0.75rem, env(safe-area-inset-right));
+      z-index: 4;
       min-height: 44px;
       padding: 0.4rem 0.95rem;
       border-radius: 999px;
@@ -2039,14 +2085,25 @@
       letter-spacing: 0.12em;
       text-transform: uppercase;
       cursor: pointer;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    @media (min-width: 860px) {
+      .album-board { padding: 2.2rem 1.4rem 2.4rem; }
+      .album-collage {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 2.1rem 1.15rem;
+      }
     }
 
     @media (max-width: 720px) {
-      .album-collage {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-auto-rows: 138px;
-      }
+      .album-tile:nth-child(n) { margin-top: 0; }
       .album-toolbar { justify-content: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .album-tile { transform: none; }
     }
 
     .attire-expand-btn {
@@ -4491,7 +4548,7 @@
       <div class="album-layout">
         <form class="album-form" id="guestAlbumForm">
           <h3>Share a moment</h3>
-          <p>Everything is saved in the couple’s Google Drive and appears in the album right away. Choose one photo or video, or select many at once.</p>
+          <p>Everything is saved in the couple’s Google Drive and appears in the album right away. Choose one photo or video, or select many at once. Videos can be up to 1 minute.</p>
           <label class="form-label" for="guestAlbumName">Your name</label>
           <input class="form-input" id="guestAlbumName" name="name" maxlength="60" autocomplete="name" required placeholder="Maria Cruz" />
           <label class="form-label" for="guestAlbumPick">Album</label>
@@ -4515,18 +4572,53 @@
           <button type="button" class="album-tool" id="guestAlbumDownloadSelected" hidden>Download selected</button>
           <button type="button" class="album-tool is-primary" id="guestAlbumDownloadAll">Download all</button>
         </div>
-        <div class="album-collage" id="guestAlbumGrid" aria-live="polite"></div>
+        <div class="album-board">
+          <svg class="album-sprig is-top" viewBox="0 0 120 90" aria-hidden="true">
+            <path d="M8 70c22-8 34-28 38-48 8 18 24 34 48 40-22 6-40 8-58 4" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M40 40c8 2 14 10 16 18M58 28c10 4 16 14 16 24M74 36c8 6 10 16 8 24" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <ellipse cx="28" cy="58" rx="10" ry="5" transform="rotate(-30 28 58)" fill="currentColor" opacity="0.55"/>
+            <ellipse cx="70" cy="22" rx="9" ry="4.5" transform="rotate(20 70 22)" fill="currentColor" opacity="0.45"/>
+          </svg>
+          <svg class="album-sprig is-bottom" viewBox="0 0 110 80" aria-hidden="true">
+            <path d="M10 20c24 6 40 24 46 46" fill="none" stroke="currentColor" stroke-width="2"/>
+            <ellipse cx="34" cy="28" rx="12" ry="5" transform="rotate(-20 34 28)" fill="currentColor" opacity="0.5"/>
+            <ellipse cx="62" cy="48" rx="11" ry="4.5" transform="rotate(25 62 48)" fill="currentColor" opacity="0.4"/>
+          </svg>
+          <svg class="album-sprig is-bloom" viewBox="0 0 64 64" aria-hidden="true">
+            <circle cx="32" cy="32" r="4" fill="currentColor"/>
+            <circle cx="32" cy="16" r="6" fill="currentColor" opacity="0.7"/>
+            <circle cx="46" cy="26" r="6" fill="currentColor" opacity="0.55"/>
+            <circle cx="42" cy="44" r="6" fill="currentColor" opacity="0.65"/>
+            <circle cx="22" cy="44" r="6" fill="currentColor" opacity="0.5"/>
+            <circle cx="18" cy="26" r="6" fill="currentColor" opacity="0.6"/>
+          </svg>
+          <div class="album-collage" id="guestAlbumGrid" aria-live="polite"></div>
+        </div>
         <button type="button" class="album-more" id="guestAlbumMore" hidden>View more</button>
+        <button type="button" class="album-more gallery-less" id="galleryViewLess">View less</button>
       </div>
     </div>
     </div>
   </section>
-  <div class="album-viewer" id="guestAlbumViewer" hidden>
-    <button type="button" class="album-viewer-close" id="guestAlbumViewerClose" aria-label="Close">&times;</button>
-    <img id="guestAlbumViewerImg" alt="" hidden />
-    <video id="guestAlbumViewerVideo" controls playsinline hidden></video>
-    <button type="button" class="album-viewer-save" id="guestAlbumViewerSave">Download</button>
-    <p class="album-viewer-caption" id="guestAlbumViewerCaption"></p>
+  <div class="lightbox album-reel" id="guestAlbumViewer" role="dialog" aria-modal="true" aria-label="Guest album reel" hidden>
+    <button type="button" class="lightbox-close" id="guestAlbumViewerClose" aria-label="Close">&times;</button>
+    <button type="button" class="album-reel-save" id="guestAlbumViewerSave">Download</button>
+    <button type="button" class="lightbox-prev" id="guestAlbumPrev" aria-label="Previous">&#8592;</button>
+    <div class="reel-frame">
+      <div class="reel-stage" id="albumReelStage">
+        <img id="guestAlbumViewerImg" alt="" hidden draggable="false" />
+        <video id="guestAlbumViewerVideo" playsinline preload="metadata" hidden></video>
+      </div>
+      <div class="reel-bar is-off" id="albumReelBar" aria-hidden="true"><i id="albumReelFill"></i></div>
+    </div>
+    <button type="button" class="lightbox-next" id="guestAlbumNext" aria-label="Next">&#8594;</button>
+    <div class="reel-tools">
+      <button type="button" class="reel-tool" id="albumReelPause" hidden>Pause</button>
+      <button type="button" class="reel-tool" id="albumReelZoom" aria-pressed="false">Zoom</button>
+      <span class="reel-count" id="albumReelCount"></span>
+    </div>
+    <p class="lightbox-caption" id="guestAlbumViewerCaption"></p>
+    <p class="lightbox-swipe-hint">Swipe for the next · double-tap to zoom</p>
   </div>
 
   <div class="lightbox" id="galleryLightbox" role="dialog" aria-modal="true" aria-label="Gallery reel" hidden>
@@ -7144,6 +7236,7 @@
       window.WeddingUI.closeGalleryLightbox = closeGalleryLightbox;
     })();
   </script>
-  <script src="/js/guest-album.js?v=5"></script>
+  <script src="/js/prepare-upload.js?v=1"></script>
+  <script src="/js/guest-album.js?v=9"></script>
 </body>
 </html>

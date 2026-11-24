@@ -82,9 +82,9 @@
   }
 
   function tileShape(index) {
-    var spot = index % 6;
-    if (spot === 0) return " is-feature";
-    if (spot === 3) return " is-wide";
+    var spot = index % 8;
+    if (spot === 0 || spot === 5) return " is-tall";
+    if (spot === 2 || spot === 6) return " is-wide";
     return "";
   }
 
@@ -124,17 +124,17 @@
     var slice = visible.slice(0, shown);
     grid.innerHTML = slice.map(function (post, index) {
       var shape = tileShape(index);
-      var thumb = previewSrc(post.src, shape.indexOf("is-feature") !== -1 ? 960 : 640);
+      var thumb = previewSrc(post.src, shape.indexOf("is-tall") !== -1 ? 900 : 640);
       var eager = index < 4;
       var media = '<img src="' + escapeHtml(thumb) + '" alt="' + escapeHtml(post.caption || post.name || "Guest photo") + '" loading="' + (eager ? "eager" : "lazy") + '" decoding="async" />' +
         (post.type === "video" ? '<span class="album-play">Film</span>' : "");
       var caption = escapeHtml(post.name || "Guest") + (post.caption ? " · " + escapeHtml(post.caption) : "");
       return (
-        '<article class="album-tile' + tileShape(index) + '">' +
+        '<article class="album-tile' + shape + '">' +
           '<button type="button" class="album-tile-open" data-open="' + escapeHtml(post.id) + '" aria-label="View ' + escapeHtml(post.name || "moment") + '">' +
             media +
-            '<span class="album-tile-caption">' + caption + "</span>" +
           "</button>" +
+          '<p class="album-polaroid-note">' + caption + "</p>" +
           '<label class="album-pick"><input type="checkbox" data-pick="' + escapeHtml(post.id) + '"' + (picked[post.id] ? " checked" : "") + ' aria-label="Select ' + escapeHtml(post.name || "moment") + '" /></label>' +
           '<button type="button" class="album-save" data-save="' + escapeHtml(post.id) + '" aria-label="Download this file">' +
             '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 19h14" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
@@ -181,30 +181,154 @@
     render();
   }
 
+  var reelIndex = 0;
+  var reelZoom = 1;
+  var reelPanX = 0;
+  var reelPanY = 0;
+  var reelPointers = new Map();
+  var reelGesture = null;
+  var reelLastTap = 0;
+  var reelTapTimer = 0;
+
+  function albumReelList() {
+    return postsForActive();
+  }
+
+  function albumReelOpen() {
+    var viewer = document.getElementById("guestAlbumViewer");
+    return !!(viewer && viewer.classList.contains("open"));
+  }
+
+  function albumReelMedia() {
+    var list = albumReelList();
+    var post = list[reelIndex];
+    if (post && post.type === "video") return document.getElementById("guestAlbumViewerVideo");
+    return document.getElementById("guestAlbumViewerImg");
+  }
+
+  function resetAlbumZoom() {
+    reelZoom = 1;
+    reelPanX = 0;
+    reelPanY = 0;
+    applyAlbumZoom(true);
+  }
+
+  function clampAlbumPan() {
+    var media = albumReelMedia();
+    if (!media || reelZoom <= 1.01) {
+      reelPanX = 0;
+      reelPanY = 0;
+      return;
+    }
+    var maxX = (media.clientWidth * (reelZoom - 1)) / 2;
+    var maxY = (media.clientHeight * (reelZoom - 1)) / 2;
+    reelPanX = Math.max(-maxX, Math.min(maxX, reelPanX));
+    reelPanY = Math.max(-maxY, Math.min(maxY, reelPanY));
+  }
+
+  function applyAlbumZoom(instant) {
+    var img = document.getElementById("guestAlbumViewerImg");
+    var video = document.getElementById("guestAlbumViewerVideo");
+    var active = albumReelMedia();
+    var viewer = document.getElementById("guestAlbumViewer");
+    [img, video].forEach(function (el) {
+      if (!el) return;
+      if (el !== active) {
+        el.style.transform = "";
+        el.style.transition = "";
+        return;
+      }
+      el.style.transition = instant ? "none" : "transform 0.28s ease";
+      el.style.transform = reelZoom <= 1.01
+        ? ""
+        : "translate3d(" + reelPanX.toFixed(1) + "px," + reelPanY.toFixed(1) + "px,0) scale(" + reelZoom.toFixed(3) + ")";
+    });
+    if (viewer) viewer.classList.toggle("is-zoomed", reelZoom > 1.01);
+    var zoomBtn = document.getElementById("albumReelZoom");
+    if (zoomBtn) zoomBtn.setAttribute("aria-pressed", reelZoom > 1.01 ? "true" : "false");
+  }
+
+  function setAlbumZoom(next, clientX, clientY) {
+    next = Math.max(1, Math.min(4, next));
+    var stage = document.getElementById("albumReelStage");
+    if (next <= 1.01) {
+      resetAlbumZoom();
+      return;
+    }
+    if (stage && clientX != null && reelZoom > 0) {
+      var rect = stage.getBoundingClientRect();
+      var ox = clientX - (rect.left + rect.width / 2);
+      var oy = clientY - (rect.top + rect.height / 2);
+      var scale = next / reelZoom;
+      reelPanX = ox - (ox - reelPanX) * scale;
+      reelPanY = oy - (oy - reelPanY) * scale;
+    }
+    reelZoom = next;
+    clampAlbumPan();
+    applyAlbumZoom(false);
+  }
+
+  function syncAlbumPause() {
+    var video = document.getElementById("guestAlbumViewerVideo");
+    var button = document.getElementById("albumReelPause");
+    var list = albumReelList();
+    var post = list[reelIndex];
+    var isVideo = !!(post && post.type === "video" && video && !video.hidden);
+    if (button) button.hidden = !isVideo;
+    if (!isVideo || !button || !video) return;
+    var paused = video.paused || video.ended;
+    button.textContent = paused ? "Play" : "Pause";
+    button.setAttribute("aria-pressed", paused ? "true" : "false");
+  }
+
+  function playAlbumMotion(dir) {
+    var stage = document.getElementById("albumReelStage");
+    if (!stage) return;
+    stage.classList.remove("reel-next", "reel-prev");
+    void stage.offsetWidth;
+    stage.classList.add(dir < 0 ? "reel-prev" : "reel-next");
+  }
+
   function closeViewer() {
     var viewer = document.getElementById("guestAlbumViewer");
     var video = document.getElementById("guestAlbumViewerVideo");
     var img = document.getElementById("guestAlbumViewerImg");
+    if (reelTapTimer) clearTimeout(reelTapTimer);
+    reelTapTimer = 0;
+    reelPointers.clear();
+    reelGesture = null;
+    resetAlbumZoom();
     if (video) {
       try { video.pause(); } catch (err) {}
       video.removeAttribute("src");
+      video.removeAttribute("poster");
       video.hidden = true;
     }
     if (img) {
       img.removeAttribute("src");
       img.hidden = true;
     }
-    if (viewer) viewer.hidden = true;
+    if (viewer) {
+      viewer.classList.remove("open", "is-zoomed");
+      viewer.hidden = true;
+    }
+    document.body.style.overflow = "";
   }
 
-  function openViewer(id) {
-    var post = posts.find(function (item) { return item.id === id; });
+  function showAlbumReel(index, animate) {
+    var list = albumReelList();
     var viewer = document.getElementById("guestAlbumViewer");
     var video = document.getElementById("guestAlbumViewerVideo");
     var img = document.getElementById("guestAlbumViewerImg");
     var caption = document.getElementById("guestAlbumViewerCaption");
-    if (!post || !viewer || !video || !img) return;
+    var count = document.getElementById("albumReelCount");
+    var bar = document.getElementById("albumReelBar");
+    var fill = document.getElementById("albumReelFill");
+    if (!list.length || !viewer || !video || !img) return;
+    reelIndex = ((index % list.length) + list.length) % list.length;
+    var post = list[reelIndex];
     viewerId = post.id;
+    resetAlbumZoom();
     if (post.type === "video") {
       img.hidden = true;
       img.removeAttribute("src");
@@ -212,6 +336,10 @@
       video.poster = previewSrc(post.src, 1200);
       video.preload = "auto";
       video.src = post.src;
+      var start = video.play();
+      if (start && start.catch) start.catch(function () {});
+      if (bar) bar.classList.remove("is-off");
+      if (fill) fill.style.width = "0%";
     } else {
       try { video.pause(); } catch (err) {}
       video.removeAttribute("src");
@@ -230,9 +358,32 @@
         };
         loader.src = full;
       }
+      if (bar) bar.classList.add("is-off");
+      if (fill) fill.style.width = "0%";
     }
     if (caption) caption.textContent = [post.name, post.caption].filter(Boolean).join(" — ");
+    if (count) count.textContent = (reelIndex + 1) + " of " + list.length;
+    var prev = document.getElementById("guestAlbumPrev");
+    var next = document.getElementById("guestAlbumNext");
+    if (prev) prev.hidden = list.length < 2;
+    if (next) next.hidden = list.length < 2;
     viewer.hidden = false;
+    viewer.classList.add("open");
+    document.body.style.overflow = "hidden";
+    if (animate) playAlbumMotion(animate);
+    syncAlbumPause();
+  }
+
+  function openViewer(id) {
+    var list = albumReelList();
+    var index = list.findIndex(function (item) { return item.id === id; });
+    if (index < 0) return;
+    showAlbumReel(index, false);
+  }
+
+  function shiftAlbumReel(dir) {
+    if (albumReelList().length < 2) return;
+    showAlbumReel(reelIndex + (dir < 0 ? -1 : 1), dir < 0 ? -1 : 1);
   }
 
   function filenameFromResponse(response, fallback) {
@@ -363,6 +514,24 @@
         album: (document.getElementById("guestAlbumPick") || {}).value || "main",
         caption: (document.getElementById("guestAlbumCaption") || {}).value || ""
       };
+      if (submit) {
+        submit.disabled = true;
+        submit.textContent = "Preparing";
+      }
+      try {
+        var prepared = [];
+        for (var p = 0; p < chosen.length; p += 1) {
+          prepared.push(await (window.prepareShareFile ? window.prepareShareFile(chosen[p]) : chosen[p]));
+        }
+        chosen = prepared;
+      } catch (err) {
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = "Share";
+        }
+        setStatus(err.message || "That moment could not be shared.", "error");
+        return;
+      }
       var totalBytes = chosen.reduce(function (sum, item) { return sum + (item.size || 1); }, 0);
       var finishedBytes = 0;
       var saved = 0;
@@ -510,6 +679,8 @@
       }
     }
 
+    var galleryLess = document.getElementById("galleryViewLess");
+
     if (galleryMore) {
       galleryMore.addEventListener("click", function () {
         var open = !!albumSection.hidden;
@@ -517,6 +688,13 @@
         if (open && albumSection) {
           albumSection.scrollIntoView({ behavior: "smooth", block: "start" });
         }
+      });
+    }
+
+    if (galleryLess) {
+      galleryLess.addEventListener("click", function () {
+        setAlbumOpen(false);
+        if (galleryMore) galleryMore.scrollIntoView({ behavior: "smooth", block: "center" });
       });
     }
 
@@ -530,14 +708,187 @@
     if ((location.hash || "") === "#album") setAlbumOpen(true);
 
     var closeBtn = document.getElementById("guestAlbumViewerClose");
-    if (closeBtn) closeBtn.addEventListener("click", closeViewer);
+    var prevBtn = document.getElementById("guestAlbumPrev");
+    var nextBtn = document.getElementById("guestAlbumNext");
+    var pauseBtn = document.getElementById("albumReelPause");
+    var zoomBtn = document.getElementById("albumReelZoom");
+    var reelVideo = document.getElementById("guestAlbumViewerVideo");
+    if (closeBtn) closeBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      closeViewer();
+    });
+    if (prevBtn) prevBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      shiftAlbumReel(-1);
+    });
+    if (nextBtn) nextBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      shiftAlbumReel(1);
+    });
+    if (pauseBtn) pauseBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      if (!reelVideo || reelVideo.hidden) return;
+      if (reelVideo.paused || reelVideo.ended) {
+        var play = reelVideo.play();
+        if (play && play.catch) play.catch(function () {});
+      } else {
+        reelVideo.pause();
+      }
+      syncAlbumPause();
+    });
+    if (zoomBtn) zoomBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      if (reelZoom > 1.05) setAlbumZoom(1);
+      else setAlbumZoom(2.4);
+    });
+    if (reelVideo) {
+      reelVideo.addEventListener("timeupdate", function () {
+        var fill = document.getElementById("albumReelFill");
+        if (!fill || !isFinite(reelVideo.duration) || reelVideo.duration <= 0) return;
+        fill.style.width = Math.min(100, (reelVideo.currentTime / reelVideo.duration) * 100) + "%";
+      });
+      reelVideo.addEventListener("play", syncAlbumPause);
+      reelVideo.addEventListener("pause", syncAlbumPause);
+      reelVideo.addEventListener("ended", syncAlbumPause);
+    }
     if (viewer) {
-      viewer.addEventListener("click", function (event) {
-        if (event.target === viewer) closeViewer();
+      function reelControl(target) {
+        return !!(target && target.closest && target.closest(".lightbox-close, .lightbox-prev, .lightbox-next, .reel-tools, .album-reel-save"));
+      }
+      function onReelMedia(target) {
+        return !!(target && target.closest && target.closest("#albumReelStage, #guestAlbumViewerImg, #guestAlbumViewerVideo"));
+      }
+      viewer.addEventListener("pointerdown", function (event) {
+        if (!viewer.classList.contains("open")) return;
+        if (event.button != null && event.button !== 0) return;
+        if (reelControl(event.target)) return;
+        reelPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (reelPointers.size === 1) {
+          reelGesture = {
+            id: event.pointerId,
+            x: event.clientX,
+            y: event.clientY,
+            lastX: event.clientX,
+            lastY: event.clientY,
+            dx: 0,
+            dy: 0,
+            moved: false,
+            pinch: false,
+            pinchDist: 1,
+            pinchZoom: reelZoom
+          };
+        } else if (reelPointers.size === 2 && reelGesture) {
+          var pts = Array.from(reelPointers.values());
+          reelGesture.pinch = true;
+          reelGesture.pinchDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+          reelGesture.pinchZoom = Math.max(1, reelZoom);
+        }
+        if (onReelMedia(event.target)) event.preventDefault();
+      });
+      viewer.addEventListener("pointermove", function (event) {
+        if (!reelPointers.has(event.pointerId)) return;
+        reelPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        var gesture = reelGesture;
+        if (!gesture) return;
+        if (reelPointers.size >= 2 && gesture.pinch) {
+          var pts = Array.from(reelPointers.values());
+          var dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+          reelZoom = Math.max(1, Math.min(4, gesture.pinchZoom * (dist / gesture.pinchDist)));
+          clampAlbumPan();
+          applyAlbumZoom(true);
+          return;
+        }
+        if (event.pointerId !== gesture.id) return;
+        gesture.dx = event.clientX - gesture.x;
+        gesture.dy = event.clientY - gesture.y;
+        if (Math.hypot(gesture.dx, gesture.dy) > 8) gesture.moved = true;
+        if (reelZoom > 1.01 && gesture.moved) {
+          reelPanX += event.clientX - gesture.lastX;
+          reelPanY += event.clientY - gesture.lastY;
+          gesture.lastX = event.clientX;
+          gesture.lastY = event.clientY;
+          clampAlbumPan();
+          applyAlbumZoom(true);
+        }
+      });
+      function endAlbumPointer(event) {
+        if (!reelPointers.has(event.pointerId)) return;
+        reelPointers.delete(event.pointerId);
+        var gesture = reelGesture;
+        if (!gesture) return;
+        if (reelPointers.size > 0) {
+          var remaining = reelPointers.values().next().value;
+          gesture.pinch = false;
+          if (remaining) {
+            gesture.lastX = remaining.x;
+            gesture.lastY = remaining.y;
+            gesture.x = remaining.x;
+            gesture.y = remaining.y;
+            gesture.dx = 0;
+            gesture.dy = 0;
+            gesture.moved = true;
+          }
+          return;
+        }
+        reelGesture = null;
+        if (gesture.pinch) {
+          if (reelZoom <= 1.05) setAlbumZoom(1);
+          return;
+        }
+        if (reelZoom > 1.01 && gesture.moved) return;
+        if (gesture.moved && reelZoom <= 1.01 && Math.abs(gesture.dx) >= 56 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.2) {
+          shiftAlbumReel(gesture.dx < 0 ? 1 : -1);
+          return;
+        }
+        if (gesture.moved) return;
+        if (!onReelMedia(event.target)) {
+          if (event.target === viewer) closeViewer();
+          return;
+        }
+        var now = performance.now();
+        if (reelZoom > 1.01) {
+          if (now - reelLastTap < 300) setAlbumZoom(1);
+          reelLastTap = now;
+          return;
+        }
+        if (now - reelLastTap < 300) {
+          reelLastTap = 0;
+          if (reelTapTimer) clearTimeout(reelTapTimer);
+          reelTapTimer = 0;
+          setAlbumZoom(2.4, event.clientX, event.clientY);
+          return;
+        }
+        reelLastTap = now;
+        if (!reelVideo || reelVideo.hidden) return;
+        reelTapTimer = window.setTimeout(function () {
+          reelTapTimer = 0;
+          if (!albumReelOpen() || reelZoom > 1.01 || reelVideo.hidden) return;
+          if (reelVideo.paused || reelVideo.ended) {
+            var play = reelVideo.play();
+            if (play && play.catch) play.catch(function () {});
+          } else {
+            reelVideo.pause();
+          }
+          syncAlbumPause();
+        }, 280);
+      }
+      viewer.addEventListener("pointerup", endAlbumPointer);
+      viewer.addEventListener("pointercancel", function (event) {
+        reelPointers.delete(event.pointerId);
+        if (!reelPointers.size) reelGesture = null;
       });
     }
     document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape") closeViewer();
+      if (!albumReelOpen()) return;
+      var tag = event.target && event.target.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (event.key === "Escape") {
+        if (reelZoom > 1.01) setAlbumZoom(1);
+        else closeViewer();
+        return;
+      }
+      if (event.key === "ArrowLeft") shiftAlbumReel(-1);
+      if (event.key === "ArrowRight") shiftAlbumReel(1);
     });
     document.addEventListener("click", function (event) {
       var link = event.target.closest && event.target.closest("#navLinks a, #navLogo");

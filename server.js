@@ -1485,7 +1485,13 @@ app.get("/api/media/drive/:id", async (req, res) => {
 
 app.post("/api/admin/gallery", requireAdmin, galleryUpload.single("photo"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Photo or video file is required" });
-  await prepareUpload(req.file);
+  try {
+    await prepareUpload(req.file);
+  } catch (err) {
+    removeUpload(req.file);
+    if (err.code === "too_long") return res.status(400).json({ error: err.message });
+    throw err;
+  }
 
   const src = `/uploads/${req.file.filename}`;
   const type = galleryItemType({ type: req.body?.type, src }, req.file.mimetype);
@@ -1895,6 +1901,7 @@ app.post("/api/guest-album", guestUpload.single("media"), async (req, res) => {
     res.status(201).json(publicGuestPost(post, readGuestToken(req)));
   } catch (err) {
     removeUpload(req.file);
+    if (err.code === "too_long") return res.status(400).json({ error: err.message });
     console.error("Guest Drive upload failed:", err.detail || err.message);
     res.status(502).json({ error: "That moment could not be saved to Google Drive. Try again in a moment." });
   }

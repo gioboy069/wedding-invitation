@@ -210,7 +210,7 @@
   <main>
     <p class="kicker">Gio &amp; Augiela</p>
     <h1>Share a moment</h1>
-    <p class="lede">February 18, 2027 · a photo or video from the day</p>
+    <p class="lede">February 18, 2027 · a photo or video from the day. Videos can be up to 1 minute.</p>
     <form id="shareForm">
       <label for="shareName">Your name</label>
       <input id="shareName" name="name" maxlength="60" autocomplete="name" required placeholder="Maria Cruz" />
@@ -251,6 +251,7 @@
     </div>
     <p class="foot"><a href="/">Back to the invitation</a></p>
   </main>
+  <script src="/js/prepare-upload.js?v=1"></script>
   <script>
     (function () {
       var form = document.getElementById("shareForm");
@@ -420,10 +421,27 @@
           album: document.getElementById("shareAlbum").value,
           caption: document.getElementById("shareCaption").value
         };
+        uploading = true;
+        refreshStayNote();
+        submit.disabled = true;
+        submit.textContent = "Preparing";
+        try {
+          var prepared = [];
+          for (var p = 0; p < chosen.length; p += 1) {
+            prepared.push(await (window.prepareShareFile ? window.prepareShareFile(chosen[p]) : chosen[p]));
+          }
+          chosen = prepared;
+        } catch (err) {
+          uploading = false;
+          refreshStayNote();
+          submit.disabled = false;
+          submit.textContent = "Share";
+          setStatus(err.message || "That moment could not be shared.", "error");
+          return;
+        }
         var totalBytes = chosen.reduce(function (sum, item) { return sum + (item.size || 1); }, 0);
         var finishedBytes = 0;
         var saved = 0;
-        uploading = true;
         refreshStayNote();
         submit.disabled = true;
         submit.textContent = "Sharing 0%";
