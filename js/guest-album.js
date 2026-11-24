@@ -115,31 +115,173 @@
     img.src = src;
   }
 
+  var albumLine = {
+    x: 0,
+    vx: 0,
+    dragging: false,
+    pointerId: null,
+    startX: 0,
+    lastX: 0,
+    lastT: 0,
+    dragDistance: 0,
+    dragArmed: false,
+    suppressClick: false,
+    auto: true,
+    autoDir: -1,
+    raf: 0,
+    reduce: false,
+    started: false
+  };
+
+  function albumLineBounds() {
+    var strip = document.getElementById("guestAlbumStrip");
+    var grid = document.getElementById("guestAlbumGrid");
+    if (!strip || !grid || grid.classList.contains("is-empty")) return { min: 0, max: 0 };
+    var extra = Math.max(0, grid.scrollWidth - strip.clientWidth);
+    return { min: -extra, max: 0 };
+  }
+
+  function applyAlbumLine() {
+    var grid = document.getElementById("guestAlbumGrid");
+    if (!grid || grid.classList.contains("is-empty")) return;
+    var bounds = albumLineBounds();
+    albumLine.x = Math.max(bounds.min, Math.min(bounds.max, albumLine.x));
+    grid.style.transform = "translate3d(" + albumLine.x.toFixed(2) + "px,0,0)";
+  }
+
+  function layoutAlbumLine() {
+    var strip = document.getElementById("guestAlbumStrip");
+    var grid = document.getElementById("guestAlbumGrid");
+    if (!strip || !grid) return;
+    if (grid.classList.contains("is-empty") || !grid.querySelector(".album-tile")) {
+      grid.style.transform = "";
+      return;
+    }
+    var width = strip.clientWidth || 1;
+    var count = 6;
+    var gap = 16;
+    while (count > 1 && (width - gap * (count - 1)) / count < 112) count -= 1;
+    var tile = (width - gap * (count - 1)) / count;
+    strip.style.setProperty("--album-tile", tile.toFixed(2) + "px");
+    applyAlbumLine();
+  }
+
+  function albumLineTick() {
+    albumLine.raf = requestAnimationFrame(albumLineTick);
+    if (albumLine.reduce || albumLine.dragging) return;
+    var viewerOpen = false;
+    try { viewerOpen = albumReelOpen(); } catch (err) { viewerOpen = false; }
+    if (viewerOpen || selecting) return;
+    if (Math.abs(albumLine.vx) > 0.05) {
+      albumLine.x += albumLine.vx;
+      albumLine.vx *= 0.94;
+    } else {
+      albumLine.vx = 0;
+      var bounds = albumLineBounds();
+      if (bounds.min < -8 && albumLine.auto) {
+        albumLine.x += albumLine.autoDir * 0.35;
+        if (albumLine.x <= bounds.min) {
+          albumLine.x = bounds.min;
+          albumLine.autoDir = 1;
+        } else if (albumLine.x >= bounds.max) {
+          albumLine.x = bounds.max;
+          albumLine.autoDir = -1;
+        }
+      }
+    }
+    applyAlbumLine();
+  }
+
+  function startAlbumLine() {
+    if (albumLine.started) return;
+    var strip = document.getElementById("guestAlbumStrip");
+    if (!strip) return;
+    albumLine.started = true;
+    albumLine.reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    albumLine.auto = !albumLine.reduce;
+
+    function endDrag(event) {
+      if (!albumLine.dragging) return;
+      if (event && albumLine.pointerId != null && event.pointerId !== albumLine.pointerId) return;
+      if (albumLine.dragArmed) albumLine.suppressClick = true;
+      albumLine.dragging = false;
+      albumLine.pointerId = null;
+      strip.classList.remove("is-dragging");
+      if (!albumLine.reduce) albumLine.auto = true;
+    }
+
+    strip.addEventListener("pointerdown", function (event) {
+      if (event.button != null && event.button !== 0) return;
+      if (event.target.closest(".album-heart, .album-laugh, .album-save, .album-pick, input, label")) return;
+      albumLine.dragging = true;
+      albumLine.pointerId = event.pointerId;
+      albumLine.startX = event.clientX;
+      albumLine.lastX = event.clientX;
+      albumLine.lastT = performance.now();
+      albumLine.dragDistance = 0;
+      albumLine.dragArmed = false;
+      albumLine.suppressClick = false;
+      albumLine.vx = 0;
+      albumLine.auto = false;
+    });
+
+    window.addEventListener("pointermove", function (event) {
+      if (!albumLine.dragging || event.pointerId !== albumLine.pointerId) return;
+      var now = performance.now();
+      var dx = event.clientX - albumLine.lastX;
+      var dt = Math.max(8, now - albumLine.lastT);
+      albumLine.dragDistance = Math.max(albumLine.dragDistance, Math.abs(event.clientX - albumLine.startX));
+      if (!albumLine.dragArmed) {
+        if (albumLine.dragDistance < 8) {
+          albumLine.lastX = event.clientX;
+          albumLine.lastT = now;
+          return;
+        }
+        albumLine.dragArmed = true;
+        strip.classList.add("is-dragging");
+      }
+      event.preventDefault();
+      albumLine.x += dx;
+      albumLine.vx = dx / dt * 16;
+      albumLine.lastX = event.clientX;
+      albumLine.lastT = now;
+      applyAlbumLine();
+    }, { passive: false });
+
+    window.addEventListener("pointerup", endDrag);
+    window.addEventListener("pointercancel", endDrag);
+    window.addEventListener("resize", layoutAlbumLine);
+    if (window.ResizeObserver) new ResizeObserver(layoutAlbumLine).observe(strip);
+    albumLine.raf = requestAnimationFrame(albumLineTick);
+  }
+
   function renderGrid() {
     var grid = document.getElementById("guestAlbumGrid");
     if (!grid) return;
     var visible = postsForActive();
     var album = ALBUMS.find(function (item) { return item.id === activeAlbum; });
     grid.classList.toggle("is-selecting", selecting);
+    grid.classList.toggle("is-empty", !visible.length);
     if (!visible.length) {
       grid.innerHTML = '<p class="album-empty">Nothing in the ' + escapeHtml(album ? album.label : "album") + ' yet. Share a photo or video from that part of the day.</p>';
       syncDownloadBar(0);
+      layoutAlbumLine();
       return;
     }
     grid.innerHTML = visible.map(function (post, index) {
       warmPost(post);
       var shape = tileShape(index);
       var thumb = previewSrc(post.src, shape.indexOf("is-tall") !== -1 ? 900 : 640);
-      var media = '<img src="' + escapeHtml(thumb) + '" alt="' + escapeHtml(post.caption || post.name || "Guest photo") + '" loading="eager" decoding="async" />' +
+      var media = '<img src="' + escapeHtml(thumb) + '" alt="' + escapeHtml(post.caption || "Guest photo") + '" loading="eager" decoding="async" />' +
         (post.type === "video" ? '<span class="album-play">Film</span>' : "");
-      var caption = escapeHtml(post.name || "Guest") + (post.caption ? " · " + escapeHtml(post.caption) : "");
+      var note = post.caption ? '<p class="album-polaroid-note">' + escapeHtml(post.caption) + "</p>" : "";
       return (
         '<article class="album-tile' + shape + '">' +
-          '<button type="button" class="album-tile-open" data-open="' + escapeHtml(post.id) + '" aria-label="View ' + escapeHtml(post.name || "moment") + '">' +
+          '<button type="button" class="album-tile-open" data-open="' + escapeHtml(post.id) + '" aria-label="View moment">' +
             media +
           "</button>" +
-          '<p class="album-polaroid-note">' + caption + "</p>" +
-          '<label class="album-pick"><input type="checkbox" data-pick="' + escapeHtml(post.id) + '"' + (picked[post.id] ? " checked" : "") + ' aria-label="Select ' + escapeHtml(post.name || "moment") + '" /></label>' +
+          note +
+          '<label class="album-pick"><input type="checkbox" data-pick="' + escapeHtml(post.id) + '"' + (picked[post.id] ? " checked" : "") + ' aria-label="Select this moment" /></label>' +
           '<button type="button" class="album-save" data-save="' + escapeHtml(post.id) + '" aria-label="Download this file">' +
             '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 19h14" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
           "</button>" +
@@ -157,6 +299,7 @@
       );
     }).join("");
     syncDownloadBar(visible.length);
+    layoutAlbumLine();
   }
 
   function render() {
@@ -353,7 +496,7 @@
       var full = post.src;
       var preview = previewSrc(full, 1400);
       img.src = preview;
-      img.alt = post.caption || post.name || "Guest photo";
+      img.alt = post.caption || "Guest photo";
       if (preview !== full) {
         var shownId = post.id;
         var loader = new Image();
@@ -365,7 +508,7 @@
       if (bar) bar.classList.add("is-off");
       if (fill) fill.style.width = "0%";
     }
-    if (caption) caption.textContent = [post.name, post.caption].filter(Boolean).join(" — ");
+    if (caption) caption.textContent = post.caption || "";
     if (count) count.textContent = (reelIndex + 1) + " of " + list.length;
     var prev = document.getElementById("guestAlbumPrev");
     var next = document.getElementById("guestAlbumNext");
@@ -655,6 +798,9 @@
         activeAlbum = button.getAttribute("data-album");
         selecting = false;
         picked = {};
+        albumLine.x = 0;
+        albumLine.vx = 0;
+        albumLine.autoDir = -1;
         render();
       });
     }
@@ -669,6 +815,10 @@
     });
 
     grid.addEventListener("click", async function (event) {
+      if (albumLine.suppressClick) {
+        albumLine.suppressClick = false;
+        return;
+      }
       var save = event.target.closest("[data-save]");
       if (save) {
         downloadOne(save.getAttribute("data-save"), save);
@@ -740,6 +890,7 @@
         galleryMore.setAttribute("aria-expanded", open ? "true" : "false");
         galleryMore.textContent = open ? "View less" : "View more";
       }
+      if (open) requestAnimationFrame(layoutAlbumLine);
     }
 
     var galleryLess = document.getElementById("galleryViewLess");
@@ -769,6 +920,7 @@
     }, true);
 
     if ((location.hash || "") === "#album") setAlbumOpen(true);
+    startAlbumLine();
 
     var closeBtn = document.getElementById("guestAlbumViewerClose");
     var prevBtn = document.getElementById("guestAlbumPrev");

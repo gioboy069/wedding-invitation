@@ -1839,17 +1839,50 @@
     .album-sprig.is-bottom { left: -0.6rem; bottom: -0.8rem; width: 8rem; transform: rotate(-18deg); color: #8fa07a; }
     .album-sprig.is-bloom { right: 8%; bottom: 6%; width: 4.2rem; color: #c4a27a; }
 
+    .album-strip {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      cursor: grab;
+      touch-action: pan-y;
+      padding: 0.35rem 0 0.55rem;
+    }
+
+    .album-strip.is-dragging { cursor: grabbing; }
+
+    .album-hint {
+      position: relative;
+      z-index: 1;
+      margin: 0.15rem 0 0;
+      text-align: center;
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(61, 52, 40, 0.62);
+    }
+
     .album-collage {
       position: relative;
       z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1.7rem 0.75rem;
-      align-items: start;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      width: max-content;
+      padding: 0.85rem 0.15rem 0.45rem;
+      will-change: transform;
+      user-select: none;
+    }
+
+    .album-collage.is-empty {
+      display: block;
+      width: auto;
+      padding: 0.2rem 0.4rem 0.4rem;
     }
 
     .album-tile {
       position: relative;
+      flex: 0 0 var(--album-tile, 9.5rem);
+      width: var(--album-tile, 9.5rem);
       min-width: 0;
       padding: 0.55rem 0.55rem 0.45rem;
       background: #fffdf8;
@@ -1892,7 +1925,6 @@
 
     .album-empty,
     .album-error {
-      grid-column: 1 / -1;
       margin: 0;
       padding: 1.2rem 0.4rem;
       text-align: center;
@@ -2155,10 +2187,6 @@
 
     @media (min-width: 860px) {
       .album-board { padding: 2.2rem 1.4rem 2.4rem; }
-      .album-collage {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 2.1rem 1.15rem;
-      }
     }
 
     @media (max-width: 720px) {
@@ -4656,7 +4684,10 @@
             <circle cx="22" cy="44" r="6" fill="currentColor" opacity="0.5"/>
             <circle cx="18" cy="26" r="6" fill="currentColor" opacity="0.6"/>
           </svg>
-          <div class="album-collage" id="guestAlbumGrid" aria-live="polite"></div>
+          <div class="album-strip" id="guestAlbumStrip">
+            <div class="album-collage" id="guestAlbumGrid" aria-live="polite"></div>
+          </div>
+          <p class="album-hint">Swipe left or right</p>
         </div>
         <button type="button" class="album-more gallery-less" id="galleryViewLess">View less</button>
       </div>
@@ -7310,6 +7341,6 @@
     })();
   </script>
   <script src="/js/prepare-upload.js?v=1"></script>
-  <script src="/js/guest-album.js?v=11"></script>
+  <script src="/js/guest-album.js?v=13"></script>
 </body>
 </html>
