@@ -158,9 +158,8 @@
       return;
     }
     var width = strip.clientWidth || 1;
-    var count = 6;
-    var gap = 16;
-    while (count > 1 && (width - gap * (count - 1)) / count < 112) count -= 1;
+    var count = width < 680 ? 1 : width < 1080 ? 2 : 3;
+    var gap = 22;
     var tile = (width - gap * (count - 1)) / count;
     strip.style.setProperty("--album-tile", tile.toFixed(2) + "px");
     applyAlbumLine();
@@ -179,7 +178,7 @@
       albumLine.vx = 0;
       var bounds = albumLineBounds();
       if (bounds.min < -8 && albumLine.auto) {
-        albumLine.x += albumLine.autoDir * 0.35;
+        albumLine.x += albumLine.autoDir * 0.1;
         if (albumLine.x <= bounds.min) {
           albumLine.x = bounds.min;
           albumLine.autoDir = 1;
