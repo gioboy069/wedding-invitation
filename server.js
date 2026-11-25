@@ -173,11 +173,46 @@ function readJson(name, fallback) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
+const liveParts = { content: 0, gallery: 0, guests: 0, album: 0 };
+let liveRev = 0;
+const liveClients = new Set();
+
+function liveSnapshot() {
+  return {
+    rev: liveRev,
+    content: liveParts.content,
+    gallery: liveParts.gallery,
+    guests: liveParts.guests,
+    album: liveParts.album,
+  };
+}
+
+function publishLive() {
+  const payload = `data: ${JSON.stringify(liveSnapshot())}\n\n`;
+  for (const client of liveClients) {
+    try { client.write(payload); } catch { liveClients.delete(client); }
+  }
+}
+
+function touchLive(name) {
+  const part = {
+    "content.json": "content",
+    "gallery.json": "gallery",
+    "guests.json": "guests",
+    "guest-album.json": "album",
+  }[name];
+  if (!part) return;
+  liveParts[part] += 1;
+  liveRev += 1;
+  publishLive();
+}
+
 function writeJson(name, data) {
   const path = join(DATA_DIR, name);
   const tmp = `${path}.tmp`;
   writeFileSync(tmp, JSON.stringify(data, null, 2));
   renameSync(tmp, path);
+  touchLive(name);
   if (BACKUP_FILES.includes(name)) scheduleRecordBackup();
 }
 
@@ -443,8 +478,9 @@ app.set("trust proxy", 1);
 app.use(compression({
   threshold: 2048,
   filter(req, res) {
+    if (req.path === "/api/live/stream") return false;
     const type = String(res.getHeader("Content-Type") || "");
-    if (/image|video|audio|zip|octet-stream|spreadsheet|font|wasm/i.test(type)) return false;
+    if (/image|video|audio|zip|octet-stream|spreadsheet|font|wasm|event-stream/i.test(type)) return false;
     return compression.filter(req, res);
   },
 }));
@@ -580,11 +616,35 @@ app.use(express.static(ROOT, {
 
 // ── Public API ──
 
+app.get("/api/live", (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.json(liveSnapshot());
+});
+
+app.get("/api/live/stream", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  if (typeof res.flushHeaders === "function") res.flushHeaders();
+  liveClients.add(res);
+  res.write(`data: ${JSON.stringify(liveSnapshot())}\n\n`);
+  const beat = setInterval(() => {
+    try { res.write(": ping\n\n"); } catch { /* closed */ }
+  }, 20000);
+  req.on("close", () => {
+    clearInterval(beat);
+    liveClients.delete(res);
+  });
+});
+
 app.get("/api/content", (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
   res.json(rewriteDriveUrlsInContent(readJson("content.json", {})));
 });
 
 app.get("/api/gallery", (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
   const gallery = readJson("gallery.json", []);
   res.json(
     gallery.map((item) => {
@@ -2188,6 +2248,7 @@ function sortedGuestPosts(posts) {
 }
 
 app.get("/api/guest-album", async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
   try {
     await Promise.race([
       refreshGuestAlbumFromDrive(false),

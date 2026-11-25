@@ -6576,7 +6576,7 @@
         applyClotheslineX();
       }
 
-      function renderHomeGallery(photos) {
+      function renderHomeGallery(photos, keepPlace) {
         var track = document.getElementById("homeGallery");
         var hint = document.getElementById("galleryHint");
         if (!track) return;
@@ -6608,9 +6608,11 @@
           );
         }).join("");
         if (hint) hint.hidden = homeGalleryItems.length < 3;
-        clothesline.x = 0;
-        clothesline.vx = 0;
-        clothesline.swing = 0;
+        if (!keepPlace) {
+          clothesline.x = 0;
+          clothesline.vx = 0;
+          clothesline.swing = 0;
+        }
         requestAnimationFrame(function () {
           applyClotheslineX();
         });
@@ -6943,6 +6945,76 @@
             lightbox.style.pointerEvents = "";
           });
         }
+        if (pendingGallery) {
+          var queued = pendingGallery;
+          pendingGallery = null;
+          applyPolaroids(queued.photos, queued.content);
+          renderHomeGallery(queued.photos, true);
+        }
+      }
+
+      var liveSeen = null;
+      var pendingGallery = null;
+      var latestGallery = [];
+
+      function applyGalleryLive(photos, content) {
+        if (isGalleryLightboxOpen()) {
+          pendingGallery = { photos: photos, content: content };
+          return;
+        }
+        applyPolaroids(photos, content);
+        renderHomeGallery(photos, true);
+      }
+
+      function pullLive(live) {
+        if (!live || live.rev == null) return;
+        if (!liveSeen) {
+          liveSeen = live;
+          return;
+        }
+        if (live.rev === liveSeen.rev) return;
+        var previous = liveSeen;
+        liveSeen = live;
+        if (live.content !== previous.content) {
+          fetch("/api/content", { cache: "no-store" })
+            .then(function (r) { return r.json(); })
+            .then(function (content) {
+              applyContent(content);
+              applyPolaroids(latestGallery, content);
+            })
+            .catch(function () {});
+        }
+        if (live.gallery !== previous.gallery) {
+          Promise.all([
+            fetch("/api/gallery", { cache: "no-store" }).then(function (r) { return r.json(); }),
+            fetch("/api/content", { cache: "no-store" }).then(function (r) { return r.json(); })
+          ]).then(function (pair) {
+            latestGallery = pair[0] || [];
+            applyGalleryLive(latestGallery, pair[1]);
+          }).catch(function () {});
+        }
+        if (live.album !== previous.album && window.WeddingUI && window.WeddingUI.refreshGuestAlbum) {
+          window.WeddingUI.refreshGuestAlbum();
+        }
+      }
+
+      function watchSite(baseline) {
+        liveSeen = baseline || null;
+        if (!window.EventSource) {
+          window.setInterval(function () {
+            if (document.hidden) return;
+            fetch("/api/live", { cache: "no-store" }).then(function (r) { return r.json(); }).then(pullLive).catch(function () {});
+          }, 3000);
+          return;
+        }
+        var source = new EventSource("/api/live/stream");
+        source.onmessage = function (event) {
+          try { pullLive(JSON.parse(event.data)); } catch (err) {}
+        };
+        source.onerror = function () {
+          source.close();
+          window.setTimeout(function () { watchSite(liveSeen); }, 4000);
+        };
       }
 
       // Expose early so nav handlers can always close the viewer
@@ -7275,12 +7347,22 @@
       })();
 
       Promise.all([
-        fetch("/api/content").then(function (r) { return r.json(); }).catch(function () { return null; }),
-        fetch("/api/gallery").then(function (r) { return r.json(); }).catch(function () { return []; })
+        fetch("/api/content", { cache: "no-store" }).then(function (r) { return r.json(); }).catch(function () { return null; }),
+        fetch("/api/gallery", { cache: "no-store" }).then(function (r) { return r.json(); }).catch(function () { return []; }),
+        fetch("/api/live", { cache: "no-store" }).then(function (r) { return r.json(); }).catch(function () { return { rev: 0, content: 0, gallery: 0, guests: 0, album: 0 }; })
       ]).then(function (results) {
+        latestGallery = results[1] || [];
         applyContent(results[0]);
-        applyPolaroids(results[1], results[0]);
-        renderHomeGallery(results[1]);
+        applyPolaroids(latestGallery, results[0]);
+        renderHomeGallery(latestGallery);
+        return fetch("/api/live", { cache: "no-store" }).then(function (r) { return r.json(); }).catch(function () { return results[2]; }).then(function (latest) {
+          var baseline = latest && latest.rev != null ? latest : results[2];
+          if (baseline && results[2] && baseline.rev !== results[2].rev) {
+            pullLive(results[2]);
+            pullLive(baseline);
+          }
+          watchSite(baseline);
+        });
       });
 
       const form = document.getElementById("rsvpForm");
@@ -7832,6 +7914,6 @@
     })();
   </script>
   <script src="/js/prepare-upload.js?v=5"></script>
-  <script src="/js/guest-album.js?v=35"></script>
+  <script src="/js/guest-album.js?v=36"></script>
 </body>
 </html>

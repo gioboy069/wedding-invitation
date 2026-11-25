@@ -379,14 +379,37 @@
     render();
   }
 
+  function albumSignature(list) {
+    return (list || []).map(function (post) {
+      return [post.id, post.type, post.src, post.caption, post.heartCount, post.laughCount].join("\t");
+    }).join("\n");
+  }
+
   async function loadAlbum() {
     var grid = document.getElementById("guestAlbumGrid");
     if (grid) grid.innerHTML = '<p class="album-empty">Gathering the album…</p>';
-    var response = await fetch("/api/guest-album", { headers: albumHeaders() });
+    var response = await fetch("/api/guest-album", { headers: albumHeaders(), cache: "no-store" });
     var data = await response.json().catch(function () { return {}; });
     if (!response.ok) throw new Error(data.error || "The album could not be loaded.");
     posts = Array.isArray(data.posts) ? data.posts : [];
     render();
+  }
+
+  async function refreshAlbumQuiet() {
+    if (uploading) return;
+    var response = await fetch("/api/guest-album", { headers: albumHeaders(), cache: "no-store" });
+    var data = await response.json().catch(function () { return {}; });
+    if (!response.ok) return;
+    var next = Array.isArray(data.posts) ? data.posts : [];
+    if (albumSignature(next) === albumSignature(posts)) return;
+    var openId = viewerId;
+    var wasOpen = albumReelOpen();
+    posts = next;
+    render();
+    if (!wasOpen) return;
+    var index = albumReelList().findIndex(function (item) { return item.id === openId; });
+    if (index < 0) closeViewer();
+    else if (index !== reelIndex) showAlbumReel(index, false);
   }
 
   var reelIndex = 0;
@@ -695,6 +718,7 @@
 
   window.WeddingUI = window.WeddingUI || {};
   window.WeddingUI.closeGuestAlbum = closeViewer;
+  window.WeddingUI.refreshGuestAlbum = refreshAlbumQuiet;
 
   function showAlbumReel(index, animate) {
     var list = albumReelList();
