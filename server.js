@@ -2,17 +2,27 @@ import express from "express";
 import compression from "compression";
 import multer from "multer";
 import cookieParser from "cookie-parser";
-import ExcelJS from "exceljs";
 import { randomBytes, timingSafeEqual, scryptSync, createHash } from "crypto";
 import { spawn } from "child_process";
-import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, mkdtempSync, rmSync, copyFileSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, mkdtempSync, rmSync, copyFileSync, renameSync } from "fs";
 import { Readable } from "stream";
 import { tmpdir } from "os";
 import { join, dirname, extname, basename, resolve } from "path";
 import { fileURLToPath } from "url";
 import QRCode from "qrcode";
 import { createDriveAlbum } from "./lib/drive-album.js";
-import { prepareUpload } from "./lib/prepare-media.js";
+
+async function prepareUpload(file) {
+  const mod = await import("./lib/prepare-media.js");
+  return mod.prepareUpload(file);
+}
+
+let exceljsModule;
+async function createWorkbook() {
+  if (!exceljsModule) exceljsModule = await import("exceljs");
+  const ExcelJS = exceljsModule.default || exceljsModule;
+  return new ExcelJS.Workbook();
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
@@ -137,35 +147,18 @@ async function sendAdminResetEmail(resetUrl) {
   });
   if (!emailRes.ok) {
     const body = await emailRes.text();
-    console.error("Admin reset email failed:", emailRes.status, body);
+    console.error("Admin reset email failed:", emailRes.status, emailErrorDetail(body));
     return false;
   }
   return true;
 }
 
-async function sendGuestShareEmail(req, post) {
-  const kind = post.type === "video" ? "video" : "photo";
-  const emailRes = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(RSVP_EMAIL)}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({
-      _subject: `Guest album: new ${kind}`,
-      _template: "box",
-      _captcha: "false",
-      name: post.name || "Guest",
-      message:
-        `${post.name || "A guest"} shared a ${kind} in the guest album.\n\n` +
-        (post.caption ? `Note: ${post.caption}\n\n` : "") +
-        `Open the album: ${publicBaseUrl(req)}/#gallery`,
-    }),
-  });
-  if (!emailRes.ok) {
-    const body = await emailRes.text();
-    throw new Error(body || "Email could not be sent");
+function emailErrorDetail(body) {
+  const text = String(body || "").replace(/\s+/g, " ").trim();
+  if (/just a moment|cf-chl|challenge-platform|cloudflare/i.test(text)) {
+    return "FormSubmit asked for a browser check, so the server could not send that email.";
   }
+  return text.slice(0, 180) || "Email could not be sent";
 }
 
 loadSessions();
@@ -181,20 +174,60 @@ function readJson(name, fallback) {
 }
 
 function writeJson(name, data) {
-  writeFileSync(join(DATA_DIR, name), JSON.stringify(data, null, 2));
+  const path = join(DATA_DIR, name);
+  const tmp = `${path}.tmp`;
+  writeFileSync(tmp, JSON.stringify(data, null, 2));
+  renameSync(tmp, path);
   if (BACKUP_FILES.includes(name)) scheduleRecordBackup();
 }
 
-let backupTimer = null;
+const LIVE_STAMP = "live-stamp.json";
+let backupQueued = false;
+let backupRunning = null;
+
+function readLiveStamp() {
+  try {
+    const saved = JSON.parse(readFileSync(join(DATA_DIR, LIVE_STAMP), "utf8"));
+    return String(saved.savedAt || "");
+  } catch {
+    return "";
+  }
+}
+
+function writeLiveStamp(savedAt) {
+  writeFileSync(join(DATA_DIR, LIVE_STAMP), JSON.stringify({ savedAt: savedAt || new Date().toISOString() }, null, 2));
+}
 
 function scheduleRecordBackup() {
-  if (!driveAlbum || !driveAlbum.connected()) return;
-  clearTimeout(backupTimer);
-  backupTimer = setTimeout(() => {
-    driveAlbum.saveJsonRecord("wedding-backup.json", readBackupBundle()).catch((err) => {
-      console.error("Could not back up the wedding settings", err.detail || err.message);
-    });
-  }, 1500);
+  if (!driveAlbum || !driveAlbum.connected()) return backupRunning || Promise.resolve();
+  backupQueued = true;
+  if (backupRunning) return backupRunning;
+  backupRunning = flushRecordBackup().finally(() => {
+    backupRunning = null;
+    if (backupQueued) scheduleRecordBackup();
+  });
+  return backupRunning;
+}
+
+async function flushRecordBackup() {
+  backupQueued = false;
+  if (!driveAlbum.connected()) return;
+  try {
+    const bundle = readBackupBundle();
+    await driveAlbum.saveJsonRecord("rsvps.json", bundle.rsvps);
+    await driveAlbum.saveJsonRecord("wedding-backup.json", bundle);
+    writeLiveStamp(bundle.savedAt);
+  } catch (err) {
+    console.error("Could not back up the wedding records", err.detail || err.message);
+  }
+}
+
+function rememberRecords() {
+  const pending = scheduleRecordBackup();
+  return Promise.race([
+    pending || Promise.resolve(),
+    new Promise((resolve) => setTimeout(resolve, 3000)),
+  ]);
 }
 
 function readBackupBundle() {
@@ -249,6 +282,7 @@ function applyBackupBundle(bundle) {
   writeFileSync(join(DATA_DIR, "guests.json"), JSON.stringify(next.guests, null, 2));
   writeFileSync(join(DATA_DIR, "rsvps.json"), JSON.stringify(next.rsvps, null, 2));
   writeFileSync(join(DATA_DIR, "guest-album.json"), JSON.stringify(next.guestAlbum, null, 2));
+  writeLiveStamp(new Date().toISOString());
   scheduleRecordBackup();
   return {
     ok: true,
@@ -312,7 +346,7 @@ const upload = multer({
 
 const galleryUpload = multer({
   storage,
-  limits: { fileSize: 48 * 1024 * 1024 },
+  limits: { fileSize: 40 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (IMAGE_MIME.test(file.mimetype) || VIDEO_MIME.test(file.mimetype)) cb(null, true);
     else cb(new Error("Only photo (JPEG/PNG/WebP/GIF) or short video (MP4/WebM/MOV) uploads are allowed"));
@@ -375,7 +409,14 @@ const spreadsheetUpload = multer({
 
 const app = express();
 app.set("trust proxy", 1);
-app.use(compression());
+app.use(compression({
+  threshold: 2048,
+  filter(req, res) {
+    const type = String(res.getHeader("Content-Type") || "");
+    if (/image|video|audio|zip|octet-stream|spreadsheet|font|wasm/i.test(type)) return false;
+    return compression.filter(req, res);
+  },
+}));
 app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
 
@@ -405,7 +446,7 @@ app.use((req, res, next) => {
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: blob: https:",
     "media-src 'self' blob: https:",
-    "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com",
+    "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://formsubmit.co",
     "worker-src 'self' blob:",
   ];
   if (https) policy.push("upgrade-insecure-requests");
@@ -483,6 +524,7 @@ app.get(["/admin", "/admin/"], (_req, res) => {
       "Admin page not found. Make sure the admin/index.html folder was uploaded to your GitHub repo, then redeploy on Render."
     );
   }
+  res.setHeader("Cache-Control", "no-cache");
   res.sendFile(adminIndex);
 });
 app.use("/admin", express.static(join(ROOT, "admin"), {
@@ -597,6 +639,7 @@ app.post("/api/rsvp", async (req, res) => {
     return res.status(500).json({ error: "The RSVP could not be saved. Please try again." });
   }
 
+  await rememberRecords();
   res.status(201).json({ ok: true, id: entry.id });
   notifyRsvp(entry, companionList);
 });
@@ -630,7 +673,7 @@ function notifyRsvp(entry, companionList) {
   }).then(async (emailRes) => {
     if (!emailRes.ok) {
       const body = await emailRes.text();
-      console.error("RSVP email failed:", emailRes.status, body);
+      console.error("RSVP email failed:", emailRes.status, emailErrorDetail(body));
     }
   }).catch((err) => {
     console.error("RSVP email error:", err.message || err);
@@ -899,7 +942,7 @@ function excelHeaderKey(value) {
 app.get("/api/admin/guests.xlsx", requireAdmin, async (_req, res) => {
   const guests = sortGuestsBySurname(readJson("guests.json", []).map(hydratePerson));
   const rsvps = readJson("rsvps.json", []);
-  const workbook = new ExcelJS.Workbook();
+  const workbook = await createWorkbook();
   workbook.creator = "Augiela & Gio wedding";
   const sheet = workbook.addWorksheet("Guest list");
   sheet.columns = [
@@ -952,7 +995,7 @@ app.post("/api/admin/guests/import", requireAdmin, (req, res) => {
     if (err) return res.status(400).json({ error: err.message || "Please upload an Excel file." });
     if (!req.file?.buffer) return res.status(400).json({ error: "Please choose an Excel file to upload." });
     try {
-      const workbook = new ExcelJS.Workbook();
+      const workbook = await createWorkbook();
       await workbook.xlsx.load(req.file.buffer);
       const sheet = workbook.getWorksheet("Guest list") || workbook.worksheets[0];
       if (!sheet) return res.status(400).json({ error: "That Excel file has no worksheet to import." });
@@ -1496,7 +1539,9 @@ function sendDriveBuffer(res, buffer, contentType, preferVideo) {
 }
 
 const thumbCache = new Map();
-const THUMB_CACHE_MAX = 120;
+const THUMB_CACHE_MAX = 16;
+const THUMB_CACHE_BYTES = 4 * 1024 * 1024;
+let thumbCacheBytes = 0;
 
 function bucketThumbWidth(value) {
   const width = Number(value);
@@ -1507,10 +1552,17 @@ function bucketThumbWidth(value) {
 }
 
 function rememberThumb(key, value) {
-  if (thumbCache.has(key)) thumbCache.delete(key);
+  const bytes = value?.buffer?.length || 0;
+  if (!bytes || bytes > 350 * 1024) return;
+  if (thumbCache.has(key)) {
+    thumbCacheBytes -= thumbCache.get(key)?.buffer?.length || 0;
+    thumbCache.delete(key);
+  }
   thumbCache.set(key, { ...value, at: Date.now() });
-  while (thumbCache.size > THUMB_CACHE_MAX) {
+  thumbCacheBytes += bytes;
+  while (thumbCache.size > THUMB_CACHE_MAX || thumbCacheBytes > THUMB_CACHE_BYTES) {
     const oldest = thumbCache.keys().next().value;
+    thumbCacheBytes -= thumbCache.get(oldest)?.buffer?.length || 0;
     thumbCache.delete(oldest);
   }
 }
@@ -1518,7 +1570,8 @@ function rememberThumb(key, value) {
 function cachedThumb(key) {
   const hit = thumbCache.get(key);
   if (!hit) return null;
-  if (Date.now() - hit.at > 1000 * 60 * 60 * 6) {
+  if (Date.now() - hit.at > 1000 * 60 * 30) {
+    thumbCacheBytes -= hit.buffer?.length || 0;
     thumbCache.delete(key);
     return null;
   }
@@ -1553,7 +1606,7 @@ async function fetchPublicThumb(id, width) {
       const contentType = (upstream.headers.get("content-type") || "").toLowerCase();
       if (!contentType.startsWith("image/")) continue;
       const buffer = Buffer.from(await upstream.arrayBuffer());
-      if (buffer.length < 32) continue;
+      if (buffer.length < 32 || buffer.length > 800 * 1024) continue;
       return { buffer, contentType: contentType.split(";")[0] };
     } catch (err) {
       console.error("Drive thumbnail fetch failed:", err.message);
@@ -1626,6 +1679,65 @@ async function streamOwnedDrive(req, res, id, preferVideo) {
   return true;
 }
 
+function looksLikeHtml(bytes) {
+  const sample = Buffer.from(bytes).subarray(0, 32).toString("utf8").trim().toLowerCase();
+  return sample.startsWith("<!doctype") || sample.startsWith("<html");
+}
+
+async function forwardUpstream(res, upstream, preferVideo) {
+  const contentType = (upstream.headers.get("content-type") || "").toLowerCase();
+  if (!upstream.body || contentType.includes("text/html")) {
+    await upstream.body?.cancel?.();
+    return false;
+  }
+  const reader = upstream.body.getReader();
+  const first = await reader.read();
+  if (!first.value?.byteLength) {
+    try { await reader.cancel(); } catch { /* ignore */ }
+    return false;
+  }
+  if (looksLikeHtml(first.value)) {
+    try { await reader.cancel(); } catch { /* ignore */ }
+    return false;
+  }
+  const isImage = contentType.startsWith("image/") || contentType.includes("octet-stream") || contentType.includes("application/binary");
+  const isVideo = contentType.startsWith("video/");
+  if (contentType && !isImage && !isVideo) {
+    try { await reader.cancel(); } catch { /* ignore */ }
+    return false;
+  }
+  let outType = preferVideo ? "video/mp4" : "image/jpeg";
+  if (contentType.startsWith("image/") || contentType.startsWith("video/")) outType = contentType.split(";")[0];
+  res.setHeader("Content-Type", outType);
+  res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
+  const length = upstream.headers.get("content-length");
+  if (length) res.setHeader("Content-Length", length);
+  let pending = first.value;
+  const nodeStream = Readable.fromWeb(new ReadableStream({
+    async pull(controller) {
+      if (pending) {
+        const chunk = pending;
+        pending = null;
+        controller.enqueue(chunk);
+        return;
+      }
+      const next = await reader.read();
+      if (next.done) controller.close();
+      else controller.enqueue(next.value);
+    },
+    cancel() {
+      reader.cancel().catch(() => {});
+    },
+  }));
+  nodeStream.on("error", () => {
+    if (!res.headersSent) res.status(502).end();
+    else res.destroy();
+  });
+  res.on("close", () => nodeStream.destroy());
+  nodeStream.pipe(res);
+  return true;
+}
+
 // Proxy Google Drive media so photos and short videos display reliably
 app.get("/api/media/drive/:id", async (req, res) => {
   const id = String(req.params.id || "").trim();
@@ -1665,37 +1777,11 @@ app.get("/api/media/drive/:id", async (req, res) => {
         },
       });
       if (!upstream.ok) continue;
-
-      const contentType = (upstream.headers.get("content-type") || "").toLowerCase();
-      const buffer = Buffer.from(await upstream.arrayBuffer());
-      if (!buffer.length) continue;
-
-      // Skip HTML virus-scan / login interstitial pages
-      const looksHtml =
-        contentType.includes("text/html") ||
-        buffer.slice(0, 32).toString("utf8").trim().toLowerCase().startsWith("<!doctype") ||
-        buffer.slice(0, 32).toString("utf8").trim().toLowerCase().startsWith("<html");
-      if (looksHtml) continue;
-
-      const isImage =
-        contentType.startsWith("image/") ||
-        contentType.includes("octet-stream") ||
-        contentType.includes("application/binary");
-      const isVideo = contentType.startsWith("video/");
-      if (!isImage && !isVideo && contentType) continue;
-
-      let outType = "image/jpeg";
-      if (contentType.startsWith("image/") || contentType.startsWith("video/")) {
-        outType = contentType.split(";")[0];
-      } else if (preferVideo) {
-        outType = "video/mp4";
-      }
-
-      res.setHeader("Content-Type", outType);
-      res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
-      return res.send(buffer);
+      const sent = await forwardUpstream(res, upstream, preferVideo);
+      if (sent) return;
     } catch (err) {
       console.error("Drive proxy fetch failed:", url, err.message);
+      if (res.headersSent) return;
     }
   }
 
@@ -1705,7 +1791,9 @@ app.get("/api/media/drive/:id", async (req, res) => {
     .send("Drive media unavailable. Check sharing is set to Anyone with the link.");
 });
 
-app.post("/api/admin/gallery", requireAdmin, galleryUpload.single("photo"), async (req, res) => {
+app.post("/api/admin/gallery", requireAdmin, (req, res, next) => {
+  galleryUpload.single("photo")(req, res, (err) => (err ? rejectUpload(err, res) : next()));
+}, async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Photo or video file is required" });
   try {
     await prepareUpload(req.file);
@@ -1812,7 +1900,7 @@ app.get("/api/admin/rsvps", requireAdmin, (_req, res) => {
   res.json(rsvps);
 });
 
-app.put("/api/admin/rsvps/:id", requireAdmin, (req, res) => {
+app.put("/api/admin/rsvps/:id", requireAdmin, async (req, res) => {
   const rsvps = readJson("rsvps.json", []);
   const idx = rsvps.findIndex((r) => r.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: "RSVP not found" });
@@ -1875,14 +1963,16 @@ app.put("/api/admin/rsvps/:id", requireAdmin, (req, res) => {
 
   rsvps[idx] = next;
   writeJson("rsvps.json", rsvps);
+  await rememberRecords();
   res.json({ ...next, guestListUpdated });
 });
 
-app.delete("/api/admin/rsvps/:id", requireAdmin, (req, res) => {
+app.delete("/api/admin/rsvps/:id", requireAdmin, async (req, res) => {
   const rsvps = readJson("rsvps.json", []);
   const next = rsvps.filter((r) => r.id !== req.params.id);
   if (next.length === rsvps.length) return res.status(404).json({ error: "Not found" });
   writeJson("rsvps.json", next);
+  await rememberRecords();
   res.json({ ok: true });
 });
 
@@ -1912,6 +2002,7 @@ const guestStorage = multer.diskStorage({
 
 const guestUpload = multer({
   storage: guestStorage,
+  limits: { fileSize: 40 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (IMAGE_MIME.test(file.mimetype) || VIDEO_MIME.test(file.mimetype)) cb(null, true);
     else cb(new Error("Only photo (JPEG/PNG/WebP/GIF) or short video (MP4/WebM/MOV) uploads are allowed"));
@@ -2025,35 +2116,38 @@ function guestDownloadName(post, ext, used, hideName) {
   return name;
 }
 
-async function readGuestMedia(post) {
+async function writeGuestFile(post, folder, used, hideName) {
+  if (!existsSync(folder)) mkdirSync(folder, { recursive: true });
   const local = safeGuestFile(post.src);
   if (local) {
     const ext = extname(local).toLowerCase() || guestFileExt("", post.type);
-    return {
-      buffer: readFileSync(local),
-      contentType: guestFileType(ext, post.type === "video" ? "video/mp4" : "image/jpeg"),
-      ext,
-    };
+    const name = guestDownloadName(post, ext, used, hideName);
+    copyFileSync(local, join(folder, name));
+    return name;
   }
   const driveId = post.driveId || driveIdFromSrc(post.src);
-  if (!driveId) return null;
-  if (!driveAlbum.connected()) {
-    const error = new Error("Google Drive is not connected yet, so these files cannot be downloaded.");
-    error.status = 503;
-    throw error;
+  if (!driveId || !driveAlbum.connected()) return "";
+  const part = join(folder, `${String(post.id).replace(/[^\w.-]+/g, "")}.part`);
+  const saved = await driveAlbum.downloadToFile(driveId, part);
+  if (!saved) {
+    try { unlinkSync(part); } catch { /* ignore */ }
+    return "";
   }
-  const owned = await driveAlbum.downloadFile(driveId);
-  if (!owned) return null;
-  const ext = guestFileExt(owned.contentType, post.type);
-  return { buffer: owned.buffer, contentType: guestFileType(ext, owned.contentType), ext };
+  const ext = guestFileExt(saved.contentType, post.type);
+  const name = guestDownloadName(post, ext, used, hideName);
+  renameSync(part, join(folder, name));
+  return name;
 }
 
-function sendAttachment(res, buffer, filename, contentType) {
-  const safe = String(filename || "photo").replace(/["\r\n]/g, "");
-  res.setHeader("Content-Type", contentType || "application/octet-stream");
-  res.setHeader("Content-Disposition", `attachment; filename="${safe}"`);
-  res.setHeader("Content-Length", buffer.length);
-  res.send(buffer);
+function uploadTooLarge(err) {
+  return err?.code === "LIMIT_FILE_SIZE";
+}
+
+function rejectUpload(err, res) {
+  if (uploadTooLarge(err)) {
+    return res.status(413).json({ error: "That file is too large for this site. Please use a photo or a video under 40 MB." });
+  }
+  return res.status(400).json({ error: err?.message || "That file could not be uploaded." });
 }
 
 function sortedGuestPosts(posts) {
@@ -2083,7 +2177,9 @@ function removeUpload(file) {
   try { unlinkSync(file.path); } catch { /* ignore */ }
 }
 
-app.post("/api/guest-album", guestUpload.single("media"), async (req, res) => {
+app.post("/api/guest-album", (req, res, next) => {
+  guestUpload.single("media")(req, res, (err) => (err ? rejectUpload(err, res) : next()));
+}, async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Choose a photo or video to share." });
   const name = clipText(req.body?.name, 60);
   const caption = clipText(req.body?.caption, 240);
@@ -2122,8 +2218,10 @@ app.post("/api/guest-album", guestUpload.single("media"), async (req, res) => {
     const album = readGuestAlbum();
     album.posts.push(post);
     writeGuestAlbum(album);
-    sendGuestShareEmail(req, post).catch((err) => console.error("Guest share email failed:", err.message));
-    res.status(201).json(publicGuestPost(post, readGuestToken(req)));
+    res.status(201).json({
+      ...publicGuestPost(post, readGuestToken(req)),
+      notifyEmail: RSVP_EMAIL,
+    });
   } catch (err) {
     removeUpload(req.file);
     if (err.code === "too_long") return res.status(400).json({ error: err.message });
@@ -2157,12 +2255,42 @@ app.get("/api/guest-album/:id/file", async (req, res) => {
   const album = readGuestAlbum();
   const post = album.posts.find((item) => item.id === req.params.id);
   if (!post) return res.status(404).json({ error: "That moment is no longer in the album." });
+  const local = safeGuestFile(post.src);
+  if (local) {
+    const ext = extname(local).toLowerCase() || guestFileExt("", post.type);
+    return res.download(local, guestDownloadName(post, ext, new Set(), true));
+  }
+  const driveId = post.driveId || driveIdFromSrc(post.src);
+  if (!driveId) return res.status(404).json({ error: "That file is not available to download." });
+  if (!driveAlbum.connected()) {
+    return res.status(503).json({ error: "Google Drive is not connected yet, so these files cannot be downloaded." });
+  }
   try {
-    const file = await readGuestMedia(post);
-    if (!file) return res.status(404).json({ error: "That file is not available to download." });
-    sendAttachment(res, file.buffer, guestDownloadName(post, file.ext, new Set(), true), file.contentType);
+    const upstream = await driveAlbum.openFile(driveId);
+    if (!upstream?.body) return res.status(404).json({ error: "That file is not available to download." });
+    const contentType = (upstream.headers.get("content-type") || "").toLowerCase();
+    if (contentType.includes("text/html")) {
+      await upstream.body.cancel?.();
+      return res.status(404).json({ error: "That file is not available to download." });
+    }
+    const ext = guestFileExt(contentType, post.type);
+    const filename = guestDownloadName(post, ext, new Set(), true).replace(/["\r\n]/g, "");
+    const type = contentType.startsWith("image/") || contentType.startsWith("video/")
+      ? contentType.split(";")[0]
+      : guestFileType(ext, post.type === "video" ? "video/mp4" : "image/jpeg");
+    res.setHeader("Content-Type", type);
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    const length = upstream.headers.get("content-length");
+    if (length) res.setHeader("Content-Length", length);
+    const stream = Readable.fromWeb(upstream.body);
+    stream.on("error", () => {
+      if (!res.headersSent) res.status(502).end();
+      else res.destroy();
+    });
+    res.on("close", () => stream.destroy());
+    stream.pipe(res);
   } catch (err) {
-    res.status(err.status || 502).json({ error: err.message || "That file could not be downloaded." });
+    if (!res.headersSent) res.status(err.status || 502).json({ error: err.message || "That file could not be downloaded." });
   }
 });
 
@@ -2184,14 +2312,10 @@ app.post("/api/guest-album/download", async (req, res) => {
   try {
     const used = new Set();
     let saved = 0;
+    const folder = join(dir, GUEST_ALBUM_LABEL);
     for (const post of chosen) {
-      const file = await readGuestMedia(post);
-      if (!file) continue;
-      const folderName = GUEST_ALBUM_LABEL;
-      const folder = join(dir, folderName);
-      if (!existsSync(folder)) mkdirSync(folder, { recursive: true });
-      writeFileSync(join(folder, guestDownloadName(post, file.ext, used, true)), file.buffer);
-      saved += 1;
+      const name = await writeGuestFile(post, folder, used, true);
+      if (name) saved += 1;
     }
     if (!saved) {
       rmSync(dir, { recursive: true, force: true });
@@ -2380,31 +2504,11 @@ app.get("/api/admin/guest-album/download", requireAdmin, async (_req, res) => {
   const zipPath = join(tmpdir(), `guest-album-${Date.now()}.zip`);
   try {
     const rows = [["Album", "Name", "Caption", "Type", "File", "Hearts", "Hahas", "Posted"]];
+    const used = new Set();
     for (const post of sortedGuestPosts(album.posts)) {
       const label = GUEST_ALBUM_LABEL;
       const folder = join(dir, label);
-      if (!existsSync(folder)) mkdirSync(folder, { recursive: true });
-      const source = safeGuestFile(post.src);
-      const driveId = post.driveId || driveIdFromSrc(post.src);
-      let fileName = "";
-      if (driveId && driveAlbum.connected()) {
-        const owned = await driveAlbum.downloadFile(driveId);
-        if (owned) {
-          const kind = String(owned.contentType || "");
-          const ext = kind.includes("png") ? ".png"
-            : kind.includes("webp") ? ".webp"
-            : kind.includes("gif") ? ".gif"
-            : kind.includes("webm") ? ".webm"
-            : kind.includes("quicktime") ? ".mov"
-            : kind.startsWith("video/") ? ".mp4"
-            : ".jpg";
-          fileName = `${post.id}${ext}`;
-          writeFileSync(join(folder, fileName), owned.buffer);
-        }
-      } else if (source) {
-        fileName = basename(source);
-        copyFileSync(source, join(folder, fileName));
-      }
+      const fileName = await writeGuestFile(post, folder, used, false);
       rows.push([
         label,
         post.name || "",
@@ -2464,6 +2568,7 @@ app.get("/api/admin/drive/callback", async (req, res) => {
     let added = 0;
     let total = 0;
     try {
+      await restoreWeddingRecords();
       const sync = await syncGuestAlbumFromDrive();
       added = sync.added || 0;
       total = sync.total || 0;
@@ -2528,7 +2633,10 @@ app.use((err, _req, res, _next) => {
 });
 
 async function restoreWeddingRecords() {
-  if (!driveAlbum.connected()) return;
+  if (!driveAlbum.connected()) {
+    console.log("Google Drive is not connected on this disk. Add GOOGLE_REFRESH_TOKEN on the host so a restart can bring the RSVPs back.");
+    return;
+  }
   const work = (async () => {
     let bundle = null;
     try {
@@ -2543,24 +2651,48 @@ async function restoreWeddingRecords() {
       "rsvps.json": bundle.rsvps,
       "guest-album.json": bundle.guestAlbum,
     } : {};
+    try {
+      const directRsvps = await driveAlbum.loadJsonRecord("rsvps.json");
+      if (Array.isArray(directRsvps)) fromBundle["rsvps.json"] = directRsvps;
+    } catch (err) {
+      console.error("Could not read RSVPs from Google Drive", err.detail || err.message);
+    }
+    const stamp = readLiveStamp();
+    const driveSavedAt = String(bundle?.savedAt || "");
+    const freshDisk = !stamp && !existsSync(join(DATA_DIR, "rsvps.json")) && !existsSync(join(DATA_DIR, "guest-album.json"));
+    const driveIsNewer = Boolean(driveSavedAt && stamp && driveSavedAt > stamp);
     for (const name of BACKUP_FILES) {
       const path = join(DATA_DIR, name);
-      if (existsSync(path)) continue;
-      let data = fromBundle[name];
-      if (data == null && (name === "rsvps.json" || name === "guests.json")) {
-        try {
-          data = await driveAlbum.loadJsonRecord(name);
-        } catch (err) {
-          console.error("Could not restore", name, err.detail || err.message);
-        }
-      }
+      const missing = !existsSync(path);
+      if (!missing && !freshDisk && !driveIsNewer) continue;
+      const data = fromBundle[name];
       if (data == null) continue;
-      writeFileSync(path, JSON.stringify(data, null, 2));
+      const tmp = `${path}.tmp`;
+      writeFileSync(tmp, JSON.stringify(data, null, 2));
+      renameSync(tmp, path);
       console.log("Restored", name, "from Google Drive");
     }
+    if (driveSavedAt && (freshDisk || driveIsNewer)) writeLiveStamp(driveSavedAt);
+    try {
+      await syncGuestAlbumFromDrive();
+    } catch (err) {
+      console.error("Guest album sync after restore failed:", err.detail || err.message);
+    }
+    await scheduleRecordBackup();
   })();
-  await Promise.race([work, new Promise((resolve) => setTimeout(resolve, 8000))]);
+  await Promise.race([work, new Promise((resolve) => setTimeout(resolve, 20000))]);
 }
+
+function shutDownAfterBackup() {
+  const pending = backupRunning || Promise.resolve();
+  Promise.race([
+    pending.then(() => (backupQueued ? flushRecordBackup() : null)),
+    new Promise((resolve) => setTimeout(resolve, 4000)),
+  ]).finally(() => process.exit(0));
+}
+
+process.once("SIGTERM", shutDownAfterBackup);
+process.once("SIGINT", shutDownAfterBackup);
 
 restoreWeddingRecords().finally(() => {
   app.listen(PORT, HOST, () => {

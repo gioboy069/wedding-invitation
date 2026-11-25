@@ -1045,6 +1045,25 @@
       return parts.join(" and ") + " selected";
     }
 
+    function notifyCouple(post, fields) {
+      var address = post && post.notifyEmail;
+      if (!address) return;
+      var kind = post.type === "video" ? "video" : "photo";
+      var who = (fields && fields.name) || "A guest";
+      var note = fields && fields.caption ? "Note: " + fields.caption + "\n\n" : "";
+      fetch("https://formsubmit.co/ajax/" + encodeURIComponent(address), {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          _subject: "Guest album: new " + kind,
+          _template: "box",
+          _captcha: "false",
+          name: who,
+          message: who + " shared a " + kind + " in the guest album.\n\n" + note + "Open the album: " + location.origin + "/#gallery"
+        })
+      }).catch(function () {});
+    }
+
     function shareOne(mediaFile, fields, onProgress) {
       return new Promise(function (resolve, reject) {
         var xhr = new XMLHttpRequest();
@@ -1137,10 +1156,11 @@
           var current = chosen[i];
           var currentSize = current.size || 1;
           if (chosen.length > 1) setStatus("Sharing " + (i + 1) + " of " + chosen.length);
-          await shareOne(current, fields, function (loaded) {
+          var savedPost = await shareOne(current, fields, function (loaded) {
             var pct = Math.min(99, Math.max(0, Math.round(((finishedBytes + Math.min(loaded, currentSize)) / totalBytes) * 100)));
             noteShareProgress(pct, chosen.length > 1 ? "Sharing " + (i + 1) + " of " + chosen.length : "");
           });
+          notifyCouple(savedPost, fields);
           finishedBytes += currentSize;
           saved += 1;
           noteShareProgress(Math.min(100, Math.round((finishedBytes / totalBytes) * 100)));

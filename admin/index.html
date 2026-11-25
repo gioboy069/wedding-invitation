@@ -1094,7 +1094,7 @@
         </div>
         <div class="card">
           <h3>Backup</h3>
-          <p class="lead">Download a copy of the invitation text, gallery, guest list, RSVPs, and album list. If the site is lost, upload that file here and those pieces come back. Photos and videos stay in Google Drive. When Drive is connected, a copy is saved there whenever something changes.</p>
+          <p class="lead">Every RSVP is copied to Google Drive as soon as it is saved. If the server restarts and this disk is empty, the RSVPs, guest list, invitation text, and album list load back from that copy. Photos and videos already stay in Drive. You can still download a file here and upload it later.</p>
           <div class="toolbar">
             <button type="button" class="btn btn-primary" id="downloadBackup">Download backup</button>
             <button type="button" class="btn btn-ghost" id="uploadBackupBtn">Upload backup</button>
@@ -1433,6 +1433,14 @@
           <h3>Google Drive</h3>
           <p class="lead" id="driveStatus">Checking the connection…</p>
           <p class="lead" id="driveRedirect" style="word-break:break-all"></p>
+          <div id="restartSafety" hidden>
+            <p class="lead" id="restartSafetyNote">A restart clears this server’s disk. Copy the restart key into Render as <strong>GOOGLE_REFRESH_TOKEN</strong>. The next start then brings the RSVPs back from Google Drive.</p>
+            <label for="restartKey">Restart key</label>
+            <input id="restartKey" type="password" readonly autocomplete="off" />
+            <div class="toolbar" style="margin-top:0.75rem">
+              <button type="button" class="btn btn-ghost" id="copyRestartKey">Copy restart key</button>
+            </div>
+          </div>
           <div class="toolbar" style="margin-bottom:0">
             <a class="btn btn-primary" id="connectDrive" href="/api/admin/drive/connect">Connect Google Drive</a>
             <button type="button" class="btn btn-ghost" id="disconnectDrive" hidden>Disconnect</button>
@@ -3507,6 +3515,16 @@
         }
         if (disconnect) disconnect.hidden = !status.connected;
         if (connect) connect.textContent = status.connected ? "Connect again" : "Connect Google Drive";
+        const safety = document.getElementById("restartSafety");
+        const safetyNote = document.getElementById("restartSafetyNote");
+        const restartKey = document.getElementById("restartKey");
+        if (safety) safety.hidden = !status.connected;
+        if (restartKey) restartKey.value = status.connected && !status.restartReady ? (status.restartKey || "") : "";
+        if (safetyNote) {
+          safetyNote.textContent = status.restartReady
+            ? "Restart safety is on. If this server restarts, RSVPs and the rest of the saved site load back from Google Drive."
+            : "A restart clears this server’s disk. Copy the restart key into Render as GOOGLE_REFRESH_TOKEN. The next start then brings the RSVPs back from Google Drive.";
+        }
       }
 
       async function loadGuestAlbum() {
@@ -3532,6 +3550,26 @@
         try { await loadGuestAlbum(); } catch (ex) { toast(ex.message, true); }
         try { await loadDriveStatus(); } catch (ex) { toast(ex.message, true); }
       }
+
+      document.getElementById("copyRestartKey")?.addEventListener("click", async () => {
+        const input = document.getElementById("restartKey");
+        const value = input ? input.value : "";
+        if (!value) {
+          toast("Connect Google Drive first.");
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(value);
+          toast("Restart key copied. In Render, add GOOGLE_REFRESH_TOKEN with that value.");
+        } catch (ex) {
+          if (input) {
+            input.type = "text";
+            input.focus();
+            input.select();
+          }
+          toast("Select the restart key and copy it into Render as GOOGLE_REFRESH_TOKEN.");
+        }
+      });
 
       document.getElementById("disconnectDrive")?.addEventListener("click", async () => {
         if (!confirm("Disconnect Google Drive? New guest uploads will wait until you connect it again.")) return;

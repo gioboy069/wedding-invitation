@@ -9,3 +9,5 @@ data/sessions.json
 data/admin.json
 data/guest-album.json
 data/drive-token.json
+data/live-stamp.json
+data/*.tmp

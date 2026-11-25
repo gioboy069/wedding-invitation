@@ -1,5 +1,6 @@
 (function (root) {
   var MAX_VIDEO_SECONDS = 60;
+  var MAX_FILE_BYTES = 40 * 1024 * 1024;
 
   function videoLength(file) {
     return new Promise(function (resolve) {
@@ -19,6 +20,9 @@
 
   function prepareShareFile(file) {
     if (!file) return Promise.resolve(file);
+    if (file.size > MAX_FILE_BYTES) {
+      return Promise.reject(new Error("That file is too large for this site. Please use a photo or a video under 40 MB."));
+    }
     if (String(file.type || "").indexOf("video/") === 0) {
       return videoLength(file).then(function (seconds) {
         if (seconds > MAX_VIDEO_SECONDS + 0.4) {

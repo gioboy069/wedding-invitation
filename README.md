@@ -20,6 +20,10 @@ npm run dev
 - Attire guide (expandable on home): [http://127.0.0.1:4317/#attire](http://127.0.0.1:4317/#attire)
 - Admin: [http://127.0.0.1:4317/admin/](http://127.0.0.1:4317/admin/)
 
+The start command keeps Node’s memory small enough for Render’s 512 MB plan. Photos are resized before they are stored, videos are prepared one at a time on a single thread, and album downloads are streamed instead of loaded all at once.
+
+Each RSVP is copied to a `rsvps.json` file in the Google Drive folder “Wedding records” as soon as it is saved, along with a full site backup. A restart that empties the disk loads those files back before the site opens. The Drive connection itself lives on that disk, so in Render add `GOOGLE_REFRESH_TOKEN` (Admin → Guest album → Copy restart key) and keep `ADMIN_PASSWORD` set there too. After that, a restart signs in to Drive on its own and brings the RSVPs back.
+
 ### Admin login
 
 The login page does not show a password. Sign in with the password you chose. **Forgot password?** emails a reset link to `gomez.wed2027@gmail.com`. The link expires in one hour. After eight wrong tries, sign-in pauses for fifteen minutes.
