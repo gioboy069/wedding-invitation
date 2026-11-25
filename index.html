@@ -1798,6 +1798,7 @@
       min-height: 1.3em;
       margin: 0.7rem 0 0;
       font-size: 0.88rem;
+      text-align: center;
     }
 
     .album-status.is-error { color: #8d3a3a; }
@@ -1807,8 +1808,20 @@
       position: relative;
       z-index: 2;
       display: flex;
-      justify-content: center;
-      margin: 0 0 0.35rem;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.55rem;
+      margin: 0 0 0.45rem;
+      padding: 0 0.85rem;
+      text-align: center;
+    }
+
+    .album-share-note {
+      margin: 0;
+      max-width: 32rem;
+      color: #3d3428;
+      font-size: 0.95rem;
+      line-height: 1.55;
     }
 
     .album-share-open {
@@ -1840,6 +1853,22 @@
 
     .album-share.is-on { display: grid; }
     .album-share[hidden] { display: none !important; }
+
+    #albumDownloadAsk { z-index: 560; }
+
+    #albumDownloadAsk p {
+      margin: 0;
+      color: var(--teal, #3d5a6c);
+      line-height: 1.45;
+    }
+
+    .album-share-card h3 {
+      font-family: var(--font-serif);
+      font-weight: 500;
+      font-size: 1.55rem;
+      color: var(--deep);
+      margin: 0 0.5rem 0.45rem 0;
+    }
 
     .album-share-card {
       position: relative;
@@ -1881,6 +1910,54 @@
     }
 
     .album-toolbar[hidden] { display: none; }
+
+    .album-download-panel {
+      max-width: 26rem;
+      margin: 0.85rem auto 0;
+      text-align: center;
+    }
+
+    .album-download-panel[hidden] { display: none !important; }
+
+    .album-download-panel p {
+      margin: 0;
+      color: #3d3428;
+      font-size: 0.92rem;
+    }
+
+    .album-download-track {
+      height: 0.45rem;
+      margin: 0.55rem 0 0.7rem;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(13, 43, 69, 0.12);
+    }
+
+    .album-download-fill {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--deep);
+    }
+
+    .album-download-panel.is-wait .album-download-fill {
+      width: 38%;
+      animation: albumSaveSlide 1s ease-in-out infinite;
+    }
+
+    .album-download-panel.is-front {
+      position: fixed;
+      left: 50%;
+      bottom: 1.25rem;
+      z-index: 570;
+      width: min(26rem, calc(100% - 2rem));
+      margin: 0;
+      padding: 0.85rem 1rem 0.95rem;
+      transform: translateX(-50%);
+      background: #fffdf8;
+      border-radius: 1rem;
+      box-shadow: 0 16px 40px rgba(13, 43, 69, 0.28);
+    }
 
     .album-tool {
       appearance: none;
@@ -4356,7 +4433,7 @@
       visibility: visible;
     }
   </style>
-  <link rel="stylesheet" href="/css/coastal.css?v=nav-lightbox-2" />
+  <link rel="stylesheet" href="/css/coastal.css?v=venue-frame-1" />
   <link rel="stylesheet" href="/css/modern-vintage.css?v=perf-1" />
   <link rel="stylesheet" href="/css/collage-rumble.css?v=nav-lightbox-2" />
 </head>
@@ -4904,7 +4981,7 @@
       <div class="container">
         <p class="section-label">Guest album</p>
         <h3 class="section-title gallery-part-title">From the celebration</h3>
-        <p class="section-subtitle album-home-note" id="albumHomeNote">Photos and videos guests share from the day. Press Share to add one, or download the album below.</p>
+        <p class="section-subtitle album-home-note" id="albumHomeNote">A few moments from the day are on the line. View more to see the rest of the album.</p>
       </div>
       <div class="album-board album-home-board">
         <svg class="album-sprig is-top" viewBox="0 0 120 90" aria-hidden="true">
@@ -4919,17 +4996,26 @@
           <ellipse cx="62" cy="48" rx="11" ry="4.5" transform="rotate(25 62 48)" fill="currentColor" opacity="0.4"/>
         </svg>
         <div class="album-slide-bar">
-          <button type="button" class="album-share-open" id="albumShareOpen">Share</button>
+          <p class="album-share-note">Have a photo or a short video from the celebration? Add your name, a note if you like, and share it with Gio and Augiela. Videos can be up to 1 minute.</p>
+          <button type="button" class="album-share-open" id="albumShareOpen">Share a photo or video</button>
         </div>
         <div class="album-strip" id="guestAlbumStrip">
           <div class="album-collage" id="guestAlbumGrid" aria-live="polite"></div>
         </div>
         <p class="album-hint">Swipe the photo line</p>
       </div>
+      <button type="button" class="album-more gallery-more" id="galleryViewMore" aria-expanded="false">View more</button>
       <div class="album-toolbar" id="guestAlbumToolbar" hidden>
         <button type="button" class="album-tool" id="guestAlbumSelect">Select</button>
         <button type="button" class="album-tool" id="guestAlbumDownloadSelected" hidden>Download selected</button>
         <button type="button" class="album-tool is-primary" id="guestAlbumDownloadAll">Download all</button>
+      </div>
+      <div class="album-download-panel" id="albumDownloadPanel" hidden>
+        <p id="albumDownloadLabel">Preparing the download…</p>
+        <div class="album-download-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="albumDownloadTrack">
+          <span id="albumDownloadFill"></span>
+        </div>
+        <button type="button" class="album-tool" id="albumDownloadCancel">Cancel</button>
       </div>
       <p class="album-status" id="albumBarStatus" role="status"></p>
     </div>
@@ -4951,6 +5037,16 @@
         <button class="form-submit" type="submit" id="guestAlbumSubmit">Share</button>
         <p class="album-status" id="guestAlbumStatus" role="status"></p>
       </form>
+    </div>
+  </div>
+  <div class="album-share" id="albumDownloadAsk" role="dialog" aria-modal="true" aria-labelledby="albumDownloadAskTitle" hidden>
+    <div class="album-share-card">
+      <h3 id="albumDownloadAskTitle">Download this file?</h3>
+      <p id="albumDownloadAskText">Continue and the file will start saving. Cancel if you pressed it by mistake.</p>
+      <div class="album-leave-actions">
+        <button type="button" class="stay" id="albumDownloadContinue">Continue</button>
+        <button type="button" class="leave" id="albumDownloadAskCancel">Cancel</button>
+      </div>
     </div>
   </div>
   <div class="album-leave" id="albumLeave" role="dialog" aria-modal="true" aria-labelledby="albumLeaveTitle" hidden>
@@ -6104,6 +6200,28 @@
           observeReveals();
         }
 
+        function photoFrameValue(frame) {
+          var src = frame && typeof frame === "object" ? frame : {};
+          function num(value, min, max, fallback) {
+            var n = Number(value);
+            if (!isFinite(n)) return fallback;
+            return Math.min(max, Math.max(min, n));
+          }
+          return {
+            x: Math.round(num(src.x, 0, 100, 50)),
+            y: Math.round(num(src.y, 0, 100, 50)),
+            zoom: Math.round(num(src.zoom, 1, 2.4, 1) * 100) / 100
+          };
+        }
+
+        function paintPhotoFrame(photoEl, frame) {
+          if (!photoEl) return;
+          var f = photoFrameValue(frame);
+          photoEl.style.objectPosition = f.x + "% " + f.y + "%";
+          photoEl.style.transformOrigin = f.x + "% " + f.y + "%";
+          photoEl.style.transform = f.zoom > 1.001 ? "scale(" + f.zoom + ")" : "";
+        }
+
         if (Array.isArray(c.venues) && c.venues.length) {
           var ceremony = c.venues.find(function (v) {
             return /ceremony|parroquia|church/i.test(v.name || "");
@@ -6129,21 +6247,26 @@
             }
             if (mapEl && place.mapUrl) mapEl.href = place.mapUrl;
             if (photoEl && photoUrl) photoEl.src = fastSrc(photoUrl, 1400);
+            paintPhotoFrame(photoEl, place.frame);
           }
 
           fillPlace("ceremony", {
             name: ceremony.name || "",
             time: ceremony.time,
             address: ceremony.address,
-            mapUrl: ceremony.mapUrl
+            mapUrl: ceremony.mapUrl,
+            frame: c.ceremonyPhotoFrame
           }, c.ceremonyPhoto || ceremony.photo);
           fillPlace("venue", {
             name: c.venueName || reception.name || "Uma Private Villa",
             time: c.venueTime || reception.time || "",
             address: c.venueAddress || reception.address || "",
-            mapUrl: c.venueMapUrl || reception.mapUrl || ceremony.mapUrl
+            mapUrl: c.venueMapUrl || reception.mapUrl || ceremony.mapUrl,
+            frame: c.venuePhotoFrame
           }, c.venuePhoto || reception.photo);
         }
+        paintPhotoFrame(document.getElementById("ceremonyHeroPhoto"), c.ceremonyPhotoFrame);
+        paintPhotoFrame(document.getElementById("venueHeroPhoto"), c.venuePhotoFrame);
 
         const weddingDayTitle = document.getElementById("weddingDayTitle");
         const weddingDaySubtitle = document.getElementById("weddingDaySubtitle");
@@ -7581,6 +7704,6 @@
     })();
   </script>
   <script src="/js/prepare-upload.js?v=2"></script>
-  <script src="/js/guest-album.js?v=27"></script>
+  <script src="/js/guest-album.js?v=29"></script>
 </body>
 </html>

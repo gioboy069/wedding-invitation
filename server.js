@@ -379,6 +379,43 @@ app.use(compression());
 app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
 
+function requestIsHttps(req) {
+  const forwarded = String(req.get("x-forwarded-proto") || "").split(",")[0].trim();
+  return req.secure || forwarded === "https";
+}
+
+app.use((req, res, next) => {
+  const https = requestIsHttps(req);
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+  );
+  const policy = [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "object-src 'none'",
+    "frame-src 'none'",
+    "script-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com data:",
+    "img-src 'self' data: blob: https:",
+    "media-src 'self' blob: https:",
+    "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com",
+    "worker-src 'self' blob:",
+  ];
+  if (https) policy.push("upgrade-insecure-requests");
+  res.setHeader("Content-Security-Policy", policy.join("; "));
+  if (https) {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
+  next();
+});
+
 function sessionCookieOptions(req) {
   const forwarded = String(req.get("x-forwarded-proto") || "").split(",")[0].trim();
   const isHttps = req.secure || forwarded === "https";
@@ -1315,9 +1352,26 @@ app.put("/api/admin/content", requireAdmin, (req, res) => {
     content.envelopeImage = normalizeImageUrl(content.envelopeImage);
   }
 
+  if (content.ceremonyPhotoFrame) content.ceremonyPhotoFrame = normalizePhotoFrame(content.ceremonyPhotoFrame);
+  if (content.venuePhotoFrame) content.venuePhotoFrame = normalizePhotoFrame(content.venuePhotoFrame);
+
   writeJson("content.json", content);
   res.json({ ok: true, content });
 });
+
+function normalizePhotoFrame(frame) {
+  const src = frame && typeof frame === "object" ? frame : {};
+  const clamp = (value, min, max, fallback) => {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return fallback;
+    return Math.min(max, Math.max(min, n));
+  };
+  return {
+    x: Math.round(clamp(src.x, 0, 100, 50)),
+    y: Math.round(clamp(src.y, 0, 100, 50)),
+    zoom: Math.round(clamp(src.zoom, 1, 2.4, 1) * 100) / 100,
+  };
+}
 
 function clampAlbumNumber(value, min, max, fallback) {
   const n = Number(value);

@@ -466,6 +466,67 @@
       color: #3d3428;
     }
 
+    .photo-frame-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 860px) {
+      .photo-frame-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .photo-frame h4 {
+      margin: 0 0 0.35rem;
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    .photo-frame-stage {
+      position: relative;
+      overflow: hidden;
+      margin: 0.35rem 0 0.75rem;
+      aspect-ratio: 16 / 10;
+      cursor: grab;
+      touch-action: none;
+      background: #efe4d2;
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 480' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 40C133 0 267 80 400 40 533 0 667 80 800 40v400C667 480 533 400 400 440 267 480 133 400 0 440z'/%3E%3C/svg%3E");
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 480' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 40C133 0 267 80 400 40 533 0 667 80 800 40v400C667 480 533 400 400 440 267 480 133 400 0 440z'/%3E%3C/svg%3E");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+    }
+
+    .photo-frame-stage.is-dragging { cursor: grabbing; }
+
+    .photo-frame-stage img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .photo-frame-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.15rem;
+      font-size: 0.75rem;
+    }
+
+    .photo-frame-label span { color: var(--sea, #1b4965); }
+
+    .photo-frame input[type="range"] {
+      margin: 0 0 0.75rem;
+      padding: 0;
+      height: 1.75rem;
+      accent-color: var(--sage);
+    }
+
     .textarea-size-row input[type="number"] {
       width: 4.25rem;
       margin: 0;
@@ -1239,6 +1300,39 @@
           </div>
 
           <div class="card">
+            <h3>Ceremony &amp; venue photos</h3>
+            <p class="lead" style="font-size:0.8rem;margin-bottom:1rem;">Drag a photo, or use the sliders, to move it higher, lower, or to the side, and to crop in closer. The wavy frame matches the invitation. Save Details when it looks right.</p>
+            <div class="photo-frame-grid">
+              <div class="photo-frame" data-frame="ceremony">
+                <h4>Ceremony</h4>
+                <div class="photo-frame-stage" data-frame-stage="ceremony">
+                  <img id="ceremonyFramePreview" alt="Ceremony photo preview" draggable="false" />
+                </div>
+                <div class="photo-frame-label"><span>Side to side</span><span id="ceremonyFrameXLabel">Centered</span></div>
+                <input type="range" id="ceremonyFrameX" min="0" max="100" step="1" value="50" aria-label="Move the ceremony photo left or right" />
+                <div class="photo-frame-label"><span>Higher or lower</span><span id="ceremonyFrameYLabel">Centered</span></div>
+                <input type="range" id="ceremonyFrameY" min="0" max="100" step="1" value="50" aria-label="Move the ceremony photo higher or lower" />
+                <div class="photo-frame-label"><span>Crop</span><span id="ceremonyFrameZoomLabel">None</span></div>
+                <input type="range" id="ceremonyFrameZoom" min="100" max="240" step="5" value="100" aria-label="Crop the ceremony photo" />
+                <button type="button" class="btn btn-ghost" data-frame-reset="ceremony">Reset</button>
+              </div>
+              <div class="photo-frame" data-frame="venue">
+                <h4>Venue</h4>
+                <div class="photo-frame-stage" data-frame-stage="venue">
+                  <img id="venueFramePreview" alt="Venue photo preview" draggable="false" />
+                </div>
+                <div class="photo-frame-label"><span>Side to side</span><span id="venueFrameXLabel">Centered</span></div>
+                <input type="range" id="venueFrameX" min="0" max="100" step="1" value="50" aria-label="Move the venue photo left or right" />
+                <div class="photo-frame-label"><span>Higher or lower</span><span id="venueFrameYLabel">Centered</span></div>
+                <input type="range" id="venueFrameY" min="0" max="100" step="1" value="50" aria-label="Move the venue photo higher or lower" />
+                <div class="photo-frame-label"><span>Crop</span><span id="venueFrameZoomLabel">None</span></div>
+                <input type="range" id="venueFrameZoom" min="100" max="240" step="5" value="100" aria-label="Crop the venue photo" />
+                <button type="button" class="btn btn-ghost" data-frame-reset="venue">Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
             <h3>Wedding Day Schedule</h3>
             <label for="weddingDayTitle">Section title</label>
             <input id="weddingDayTitle" name="weddingDayTitle" />
@@ -1355,7 +1449,7 @@
         </div>
         <div class="card album-look-card" style="margin-bottom:1.25rem">
           <h3>Home preview</h3>
-          <p class="lead">This sample is the photo line on the invitation. Drag the sliders and the example changes immediately. Save preview to keep it.</p>
+          <p class="lead">This sample is the photo line guests see before they press View more. Drag the sliders and the example changes immediately. Save preview to keep it.</p>
           <div class="album-look-stage" id="albumLookStage">
             <div class="album-look-track" id="albumLookTrack"></div>
           </div>
@@ -1926,6 +2020,144 @@
         return date;
       }
 
+      function placePhotos() {
+        const venues = content.venues || [];
+        const ceremony = venues.find((v) => /ceremony|parroquia|church/i.test(v.name || "")) || venues[0] || {};
+        const reception = venues.find((v) => /reception|uma|villa/i.test(v.name || "")) || venues[1] || ceremony;
+        return {
+          ceremony: content.ceremonyPhoto || ceremony.photo || "img/venues/church.jpg",
+          venue: content.venuePhoto || reception.photo || "img/venues/venue.jpg",
+        };
+      }
+
+      function publicPhotoSrc(src) {
+        const value = previewMedia(src || "");
+        if (!value) return "";
+        if (/^(https?:|data:|\/)/i.test(value)) return value;
+        return "/" + value.replace(/^\.\//, "");
+      }
+
+      function clampFrameNumber(value, min, max, fallback) {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return fallback;
+        return Math.min(max, Math.max(min, n));
+      }
+
+      function readPhotoFrame(prefix) {
+        const xSlider = Number(document.getElementById(prefix + "FrameX")?.value);
+        const ySlider = Number(document.getElementById(prefix + "FrameY")?.value);
+        const zoom = Number(document.getElementById(prefix + "FrameZoom")?.value) / 100;
+        return {
+          x: Math.round(100 - clampFrameNumber(xSlider, 0, 100, 50)),
+          y: Math.round(clampFrameNumber(ySlider, 0, 100, 50)),
+          zoom: Math.round(clampFrameNumber(zoom, 1, 2.4, 1) * 100) / 100,
+        };
+      }
+
+      function sideWord(slider) {
+        const n = Number(slider);
+        if (n < 40) return "To the left";
+        if (n > 60) return "To the right";
+        return "Centered";
+      }
+
+      function heightWord(slider) {
+        const n = Number(slider);
+        if (n < 40) return "Lower";
+        if (n > 60) return "Higher";
+        return "Centered";
+      }
+
+      function cropWord(zoomSlider) {
+        const z = Number(zoomSlider) / 100;
+        if (z <= 1.02) return "None";
+        if (z < 1.45) return "A little closer";
+        if (z < 1.9) return "Closer";
+        return "Tight";
+      }
+
+      function applyFramePreview(prefix, frame) {
+        const img = document.getElementById(prefix + "FramePreview");
+        if (img) {
+          img.style.objectPosition = frame.x + "% " + frame.y + "%";
+          img.style.transformOrigin = frame.x + "% " + frame.y + "%";
+          img.style.transform = frame.zoom > 1.001 ? "scale(" + frame.zoom + ")" : "none";
+        }
+        const xSlider = document.getElementById(prefix + "FrameX");
+        const ySlider = document.getElementById(prefix + "FrameY");
+        const zSlider = document.getElementById(prefix + "FrameZoom");
+        const xLabel = document.getElementById(prefix + "FrameXLabel");
+        const yLabel = document.getElementById(prefix + "FrameYLabel");
+        const zLabel = document.getElementById(prefix + "FrameZoomLabel");
+        if (xLabel && xSlider) xLabel.textContent = sideWord(xSlider.value);
+        if (yLabel && ySlider) yLabel.textContent = heightWord(ySlider.value);
+        if (zLabel && zSlider) zLabel.textContent = cropWord(zSlider.value);
+      }
+
+      function setFrameSliders(prefix, frame) {
+        const src = frame && typeof frame === "object" ? frame : {};
+        const x = clampFrameNumber(src.x, 0, 100, 50);
+        const y = clampFrameNumber(src.y, 0, 100, 50);
+        const zoom = clampFrameNumber(src.zoom, 1, 2.4, 1);
+        const xSlider = document.getElementById(prefix + "FrameX");
+        const ySlider = document.getElementById(prefix + "FrameY");
+        const zSlider = document.getElementById(prefix + "FrameZoom");
+        if (xSlider) xSlider.value = String(Math.round(100 - x));
+        if (ySlider) ySlider.value = String(Math.round(y));
+        if (zSlider) zSlider.value = String(Math.round(zoom * 100));
+        applyFramePreview(prefix, { x, y, zoom });
+      }
+
+      function paintPhotoFrames() {
+        const photos = placePhotos();
+        ["ceremony", "venue"].forEach((prefix) => {
+          const img = document.getElementById(prefix + "FramePreview");
+          if (img) img.src = publicPhotoSrc(photos[prefix]);
+          setFrameSliders(prefix, content[prefix + "PhotoFrame"]);
+        });
+      }
+
+      function bindPhotoFrames() {
+        ["ceremony", "venue"].forEach((prefix) => {
+          ["X", "Y", "Zoom"].forEach((axis) => {
+            const input = document.getElementById(prefix + "Frame" + axis);
+            if (!input) return;
+            input.addEventListener("input", () => applyFramePreview(prefix, readPhotoFrame(prefix)));
+          });
+          const reset = document.querySelector('[data-frame-reset="' + prefix + '"]');
+          if (reset) reset.addEventListener("click", () => setFrameSliders(prefix, { x: 50, y: 50, zoom: 1 }));
+          const stage = document.querySelector('[data-frame-stage="' + prefix + '"]');
+          if (!stage) return;
+          stage.addEventListener("pointerdown", (event) => {
+            if (event.button != null && event.button !== 0) return;
+            event.preventDefault();
+            stage.classList.add("is-dragging");
+            try { stage.setPointerCapture(event.pointerId); } catch (err) {}
+            const origin = { x: event.clientX, y: event.clientY, frame: readPhotoFrame(prefix) };
+            function move(ev) {
+              const rect = stage.getBoundingClientRect();
+              const next = {
+                x: clampFrameNumber(origin.frame.x - ((ev.clientX - origin.x) / Math.max(rect.width, 1)) * 100, 0, 100, 50),
+                y: clampFrameNumber(origin.frame.y - ((ev.clientY - origin.y) / Math.max(rect.height, 1)) * 100, 0, 100, 50),
+                zoom: origin.frame.zoom,
+              };
+              setFrameSliders(prefix, next);
+            }
+            function end() {
+              stage.classList.remove("is-dragging");
+              stage.removeEventListener("pointermove", move);
+              stage.removeEventListener("pointerup", end);
+              stage.removeEventListener("pointercancel", end);
+            }
+            stage.addEventListener("pointermove", move);
+            stage.addEventListener("pointerup", end);
+            stage.addEventListener("pointercancel", end);
+          });
+        });
+      }
+
+      bindPhotoFrames();
+
       function fillContentForm() {
         ["groom","bride","location","heroPre","rsvpDeadline","storyTitle","storySubtitle","attireSummary","footerQuote","weddingDayTitle","weddingDaySubtitle","entourageTitle","entourageSubtitle","principalSponsorsTitle","fontSerif","fontScript","fontSans","calendarSpinMode","calendarSpinSeconds","envelopeAnimSpeed","envelopeFontScript","envelopeFontSans","envelopeColorMode","envelopeColor","envelopeColorAlt","envelopeInk","envelopeImage"]
           .forEach((k) => {
@@ -1952,6 +2184,7 @@
         renderNinangs();
         renderEntourageGroups();
         renderVenues();
+        paintPhotoFrames();
         renderWeddingDayTimeline();
         syncAppearancePreview();
         syncEnvelopeAdminUI();
@@ -2100,13 +2333,16 @@
           names: row.querySelector('[data-field="names"]').value,
         }));
 
-        data.venues = [...document.querySelectorAll("#venueFields .venue-editor")].map((row) => ({
+        data.venues = [...document.querySelectorAll("#venueFields .venue-editor")].map((row, i) => ({
           name: row.querySelector('[data-field="name"]').value,
           time: row.querySelector('[data-field="time"]').value,
           address: row.querySelector('[data-field="address"]').value,
           mapUrl: row.querySelector('[data-field="mapUrl"]').value,
+          photo: content.venues?.[i]?.photo || "",
           addressFontSize: clampFontSize(row.querySelector("[data-textarea-size]")?.value),
         }));
+        data.ceremonyPhotoFrame = readPhotoFrame("ceremony");
+        data.venuePhotoFrame = readPhotoFrame("venue");
 
         data.weddingDayTimeline = [...document.querySelectorAll("#weddingDayFields .wedding-day-editor")].map((row) => ({
           time: row.querySelector('[data-field="time"]').value,

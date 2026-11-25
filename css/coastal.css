@@ -555,6 +555,7 @@ header.hero,
   aspect-ratio: 16 / 10;
   object-fit: cover;
   object-position: center center;
+  transform-origin: center center;
   display: block;
 }
 

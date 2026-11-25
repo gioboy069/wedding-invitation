@@ -116,8 +116,10 @@
     layoutAlbumLine();
   };
 
+  var albumExpanded = false;
+
   function albumIsOpen() {
-    return false;
+    return albumExpanded;
   }
 
   var albumLine = {
@@ -315,8 +317,8 @@
     var homeNote = document.getElementById("albumHomeNote");
     if (homeNote) {
       homeNote.textContent = visible.length
-        ? visible.length + (visible.length === 1 ? " moment" : " moments") + " from the day. Share one of your own, or download the album below."
-        : "Photos and videos guests share from the day. Press Share to add one.";
+        ? visible.length + (visible.length === 1 ? " moment" : " moments") + " from the day. View more to see the rest, or share a photo or video of your own."
+        : "No guest photos yet. Share a photo or a short video from the day.";
     }
     if (!visible.length) {
       grid.innerHTML = '<p class="album-empty">Nothing in the album yet. Share a photo or video from the day.</p>';
@@ -811,12 +813,22 @@
     if (label) label.textContent = "Download";
   }
 
-  function guestFileRequest(url, onProgress) {
+  var activeDownloadXhr = null;
+  var downloadBusy = false;
+
+  function cancelledDownload() {
+    var error = new Error("The download was stopped.");
+    error.cancelled = true;
+    return error;
+  }
+
+  function requestBlob(method, url, body, onProgress) {
     return new Promise(function (resolve, reject) {
       var xhr = new XMLHttpRequest();
-      xhr.open("GET", url);
+      activeDownloadXhr = xhr;
+      xhr.open(method, url);
       xhr.responseType = "blob";
-      var headers = albumHeaders();
+      var headers = albumHeaders(method === "POST" ? { "Content-Type": "application/json" } : null);
       Object.keys(headers).forEach(function (key) { xhr.setRequestHeader(key, headers[key]); });
       if (onProgress) onProgress(null);
       xhr.onprogress = function (event) {
@@ -824,6 +836,7 @@
         if (event.lengthComputable && event.total > 0) onProgress(event.loaded / event.total);
       };
       xhr.onload = function () {
+        if (activeDownloadXhr === xhr) activeDownloadXhr = null;
         var header = xhr.getResponseHeader("Content-Disposition") || "";
         var match = header.match(/filename="([^"]+)"/);
         if (xhr.status >= 200 && xhr.status < 300) {
@@ -842,69 +855,172 @@
         reader.onerror = function () { reject(new Error("That file could not be downloaded.")); };
         reader.readAsText(xhr.response || new Blob());
       };
-      xhr.onerror = function () { reject(new Error("That file could not be downloaded.")); };
-      xhr.onabort = function () { reject(new Error("The download was stopped.")); };
-      xhr.send();
+      xhr.onerror = function () {
+        if (activeDownloadXhr === xhr) activeDownloadXhr = null;
+        reject(new Error("That file could not be downloaded."));
+      };
+      xhr.onabort = function () {
+        if (activeDownloadXhr === xhr) activeDownloadXhr = null;
+        reject(cancelledDownload());
+      };
+      xhr.send(body || null);
     });
   }
 
-  function filenameFromResponse(response, fallback) {
-    var header = response.headers.get("content-disposition") || "";
-    var match = header.match(/filename="([^"]+)"/);
-    return match ? match[1] : fallback;
+  function guestFileRequest(url, onProgress) {
+    return requestBlob("GET", url, null, onProgress);
   }
 
-  async function saveResponse(response, fallback) {
-    if (!response.ok) {
-      var body = await response.json().catch(function () { return {}; });
-      throw new Error(body.error || "The download could not be prepared.");
+  function paintDownloadPanel(message, ratio) {
+    var panel = document.getElementById("albumDownloadPanel");
+    var label = document.getElementById("albumDownloadLabel");
+    var track = document.getElementById("albumDownloadTrack");
+    var fill = document.getElementById("albumDownloadFill");
+    if (!panel) return;
+    panel.hidden = false;
+    var viewer = document.getElementById("guestAlbumViewer");
+    panel.classList.toggle("is-front", !!(viewer && viewer.classList.contains("open")));
+    if (label) label.textContent = message || "Preparing the download…";
+    var waiting = ratio == null || !isFinite(ratio);
+    panel.classList.toggle("is-wait", waiting);
+    var pct = waiting ? 0 : Math.max(0, Math.min(100, Math.round(ratio * 100)));
+    if (fill && !waiting) fill.style.width = pct + "%";
+    if (track) track.setAttribute("aria-valuenow", String(pct));
+  }
+
+  function hideDownloadPanel() {
+    var panel = document.getElementById("albumDownloadPanel");
+    var fill = document.getElementById("albumDownloadFill");
+    if (panel) {
+      panel.hidden = true;
+      panel.classList.remove("is-wait", "is-front");
     }
-    var blob = await response.blob();
-    saveBlob(blob, filenameFromResponse(response, fallback));
+    if (fill) fill.style.width = "0%";
+  }
+
+  function askToDownload(title, text) {
+    var layer = document.getElementById("albumDownloadAsk");
+    var titleEl = document.getElementById("albumDownloadAskTitle");
+    var textEl = document.getElementById("albumDownloadAskText");
+    var go = document.getElementById("albumDownloadContinue");
+    var stop = document.getElementById("albumDownloadAskCancel");
+    if (!layer || !go || !stop) return Promise.resolve(true);
+    if (titleEl) titleEl.textContent = title;
+    if (textEl) textEl.textContent = text;
+    layer.hidden = false;
+    layer.classList.add("is-on");
+    go.focus();
+    return new Promise(function (resolve) {
+      function finish(answer) {
+        layer.classList.remove("is-on");
+        layer.hidden = true;
+        go.removeEventListener("click", onGo);
+        stop.removeEventListener("click", onStop);
+        layer.removeEventListener("click", onLayer);
+        document.removeEventListener("keydown", onKey);
+        resolve(answer);
+      }
+      function onGo() { finish(true); }
+      function onStop() { finish(false); }
+      function onLayer(event) { if (event.target === layer) finish(false); }
+      function onKey(event) { if (event.key === "Escape") finish(false); }
+      go.addEventListener("click", onGo);
+      stop.addEventListener("click", onStop);
+      layer.addEventListener("click", onLayer);
+      document.addEventListener("keydown", onKey);
+    });
+  }
+
+  function stopActiveDownload() {
+    if (!activeDownloadXhr) return;
+    try { activeDownloadXhr.abort(); } catch (err) {}
+  }
+
+  function downloadMessage(ratio) {
+    if (ratio == null || !isFinite(ratio)) return "Preparing the download…";
+    var pct = Math.max(0, Math.min(100, Math.round(ratio * 100)));
+    return pct >= 100 ? "Saving the file…" : "Downloading " + pct + "%…";
   }
 
   async function downloadOne(id, button) {
-    if (button) button.disabled = true;
-    paintSaveProgress(button, null);
-    setStatus("Preparing the download…");
+    if (downloadBusy) return;
+    downloadBusy = true;
+    var viewer = button && button.id === "guestAlbumViewerSave";
+    var outcome = null;
     try {
+      var proceed = await askToDownload(
+        viewer ? "Download this photo or video?" : "Download this file?",
+        "Continue and it will start saving. Cancel if you pressed it by mistake."
+      );
+      if (!proceed) return;
+      if (button) button.disabled = true;
+      paintSaveProgress(button, null);
+      paintDownloadPanel("Preparing the download…", null);
+      setStatus("");
       var file = await guestFileRequest("/api/guest-album/" + encodeURIComponent(id) + "/file", function (ratio) {
         paintSaveProgress(button, ratio);
-        if (ratio == null) setStatus("Preparing the download…");
-        else setStatus("Downloading " + Math.round(ratio * 100) + "%…");
+        paintDownloadPanel(downloadMessage(ratio), ratio);
       });
       paintSaveProgress(button, 1);
+      paintDownloadPanel("Saving the file…", 1);
       saveBlob(file.blob, file.name || "guest-photo");
-      setStatus("Download started.", "ok");
-      await new Promise(function (resolve) { setTimeout(resolve, 500); });
+      paintDownloadPanel("Download started.", 1);
+      outcome = { message: "Download started.", kind: "ok" };
+      await new Promise(function (resolve) { setTimeout(resolve, 700); });
     } catch (err) {
-      setStatus(err.message || "That file could not be downloaded.", "error");
+      outcome = {
+        message: err.cancelled ? "The download was stopped." : (err.message || "That file could not be downloaded."),
+        kind: err.cancelled ? "" : "error"
+      };
     } finally {
+      downloadBusy = false;
       if (button) button.disabled = false;
       clearSaveProgress(button);
+      hideDownloadPanel();
+      if (outcome) setStatus(outcome.message, outcome.kind);
     }
   }
 
   async function downloadMany(payload, button, label) {
-    if (button) {
-      button.disabled = true;
-      button.textContent = "Preparing…";
-    }
-    setStatus("Preparing the download…");
+    if (downloadBusy) return;
+    downloadBusy = true;
+    var all = !payload || !payload.ids;
+    var outcome = null;
     try {
-      var response = await fetch("/api/guest-album/download", {
-        method: "POST",
-        headers: albumHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify(payload)
+      var proceed = await askToDownload(
+        all ? "Download the whole album?" : "Download the selected photos?",
+        all
+          ? "Continue and every photo and video will be packed into one file."
+          : "Continue and the photos you picked will start saving."
+      );
+      if (!proceed) return;
+      if (button) {
+        button.disabled = true;
+        button.textContent = "Preparing…";
+      }
+      paintDownloadPanel("Preparing the download…", null);
+      setStatus("");
+      var file = await requestBlob("POST", "/api/guest-album/download", JSON.stringify(payload || {}), function (ratio) {
+        paintDownloadPanel(downloadMessage(ratio), ratio);
+        if (button && ratio != null) button.textContent = Math.round(ratio * 100) + "%";
       });
-      await saveResponse(response, "gio-augiela-guest-album.zip");
-      setStatus("Download started.", "ok");
+      paintDownloadPanel("Saving the file…", 1);
+      saveBlob(file.blob, file.name || "gio-augiela-guest-album.zip");
+      paintDownloadPanel("Download started.", 1);
+      outcome = { message: "Download started.", kind: "ok" };
+      await new Promise(function (resolve) { setTimeout(resolve, 700); });
     } catch (err) {
-      setStatus(err.message || "The download could not be prepared.", "error");
+      outcome = {
+        message: err.cancelled ? "The download was stopped." : (err.message || "The download could not be prepared."),
+        kind: err.cancelled ? "" : "error"
+      };
     } finally {
+      downloadBusy = false;
       if (button) button.disabled = false;
       if (label) button.textContent = label;
       syncDownloadBar(postsForActive().length);
+      hideDownloadPanel();
+      if (outcome) setStatus(outcome.message, outcome.kind);
     }
   }
 
@@ -1173,10 +1289,29 @@
         downloadMany({}, allBtn, "Download all");
       });
     }
+    var downloadCancel = document.getElementById("albumDownloadCancel");
+    if (downloadCancel) downloadCancel.addEventListener("click", stopActiveDownload);
     var viewerSave = document.getElementById("guestAlbumViewerSave");
     if (viewerSave) {
       viewerSave.addEventListener("click", function () {
         if (viewerId) downloadOne(viewerId, viewerSave);
+      });
+    }
+
+    var viewMore = document.getElementById("galleryViewMore");
+
+    function setAlbumExpanded(open) {
+      albumExpanded = !!open;
+      if (viewMore) {
+        viewMore.setAttribute("aria-expanded", albumExpanded ? "true" : "false");
+        viewMore.textContent = albumExpanded ? "View less" : "View more";
+      }
+      requestAnimationFrame(layoutAlbumLine);
+    }
+
+    if (viewMore) {
+      viewMore.addEventListener("click", function () {
+        setAlbumExpanded(!albumExpanded);
       });
     }
 
@@ -1214,11 +1349,13 @@
       if (!link) return;
       var href = link.getAttribute("href") || "";
       if (href === "#album" || href.slice(-6) === "#album") {
+        setAlbumExpanded(true);
         if (albumHome) albumHome.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }, true);
 
     if ((location.hash || "") === "#album" && albumHome) {
+      setAlbumExpanded(true);
       albumHome.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     startAlbumLine();
