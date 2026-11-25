@@ -478,6 +478,24 @@
     return minutes + ":" + (remain < 10 ? "0" : "") + remain;
   }
 
+  function paintAlbumBuffer(video) {
+    var track = document.getElementById("albumReelBuffer");
+    if (!track) return;
+    var duration = video && isFinite(video.duration) ? video.duration : 0;
+    var html = "";
+    if (video && duration > 0 && video.buffered) {
+      for (var i = 0; i < video.buffered.length; i++) {
+        var start = (video.buffered.start(i) / duration) * 100;
+        var width = ((video.buffered.end(i) - video.buffered.start(i)) / duration) * 100;
+        html += '<span style="left:' + start.toFixed(2) + '%;width:' + Math.max(0, width).toFixed(2) + '%"></span>';
+      }
+    }
+    if (track.getAttribute("data-html") !== html) {
+      track.innerHTML = html;
+      track.setAttribute("data-html", html);
+    }
+  }
+
   function paintAlbumProgress(video) {
     var bar = document.getElementById("albumReelBar");
     var fill = document.getElementById("albumReelFill");
@@ -492,6 +510,12 @@
     }
     if (fill) fill.style.width = percent;
     if (time) time.textContent = formatReelTime(video ? video.currentTime : 0) + " / " + formatReelTime(duration);
+    paintAlbumBuffer(video);
+  }
+
+  function setAlbumWait(on) {
+    var wait = document.getElementById("albumReelWait");
+    if (wait) wait.hidden = !on;
   }
 
   function setAlbumVideoMode(on) {
@@ -502,9 +526,13 @@
       bar.setAttribute("aria-hidden", on ? "false" : "true");
       bar.tabIndex = on ? 0 : -1;
     }
+    if (!on) {
+      paintAlbumBuffer(null);
+      setAlbumWait(false);
+    }
     if (hint) {
       hint.textContent = on
-        ? "Drag the line to move through the video · swipe for the next"
+        ? "Pale stretch is loaded · drag the line to move"
         : "Swipe for the next · double-tap to zoom";
     }
   }
@@ -640,6 +668,7 @@
       var start = video.play();
       if (start && start.catch) start.catch(function () {});
       setAlbumVideoMode(true);
+      setAlbumWait(true);
       paintAlbumProgress(video);
     } else {
       try { video.pause(); } catch (err) {}
@@ -693,6 +722,86 @@
     showAlbumReel(reelIndex + (dir < 0 ? -1 : 1), dir < 0 ? -1 : 1);
   }
 
+  function saveBlob(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = name || "guest-photo";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+  }
+
+  function paintSaveProgress(button, ratio) {
+    if (!button || button.id !== "guestAlbumViewerSave") return;
+    var label = button.querySelector(".album-reel-save-label");
+    var bar = button.querySelector(".album-reel-save-bar");
+    var fill = button.querySelector(".album-reel-save-fill");
+    button.classList.add("is-busy");
+    button.setAttribute("aria-busy", "true");
+    if (bar) bar.hidden = false;
+    if (ratio == null || !isFinite(ratio)) {
+      button.classList.add("is-indeterminate");
+      if (label) label.textContent = "Saving";
+      if (fill) fill.style.width = "";
+      return;
+    }
+    var pct = Math.max(0, Math.min(100, Math.round(ratio * 100)));
+    button.classList.remove("is-indeterminate");
+    if (label) label.textContent = pct >= 100 ? "Done" : pct + "%";
+    if (fill) fill.style.width = pct + "%";
+  }
+
+  function clearSaveProgress(button) {
+    if (!button || button.id !== "guestAlbumViewerSave") return;
+    var label = button.querySelector(".album-reel-save-label");
+    var bar = button.querySelector(".album-reel-save-bar");
+    var fill = button.querySelector(".album-reel-save-fill");
+    button.classList.remove("is-busy", "is-indeterminate");
+    button.setAttribute("aria-busy", "false");
+    if (bar) bar.hidden = true;
+    if (fill) fill.style.width = "0%";
+    if (label) label.textContent = "Download";
+  }
+
+  function guestFileRequest(url, onProgress) {
+    return new Promise(function (resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", url);
+      xhr.responseType = "blob";
+      var headers = albumHeaders();
+      Object.keys(headers).forEach(function (key) { xhr.setRequestHeader(key, headers[key]); });
+      if (onProgress) onProgress(null);
+      xhr.onprogress = function (event) {
+        if (!onProgress) return;
+        if (event.lengthComputable && event.total > 0) onProgress(event.loaded / event.total);
+      };
+      xhr.onload = function () {
+        var header = xhr.getResponseHeader("Content-Disposition") || "";
+        var match = header.match(/filename="([^"]+)"/);
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve({ blob: xhr.response, name: match ? match[1] : "" });
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function () {
+          var message = "That file could not be downloaded.";
+          try {
+            var data = JSON.parse(String(reader.result || ""));
+            if (data.error) message = data.error;
+          } catch (err) {}
+          reject(new Error(message));
+        };
+        reader.onerror = function () { reject(new Error("That file could not be downloaded.")); };
+        reader.readAsText(xhr.response || new Blob());
+      };
+      xhr.onerror = function () { reject(new Error("That file could not be downloaded.")); };
+      xhr.onabort = function () { reject(new Error("The download was stopped.")); };
+      xhr.send();
+    });
+  }
+
   function filenameFromResponse(response, fallback) {
     var header = response.headers.get("content-disposition") || "";
     var match = header.match(/filename="([^"]+)"/);
@@ -705,27 +814,28 @@
       throw new Error(body.error || "The download could not be prepared.");
     }
     var blob = await response.blob();
-    var url = URL.createObjectURL(blob);
-    var link = document.createElement("a");
-    link.href = url;
-    link.download = filenameFromResponse(response, fallback);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    saveBlob(blob, filenameFromResponse(response, fallback));
   }
 
   async function downloadOne(id, button) {
     if (button) button.disabled = true;
+    paintSaveProgress(button, null);
     setStatus("Preparing the download…");
     try {
-      var response = await fetch("/api/guest-album/" + encodeURIComponent(id) + "/file", { headers: albumHeaders() });
-      await saveResponse(response, "guest-photo");
+      var file = await guestFileRequest("/api/guest-album/" + encodeURIComponent(id) + "/file", function (ratio) {
+        paintSaveProgress(button, ratio);
+        if (ratio == null) setStatus("Preparing the download…");
+        else setStatus("Downloading " + Math.round(ratio * 100) + "%…");
+      });
+      paintSaveProgress(button, 1);
+      saveBlob(file.blob, file.name || "guest-photo");
       setStatus("Download started.", "ok");
+      await new Promise(function (resolve) { setTimeout(resolve, 500); });
     } catch (err) {
       setStatus(err.message || "That file could not be downloaded.", "error");
     } finally {
       if (button) button.disabled = false;
+      clearSaveProgress(button);
     }
   }
 
@@ -1102,7 +1212,18 @@
     if (reelVideo) {
       reelVideo.addEventListener("timeupdate", function () { paintAlbumProgress(reelVideo); });
       reelVideo.addEventListener("loadedmetadata", function () { paintAlbumProgress(reelVideo); });
-      reelVideo.addEventListener("seeked", function () { paintAlbumProgress(reelVideo); });
+      reelVideo.addEventListener("progress", function () { paintAlbumProgress(reelVideo); });
+      reelVideo.addEventListener("seeked", function () {
+        paintAlbumProgress(reelVideo);
+        if (reelVideo.readyState >= 3) setAlbumWait(false);
+      });
+      reelVideo.addEventListener("waiting", function () {
+        if (reelVideo.paused && !reelVideo.seeking) return;
+        setAlbumWait(true);
+      });
+      reelVideo.addEventListener("playing", function () { setAlbumWait(false); });
+      reelVideo.addEventListener("canplay", function () { setAlbumWait(false); });
+      reelVideo.addEventListener("error", function () { setAlbumWait(false); });
       var scrub = document.getElementById("albumReelBar");
       if (scrub) {
         var scrubbing = false;

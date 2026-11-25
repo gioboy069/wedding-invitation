@@ -2218,7 +2218,26 @@
       box-shadow: 0 0 0 1px rgba(247, 245, 241, 0.38);
     }
 
-    .album-reel .reel-bar i {
+    .album-reel .reel-buffer {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 4px;
+      transform: translateY(-50%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .album-reel .reel-buffer span {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      border-radius: 99px;
+      background: rgba(247, 245, 241, 0.55);
+    }
+
+    #albumReelFill {
       position: absolute;
       left: 0;
       top: 50%;
@@ -2227,6 +2246,8 @@
       transform: translateY(-50%);
       border-radius: 99px;
       max-width: 100%;
+      z-index: 2;
+      background: #fff;
     }
 
     .album-reel .reel-bar::after {
@@ -2240,6 +2261,28 @@
       background: #f7f5f1;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
       transform: translate(-50%, -50%);
+      z-index: 3;
+    }
+
+    .album-reel .reel-wait {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 3;
+      width: 46px;
+      height: 46px;
+      margin: -23px 0 0 -23px;
+      border-radius: 50%;
+      border: 3px solid rgba(247, 245, 241, 0.28);
+      border-top-color: #f7f5f1;
+      pointer-events: none;
+      animation: albumReelSpin 0.8s linear infinite;
+    }
+
+    .album-reel .reel-wait[hidden] { display: none !important; }
+
+    @keyframes albumReelSpin {
+      to { transform: rotate(360deg); }
     }
 
     .album-reel .reel-time {
@@ -2260,6 +2303,7 @@
       right: auto;
       z-index: 4;
       min-height: 44px;
+      min-width: 8.5rem;
       padding: 0.4rem 0.95rem;
       border-radius: 999px;
       border: 1px solid rgba(247, 245, 241, 0.55);
@@ -2270,9 +2314,42 @@
       letter-spacing: 0.12em;
       text-transform: uppercase;
       cursor: pointer;
+      overflow: hidden;
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
     }
+
+    .album-reel-save-label {
+      position: relative;
+      z-index: 1;
+    }
+
+    .album-reel-save-bar {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .album-reel-save-bar[hidden] { display: none !important; }
+
+    .album-reel-save-fill {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: rgba(247, 245, 241, 0.42);
+    }
+
+    .album-reel-save.is-indeterminate .album-reel-save-fill {
+      width: 42%;
+      animation: albumSaveSlide 1s ease-in-out infinite;
+    }
+
+    @keyframes albumSaveSlide {
+      from { transform: translateX(-130%); }
+      to { transform: translateX(280%); }
+    }
+
+    .album-reel-save.is-busy { cursor: progress; }
 
     @media (min-width: 769px) {
       .album-reel-save {
@@ -4793,14 +4870,15 @@
   </div>
   <div class="lightbox album-reel" id="guestAlbumViewer" role="dialog" aria-modal="true" aria-label="Guest album reel" hidden>
     <button type="button" class="lightbox-close" id="guestAlbumViewerClose" aria-label="Close">&times;</button>
-    <button type="button" class="album-reel-save" id="guestAlbumViewerSave">Download</button>
+    <button type="button" class="album-reel-save" id="guestAlbumViewerSave" aria-busy="false"><span class="album-reel-save-label">Download</span><span class="album-reel-save-bar" hidden><span class="album-reel-save-fill" id="albumReelSaveFill"></span></span></button>
     <button type="button" class="lightbox-prev" id="guestAlbumPrev" aria-label="Previous">&#8592;</button>
     <div class="reel-frame">
       <div class="reel-stage" id="albumReelStage">
         <img id="guestAlbumViewerImg" alt="" hidden draggable="false" />
         <video id="guestAlbumViewerVideo" playsinline preload="metadata" hidden></video>
       </div>
-      <div class="reel-bar is-off" id="albumReelBar" role="slider" aria-label="Video position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-hidden="true" tabindex="-1"><i id="albumReelFill"></i><span class="reel-time" id="albumReelTime">0:00 / 0:00</span></div>
+      <div class="reel-bar is-off" id="albumReelBar" role="slider" aria-label="Video position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-hidden="true" tabindex="-1"><span class="reel-buffer" id="albumReelBuffer"></span><i id="albumReelFill"></i><span class="reel-time" id="albumReelTime">0:00 / 0:00</span></div>
+      <div class="reel-wait" id="albumReelWait" hidden></div>
     </div>
     <button type="button" class="lightbox-next" id="guestAlbumNext" aria-label="Next">&#8594;</button>
     <div class="reel-tools">
@@ -7434,6 +7512,6 @@
     })();
   </script>
   <script src="/js/prepare-upload.js?v=2"></script>
-  <script src="/js/guest-album.js?v=24"></script>
+  <script src="/js/guest-album.js?v=25"></script>
 </body>
 </html>
