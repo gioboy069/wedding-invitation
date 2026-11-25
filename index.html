@@ -1803,12 +1803,81 @@
     .album-status.is-error { color: #8d3a3a; }
     .album-status.is-ok { color: var(--teal); }
 
+    .album-slide-bar {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      margin: 0 0 0.35rem;
+    }
+
+    .album-share-open {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      min-height: 44px;
+      padding: 0.55rem 1.35rem;
+      background: var(--deep);
+      color: #f7f5f1;
+      font: inherit;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .album-share-open:hover { background: var(--teal, #6ba7a0); }
+
+    .album-share {
+      position: fixed;
+      inset: 0;
+      z-index: 480;
+      display: none;
+      place-items: center;
+      padding: 1.25rem;
+      background: rgba(13, 43, 69, 0.46);
+    }
+
+    .album-share.is-on { display: grid; }
+    .album-share[hidden] { display: none !important; }
+
+    .album-share-card {
+      position: relative;
+      width: min(32rem, 100%);
+      max-height: min(90vh, 44rem);
+      overflow: auto;
+      padding: 1.35rem 1.15rem 1.2rem;
+      background: #fffdf8;
+      border-radius: 1.1rem;
+      box-shadow: 0 24px 50px rgba(13, 43, 69, 0.28);
+    }
+
+    .album-share-close {
+      position: absolute;
+      top: 0.55rem;
+      right: 0.65rem;
+      border: 0;
+      background: transparent;
+      color: var(--deep);
+      font-size: 1.6rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .album-share .album-form {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      max-width: none;
+    }
+
     .album-toolbar {
       display: flex;
       flex-wrap: wrap;
-      justify-content: flex-end;
+      justify-content: center;
       gap: 0.45rem;
-      margin: 0 0 0.75rem;
+      margin: 0.85rem 0 0.35rem;
     }
 
     .album-toolbar[hidden] { display: none; }
@@ -4831,11 +4900,11 @@
       <p class="gallery-hint" id="galleryHint" hidden>Drag the line, or tap a photo to play it through</p>
     </div>
 
-    <div class="album-home" id="albumHome">
+    <div class="album-home" id="album">
       <div class="container">
         <p class="section-label">Guest album</p>
         <h3 class="section-title gallery-part-title">From the celebration</h3>
-        <p class="section-subtitle album-home-note" id="albumHomeNote">Photos and videos guests share from the day. Swipe the line, then open the album to share one of your own.</p>
+        <p class="section-subtitle album-home-note" id="albumHomeNote">Photos and videos guests share from the day. Press Share to add one, or download the album below.</p>
       </div>
       <div class="album-board album-home-board">
         <svg class="album-sprig is-top" viewBox="0 0 120 90" aria-hidden="true">
@@ -4849,44 +4918,41 @@
           <ellipse cx="34" cy="28" rx="12" ry="5" transform="rotate(-20 34 28)" fill="currentColor" opacity="0.5"/>
           <ellipse cx="62" cy="48" rx="11" ry="4.5" transform="rotate(25 62 48)" fill="currentColor" opacity="0.4"/>
         </svg>
+        <div class="album-slide-bar">
+          <button type="button" class="album-share-open" id="albumShareOpen">Share</button>
+        </div>
         <div class="album-strip" id="guestAlbumStrip">
           <div class="album-collage" id="guestAlbumGrid" aria-live="polite"></div>
         </div>
         <p class="album-hint">Swipe the photo line</p>
       </div>
-      <button type="button" class="album-more gallery-more" id="galleryViewMore" aria-expanded="false" aria-controls="album">View more</button>
-    </div>
-
-    <div class="guest-album" id="album" hidden>
-    <div class="container">
-      <p class="section-label reveal">From the celebration</p>
-      <h3 class="section-title gallery-part-title reveal reveal-delay-1">Guest album</h3>
-      <p class="section-subtitle reveal reveal-delay-2">Share photos and videos from the day. Heart a moment or leave a haha, then download one, a few, or the whole album.</p>
-      <div class="album-layout">
-        <form class="album-form" id="guestAlbumForm">
-          <h3>Share a moment</h3>
-          <p>Everything is saved in the couple’s Google Drive and appears in the album right away. Choose one photo or video, or select many at once. Videos can be up to 1 minute.</p>
-          <label class="form-label" for="guestAlbumName">Your name</label>
-          <input class="form-input" id="guestAlbumName" name="name" maxlength="60" autocomplete="name" required placeholder="Maria Cruz" />
-          <label class="form-label" for="guestAlbumCaption">Note</label>
-          <input class="form-input" id="guestAlbumCaption" name="caption" maxlength="240" placeholder="The first dance" />
-          <label class="album-file" for="guestAlbumFile">
-            <input id="guestAlbumFile" name="media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" multiple required />
-            <span id="guestAlbumFileLabel">Choose photos or videos</span>
-          </label>
-          <button class="form-submit" type="submit" id="guestAlbumSubmit">Share</button>
-          <p class="album-status" id="guestAlbumStatus" role="status"></p>
-        </form>
-        <div class="album-toolbar" id="guestAlbumToolbar" hidden>
-          <button type="button" class="album-tool" id="guestAlbumSelect">Select</button>
-          <button type="button" class="album-tool" id="guestAlbumDownloadSelected" hidden>Download selected</button>
-          <button type="button" class="album-tool is-primary" id="guestAlbumDownloadAll">Download all</button>
-        </div>
-        <button type="button" class="album-more gallery-less" id="galleryViewLess">View less</button>
+      <div class="album-toolbar" id="guestAlbumToolbar" hidden>
+        <button type="button" class="album-tool" id="guestAlbumSelect">Select</button>
+        <button type="button" class="album-tool" id="guestAlbumDownloadSelected" hidden>Download selected</button>
+        <button type="button" class="album-tool is-primary" id="guestAlbumDownloadAll">Download all</button>
       </div>
-    </div>
+      <p class="album-status" id="albumBarStatus" role="status"></p>
     </div>
   </section>
+  <div class="album-share" id="albumShare" role="dialog" aria-modal="true" aria-labelledby="albumShareTitle" hidden>
+    <div class="album-share-card">
+      <button type="button" class="album-share-close" id="albumShareClose" aria-label="Close">&times;</button>
+      <form class="album-form" id="guestAlbumForm">
+        <h3 id="albumShareTitle">Share a moment</h3>
+        <p>Everything is saved in the couple’s Google Drive and appears in the album right away. Choose one photo or video, or select many at once. Videos can be up to 1 minute.</p>
+        <label class="form-label" for="guestAlbumName">Your name</label>
+        <input class="form-input" id="guestAlbumName" name="name" maxlength="60" autocomplete="name" required placeholder="Maria Cruz" />
+        <label class="form-label" for="guestAlbumCaption">Note</label>
+        <input class="form-input" id="guestAlbumCaption" name="caption" maxlength="240" placeholder="The first dance" />
+        <label class="album-file" for="guestAlbumFile">
+          <input id="guestAlbumFile" name="media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" multiple required />
+          <span id="guestAlbumFileLabel">Choose photos or videos</span>
+        </label>
+        <button class="form-submit" type="submit" id="guestAlbumSubmit">Share</button>
+        <p class="album-status" id="guestAlbumStatus" role="status"></p>
+      </form>
+    </div>
+  </div>
   <div class="album-leave" id="albumLeave" role="dialog" aria-modal="true" aria-labelledby="albumLeaveTitle" hidden>
     <div class="album-leave-card">
       <h2 id="albumLeaveTitle">Leave this page?</h2>
@@ -7459,31 +7525,6 @@
           submitBtn.textContent = "Send RSVP";
         }
 
-        function emailCouple() {
-          return fetch("https://formsubmit.co/ajax/" + encodeURIComponent(COUPLE_EMAIL), {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json"
-            },
-            body: JSON.stringify({
-              name: data.name,
-              attendance: data.attendance === "attending" ? "Joyfully Accepts" : "Regretfully Declines",
-              companions: data.companions.length ? data.companions.map(function (c) { return c.name; }).join(", ") : "(none)",
-              partySize: 1 + data.companions.length,
-              message: data.message || "(no message)",
-              submittedAt: new Date().toISOString(),
-              _subject: "Wedding RSVP: " + data.name + " — " + data.attendance,
-              _template: "table",
-              _captcha: "false"
-            })
-          }).then(function (res) {
-            if (!res.ok) throw new Error("Email delivery failed");
-            return res.json();
-          });
-        }
-
-        // Prefer API (saves + emails). Fall back to direct email if API is unavailable.
         fetch("/api/rsvp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -7510,9 +7551,6 @@
               return null;
             }
             if (!result.ok) throw new Error((result.body && result.body.error) || "API failed");
-            if (result.body && result.body.emailed === false && matchedGuest) {
-              return emailCouple().then(function () { return result.body; });
-            }
             return result.body;
           })
           .then(function (result) {
@@ -7543,6 +7581,6 @@
     })();
   </script>
   <script src="/js/prepare-upload.js?v=2"></script>
-  <script src="/js/guest-album.js?v=26"></script>
+  <script src="/js/guest-album.js?v=27"></script>
 </body>
 </html>

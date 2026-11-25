@@ -557,44 +557,48 @@ app.post("/api/rsvp", async (req, res) => {
     writeJson("rsvps.json", rsvps);
   } catch (err) {
     console.error("Failed to save RSVP locally:", err);
+    return res.status(500).json({ error: "The RSVP could not be saved. Please try again." });
   }
 
-  let emailed = false;
-  try {
-    const emailRes = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(RSVP_EMAIL)}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        name: entry.name,
-        firstName: entry.firstName,
-        surname: entry.surname,
-        attendance: entry.attendance === "attending" ? "Joyfully Accepts" : "Regretfully Declines",
-        partySize: entry.partySize,
-        companions: companionList.length ? companionList.map((c) => c.name).join(", ") : "(none)",
-        message: entry.message || "(no message)",
-        guestMatched: entry.guestMatched ? "Yes" : "No",
-        category: entry.category || "(none)",
-        table: formatTableLabel(entry.tableNumber) || "(not assigned)",
-        submittedAt: entry.submittedAt,
-        _subject: `Wedding RSVP: ${entry.name} — ${entry.attendance}`,
-        _template: "table",
-        _captcha: "false",
-      }),
-    });
-    emailed = emailRes.ok;
-    if (!emailed) {
+  res.status(201).json({ ok: true, id: entry.id });
+  notifyRsvp(entry, companionList);
+});
+
+function notifyRsvp(entry, companionList) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  fetch(`https://formsubmit.co/ajax/${encodeURIComponent(RSVP_EMAIL)}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    signal: controller.signal,
+    body: JSON.stringify({
+      name: entry.name,
+      firstName: entry.firstName,
+      surname: entry.surname,
+      attendance: entry.attendance === "attending" ? "Joyfully Accepts" : "Regretfully Declines",
+      partySize: entry.partySize,
+      companions: companionList.length ? companionList.map((c) => c.name).join(", ") : "(none)",
+      message: entry.message || "(no message)",
+      guestMatched: entry.guestMatched ? "Yes" : "No",
+      category: entry.category || "(none)",
+      table: formatTableLabel(entry.tableNumber) || "(not assigned)",
+      submittedAt: entry.submittedAt,
+      _subject: `Wedding RSVP: ${entry.name} — ${entry.attendance}`,
+      _template: "table",
+      _captcha: "false",
+    }),
+  }).then(async (emailRes) => {
+    if (!emailRes.ok) {
       const body = await emailRes.text();
       console.error("RSVP email failed:", emailRes.status, body);
     }
-  } catch (err) {
-    console.error("RSVP email error:", err);
-  }
-
-  res.status(201).json({ ok: true, id: entry.id, emailed });
-});
+  }).catch((err) => {
+    console.error("RSVP email error:", err.message || err);
+  }).finally(() => clearTimeout(timer));
+}
 
 function normalizeGuestName(value) {
   return String(value || "")

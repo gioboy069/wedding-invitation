@@ -49,11 +49,13 @@
   }
 
   function setStatus(message, kind) {
-    var status = document.getElementById("guestAlbumStatus");
-    if (!status) return;
-    status.textContent = message || "";
-    status.classList.toggle("is-error", kind === "error");
-    status.classList.toggle("is-ok", kind === "ok");
+    ["guestAlbumStatus", "albumBarStatus"].forEach(function (id) {
+      var status = document.getElementById(id);
+      if (!status) return;
+      status.textContent = message || "";
+      status.classList.toggle("is-error", kind === "error");
+      status.classList.toggle("is-ok", kind === "ok");
+    });
   }
 
   function postsForActive() {
@@ -115,8 +117,7 @@
   };
 
   function albumIsOpen() {
-    var section = document.getElementById("album");
-    return !!(section && !section.hidden);
+    return false;
   }
 
   var albumLine = {
@@ -314,8 +315,8 @@
     var homeNote = document.getElementById("albumHomeNote");
     if (homeNote) {
       homeNote.textContent = visible.length
-        ? visible.length + (visible.length === 1 ? " moment" : " moments") + " from the day. Swipe the line, then open the album to share one of your own."
-        : "Photos and videos guests share from the day. Swipe the line, then open the album to share one of your own.";
+        ? visible.length + (visible.length === 1 ? " moment" : " moments") + " from the day. Share one of your own, or download the album below."
+        : "Photos and videos guests share from the day. Press Share to add one.";
     }
     if (!visible.length) {
       grid.innerHTML = '<p class="album-empty">Nothing in the album yet. Share a photo or video from the day.</p>';
@@ -1033,6 +1034,7 @@
         if (label) label.textContent = "Choose photos or videos";
         await loadAlbum();
         setStatus(saved === 1 ? "Shared. It is in the album now." : "Shared " + saved + " moments. They are in the album now.", "ok");
+        setShareOpen(false);
       } catch (err) {
         if (saved) await loadAlbum().catch(function () {});
         setStatus(
@@ -1178,46 +1180,47 @@
       });
     }
 
-    var albumSection = document.getElementById("album");
-    var galleryMore = document.getElementById("galleryViewMore");
+    var shareLayer = document.getElementById("albumShare");
 
-    function setAlbumOpen(open) {
-      if (!albumSection) return;
-      albumSection.hidden = !open;
-      if (galleryMore) {
-        galleryMore.setAttribute("aria-expanded", open ? "true" : "false");
-        galleryMore.textContent = open ? "View less" : "View more";
+    function setShareOpen(open) {
+      if (!shareLayer) return;
+      if (!open && uploading) return;
+      shareLayer.hidden = !open;
+      shareLayer.classList.toggle("is-on", !!open);
+      document.body.style.overflow = open ? "hidden" : "";
+      if (open) {
+        var name = document.getElementById("guestAlbumName");
+        if (name) name.focus();
       }
-      requestAnimationFrame(layoutAlbumLine);
     }
 
-    var galleryLess = document.getElementById("galleryViewLess");
-
-    if (galleryMore) {
-      galleryMore.addEventListener("click", function () {
-        var open = !!albumSection.hidden;
-        setAlbumOpen(open);
-        if (open && albumSection) {
-          albumSection.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
+    var shareOpen = document.getElementById("albumShareOpen");
+    var shareClose = document.getElementById("albumShareClose");
+    if (shareOpen) shareOpen.addEventListener("click", function () { setShareOpen(true); });
+    if (shareClose) shareClose.addEventListener("click", function () { setShareOpen(false); });
+    if (shareLayer) {
+      shareLayer.addEventListener("click", function (event) {
+        if (event.target === shareLayer) setShareOpen(false);
       });
     }
+    document.addEventListener("keydown", function (event) {
+      if (event.key !== "Escape" || !shareLayer || shareLayer.hidden) return;
+      setShareOpen(false);
+    });
 
-    if (galleryLess) {
-      galleryLess.addEventListener("click", function () {
-        setAlbumOpen(false);
-        if (galleryMore) galleryMore.scrollIntoView({ behavior: "smooth", block: "center" });
-      });
-    }
-
+    var albumHome = document.getElementById("album");
     document.addEventListener("click", function (event) {
       var link = event.target.closest && event.target.closest("a[href]");
       if (!link) return;
       var href = link.getAttribute("href") || "";
-      if (href === "#album" || href.slice(-6) === "#album") setAlbumOpen(true);
+      if (href === "#album" || href.slice(-6) === "#album") {
+        if (albumHome) albumHome.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }, true);
 
-    if ((location.hash || "") === "#album") setAlbumOpen(true);
+    if ((location.hash || "") === "#album" && albumHome) {
+      albumHome.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
     startAlbumLine();
 
     var closeBtn = document.getElementById("guestAlbumViewerClose");
