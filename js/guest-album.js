@@ -314,6 +314,7 @@
 
   function render() {
     renderGrid();
+    warmReelWindow(reelIndex || 0);
   }
 
   function replacePost(next) {
@@ -345,6 +346,40 @@
   var reelGesture = null;
   var reelLastTap = 0;
   var reelTapTimer = 0;
+  var reelFrames = {};
+
+  function reelPhotoSrc(post) {
+    return previewSrc(post && post.src, 1200);
+  }
+
+  function warmUrl(src) {
+    if (!src) return null;
+    var frame = reelFrames[src];
+    if (!frame) {
+      frame = new Image();
+      frame.decoding = "async";
+      frame.src = src;
+      reelFrames[src] = frame;
+    }
+    return frame;
+  }
+
+  function frameReady(src) {
+    var frame = src && reelFrames[src];
+    return !!(frame && frame.complete && frame.naturalWidth);
+  }
+
+  function warmReelWindow(index) {
+    var list = albumReelList();
+    var total = list.length;
+    if (!total) return;
+    [0, 1, 2, -1].forEach(function (offset) {
+      var post = list[(index + offset + total) % total];
+      if (!post || post.type === "video") return;
+      warmUrl(reelPhotoSrc(post));
+      if (post.src) warmUrl(post.src);
+    });
+  }
 
   function albumReelList() {
     return postsForActive();
@@ -550,16 +585,22 @@
       video.hidden = true;
       img.hidden = false;
       var full = post.src;
-      var preview = previewSrc(full, 1400);
-      img.src = preview;
+      var preview = reelPhotoSrc(post);
+      warmReelWindow(reelIndex);
       img.alt = post.caption || "Guest photo";
-      if (preview !== full) {
-        var shownId = post.id;
-        var loader = new Image();
-        loader.onload = function () {
-          if (viewerId === shownId && !img.hidden) img.src = full;
-        };
-        loader.src = full;
+      if (frameReady(full)) {
+        img.src = full;
+      } else {
+        img.src = preview;
+        if (preview !== full) {
+          var shownId = post.id;
+          var loader = warmUrl(full);
+          var applyFull = function () {
+            if (viewerId === shownId && !img.hidden) img.src = full;
+          };
+          if (loader && loader.complete && loader.naturalWidth) applyFull();
+          else if (loader) loader.addEventListener("load", applyFull, { once: true });
+        }
       }
       if (bar) bar.classList.add("is-off");
       if (fill) fill.style.width = "0%";

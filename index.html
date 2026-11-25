@@ -1337,6 +1337,18 @@
 
     .reel-stage.reel-next { animation: reelNext 0.42s ease; }
     .reel-stage.reel-prev { animation: reelPrev 0.42s ease; }
+    .album-reel .reel-stage.reel-next { animation: albumReelNext 0.16s ease; }
+    .album-reel .reel-stage.reel-prev { animation: albumReelPrev 0.16s ease; }
+
+    @keyframes albumReelNext {
+      from { transform: translateX(3%); }
+      to { transform: none; }
+    }
+
+    @keyframes albumReelPrev {
+      from { transform: translateX(-3%); }
+      to { transform: none; }
+    }
 
     @keyframes reelNext {
       from { opacity: 0.15; transform: translateX(7%); }
@@ -2176,8 +2188,9 @@
     .album-reel .reel-bar.is-off { visibility: hidden; }
     .album-reel-save {
       position: absolute;
-      top: 1.35rem;
-      right: max(0.75rem, env(safe-area-inset-right));
+      top: calc(1.25rem + 52px + 0.7rem);
+      left: max(0.75rem, env(safe-area-inset-left));
+      right: auto;
       z-index: 4;
       min-height: 44px;
       padding: 0.4rem 0.95rem;
@@ -2192,6 +2205,12 @@
       cursor: pointer;
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
+    }
+
+    @media (min-width: 769px) {
+      .album-reel-save {
+        top: calc(1.25rem + 56px + 0.75rem);
+      }
     }
 
     @media (min-width: 860px) {
@@ -7348,6 +7367,6 @@
     })();
   </script>
   <script src="/js/prepare-upload.js?v=2"></script>
-  <script src="/js/guest-album.js?v=22"></script>
+  <script src="/js/guest-album.js?v=23"></script>
 </body>
 </html>
