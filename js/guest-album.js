@@ -10,6 +10,9 @@
   var uploading = false;
   var allowLeave = false;
   var activeXhr = null;
+  var shareAside = false;
+  var shareStopQuiet = false;
+  var shareProgress = { pct: 0, label: "Sharing…" };
 
   function escapeHtml(value) {
     return String(value || "")
@@ -48,8 +51,9 @@
     return headers;
   }
 
-  function setStatus(message, kind) {
-    ["guestAlbumStatus", "albumBarStatus"].forEach(function (id) {
+  function setStatus(message, kind, only) {
+    var ids = only ? [only] : ["guestAlbumStatus", "albumBarStatus"];
+    ids.forEach(function (id) {
       var status = document.getElementById(id);
       if (!status) return;
       status.textContent = message || "";
@@ -871,7 +875,7 @@
     return requestBlob("GET", url, null, onProgress);
   }
 
-  function paintDownloadPanel(message, ratio) {
+  function paintDownloadPanel(ratio, caption) {
     var panel = document.getElementById("albumDownloadPanel");
     var label = document.getElementById("albumDownloadLabel");
     var track = document.getElementById("albumDownloadTrack");
@@ -880,12 +884,16 @@
     panel.hidden = false;
     var viewer = document.getElementById("guestAlbumViewer");
     panel.classList.toggle("is-front", !!(viewer && viewer.classList.contains("open")));
-    if (label) label.textContent = message || "Preparing the download…";
     var waiting = ratio == null || !isFinite(ratio);
     panel.classList.toggle("is-wait", waiting);
     var pct = waiting ? 0 : Math.max(0, Math.min(100, Math.round(ratio * 100)));
-    if (fill && !waiting) fill.style.width = pct + "%";
-    if (track) track.setAttribute("aria-valuenow", String(pct));
+    if (fill) fill.style.width = waiting ? "" : pct + "%";
+    var text = caption || (waiting ? "Preparing…" : pct + "%");
+    if (label) label.textContent = text;
+    if (track) {
+      track.setAttribute("aria-valuenow", String(pct));
+      track.setAttribute("aria-valuetext", text);
+    }
   }
 
   function hideDownloadPanel() {
@@ -936,12 +944,6 @@
     try { activeDownloadXhr.abort(); } catch (err) {}
   }
 
-  function downloadMessage(ratio) {
-    if (ratio == null || !isFinite(ratio)) return "Preparing the download…";
-    var pct = Math.max(0, Math.min(100, Math.round(ratio * 100)));
-    return pct >= 100 ? "Saving the file…" : "Downloading " + pct + "%…";
-  }
-
   async function downloadOne(id, button) {
     if (downloadBusy) return;
     downloadBusy = true;
@@ -955,16 +957,16 @@
       if (!proceed) return;
       if (button) button.disabled = true;
       paintSaveProgress(button, null);
-      paintDownloadPanel("Preparing the download…", null);
-      setStatus("");
+      paintDownloadPanel(null);
+      setStatus("", "", "albumBarStatus");
       var file = await guestFileRequest("/api/guest-album/" + encodeURIComponent(id) + "/file", function (ratio) {
         paintSaveProgress(button, ratio);
-        paintDownloadPanel(downloadMessage(ratio), ratio);
+        paintDownloadPanel(ratio);
       });
       paintSaveProgress(button, 1);
-      paintDownloadPanel("Saving the file…", 1);
+      paintDownloadPanel(1, "Saving…");
       saveBlob(file.blob, file.name || "guest-photo");
-      paintDownloadPanel("Download started.", 1);
+      paintDownloadPanel(1, "Done");
       outcome = { message: "Download started.", kind: "ok" };
       await new Promise(function (resolve) { setTimeout(resolve, 700); });
     } catch (err) {
@@ -977,7 +979,7 @@
       if (button) button.disabled = false;
       clearSaveProgress(button);
       hideDownloadPanel();
-      if (outcome) setStatus(outcome.message, outcome.kind);
+      if (outcome) setStatus(outcome.message, outcome.kind, "albumBarStatus");
     }
   }
 
@@ -994,19 +996,15 @@
           : "Continue and the photos you picked will start saving."
       );
       if (!proceed) return;
-      if (button) {
-        button.disabled = true;
-        button.textContent = "Preparing…";
-      }
-      paintDownloadPanel("Preparing the download…", null);
-      setStatus("");
+      if (button) button.disabled = true;
+      paintDownloadPanel(null);
+      setStatus("", "", "albumBarStatus");
       var file = await requestBlob("POST", "/api/guest-album/download", JSON.stringify(payload || {}), function (ratio) {
-        paintDownloadPanel(downloadMessage(ratio), ratio);
-        if (button && ratio != null) button.textContent = Math.round(ratio * 100) + "%";
+        paintDownloadPanel(ratio);
       });
-      paintDownloadPanel("Saving the file…", 1);
+      paintDownloadPanel(1, "Saving…");
       saveBlob(file.blob, file.name || "gio-augiela-guest-album.zip");
-      paintDownloadPanel("Download started.", 1);
+      paintDownloadPanel(1, "Done");
       outcome = { message: "Download started.", kind: "ok" };
       await new Promise(function (resolve) { setTimeout(resolve, 700); });
     } catch (err) {
@@ -1020,7 +1018,7 @@
       if (label) button.textContent = label;
       syncDownloadBar(postsForActive().length);
       hideDownloadPanel();
-      if (outcome) setStatus(outcome.message, outcome.kind);
+      if (outcome) setStatus(outcome.message, outcome.kind, "albumBarStatus");
     }
   }
 
@@ -1131,28 +1129,39 @@
         submit.textContent = "Sharing 0%";
         submit.setAttribute("aria-busy", "true");
       }
+      shareProgress = { pct: 0, label: "Sharing…" };
       setStatus(chosen.length > 1 ? "Sharing 1 of " + chosen.length : "");
       try {
         for (var i = 0; i < chosen.length; i += 1) {
+          if (shareStopQuiet) throw new Error("The upload was stopped.");
           var current = chosen[i];
           var currentSize = current.size || 1;
           if (chosen.length > 1) setStatus("Sharing " + (i + 1) + " of " + chosen.length);
           await shareOne(current, fields, function (loaded) {
-            var pct = Math.round(((finishedBytes + Math.min(loaded, currentSize)) / totalBytes) * 100);
-            if (submit) submit.textContent = "Sharing " + Math.min(99, Math.max(0, pct)) + "%";
+            var pct = Math.min(99, Math.max(0, Math.round(((finishedBytes + Math.min(loaded, currentSize)) / totalBytes) * 100)));
+            noteShareProgress(pct, chosen.length > 1 ? "Sharing " + (i + 1) + " of " + chosen.length : "");
           });
           finishedBytes += currentSize;
           saved += 1;
-          if (submit) submit.textContent = "Sharing " + Math.min(100, Math.round((finishedBytes / totalBytes) * 100)) + "%";
+          noteShareProgress(Math.min(100, Math.round((finishedBytes / totalBytes) * 100)));
         }
         form.reset();
         var label = document.getElementById("guestAlbumFileLabel");
         if (label) label.textContent = "Choose photos or videos";
         await loadAlbum();
+        var wasAside = shareAside;
+        shareAside = false;
         setStatus(saved === 1 ? "Shared. It is in the album now." : "Shared " + saved + " moments. They are in the album now.", "ok");
-        setShareOpen(false);
+        setShareOpen(false, true);
+        if (wasAside) flashUploadDock("Shared");
+        else hideUploadDock();
       } catch (err) {
+        var quiet = shareStopQuiet;
+        shareStopQuiet = false;
+        shareAside = false;
+        hideUploadDock();
         if (saved) await loadAlbum().catch(function () {});
+        if (!quiet) setShareOpen(true, true);
         setStatus(
           (saved ? "Saved " + saved + " of " + chosen.length + ". " : "") + (err.message || "That moment could not be shared."),
           "error"
@@ -1169,18 +1178,90 @@
 
     var leaveLayer = document.getElementById("albumLeave");
     var leaveKind = "";
+    var leaveLink = null;
 
-    function openAlbumLeave(kind) {
+    function noteShareProgress(pct, caption) {
+      var shown = Math.max(0, Math.min(100, Math.round(pct)));
+      shareProgress.pct = shown;
+      shareProgress.label = caption || ("Sharing " + shown + "%");
+      var submit = document.getElementById("guestAlbumSubmit");
+      if (submit) submit.textContent = "Sharing " + shown + "%";
+      if (shareAside) paintUploadDock();
+    }
+
+    function paintUploadDock(labelText) {
+      var dock = document.getElementById("albumUploadDock");
+      var fill = document.getElementById("albumUploadFill");
+      var label = document.getElementById("albumUploadLabel");
+      var track = document.getElementById("albumUploadTrack");
+      if (!dock) return;
+      dock.hidden = false;
+      var text = labelText || shareProgress.label || "Sharing…";
+      if (label) label.textContent = text;
+      if (fill) fill.style.width = (shareProgress.pct || 0) + "%";
+      if (track) {
+        track.setAttribute("aria-valuenow", String(shareProgress.pct || 0));
+        track.setAttribute("aria-valuetext", text);
+      }
+    }
+
+    function hideUploadDock() {
+      var dock = document.getElementById("albumUploadDock");
+      if (dock) dock.hidden = true;
+    }
+
+    function flashUploadDock(text) {
+      shareProgress.pct = 100;
+      shareProgress.label = text;
+      paintUploadDock(text);
+      setTimeout(hideUploadDock, 1600);
+    }
+
+    function followInPage(link) {
+      if (!link) return;
+      var href = link.getAttribute("href") || "";
+      if (!href || href === "#") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      if (href.charAt(0) === "#") {
+        var target = document.querySelector(href);
+        if (href === "#album" || href.slice(-6) === "#album") setAlbumExpanded(true);
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (history.replaceState) history.replaceState(null, "", href);
+        return;
+      }
+      window.location.href = link.href;
+    }
+
+    function openAlbumLeave(kind, link) {
       if (!leaveLayer || !uploading || allowLeave) return;
       leaveKind = kind || "reload";
+      leaveLink = link || null;
+      var title = document.getElementById("albumLeaveTitle");
+      var text = document.getElementById("albumLeaveText");
+      var aside = document.getElementById("albumLeaveAside");
+      var stay = document.getElementById("albumLeaveStay");
+      var go = document.getElementById("albumLeaveGo");
+      var moving = leaveKind === "close" || leaveKind === "nav";
+      if (aside) aside.hidden = !moving;
+      if (title) title.textContent = moving ? "Sharing is still going" : "Leave this page?";
+      if (text) {
+        text.textContent = moving
+          ? "You can keep this upload going while you look around the site. A progress note will stay on the screen. Stopping will lose what has not finished."
+          : "Sharing is still in progress. If you leave now, this upload will stop.";
+      }
+      if (stay) stay.textContent = moving ? "Stay here" : "Stay";
+      if (go) go.textContent = moving ? "Stop sharing" : "Leave";
       leaveLayer.hidden = false;
       leaveLayer.classList.add("is-on");
-      var stay = document.getElementById("albumLeaveStay");
-      if (stay) stay.focus();
+      if (aside && moving) aside.focus();
+      else if (stay) stay.focus();
     }
 
     function closeAlbumLeave() {
       leaveKind = "";
+      leaveLink = null;
       if (!leaveLayer) return;
       leaveLayer.classList.remove("is-on");
       leaveLayer.hidden = true;
@@ -1206,20 +1287,43 @@
       openAlbumLeave("reload");
     }, true);
 
+    function stopSharingQuiet() {
+      shareStopQuiet = true;
+      shareAside = false;
+      if (activeXhr) {
+        try { activeXhr.abort(); } catch (err) {}
+      }
+      hideUploadDock();
+    }
+
     var stayBtn = document.getElementById("albumLeaveStay");
     var goBtn = document.getElementById("albumLeaveGo");
+    var asideBtn = document.getElementById("albumLeaveAside");
     if (stayBtn) stayBtn.addEventListener("click", closeAlbumLeave);
+    if (asideBtn) {
+      asideBtn.addEventListener("click", function () {
+        var link = leaveLink;
+        shareAside = true;
+        closeAlbumLeave();
+        setShareOpen(false, true);
+        paintUploadDock();
+        if (link) followInPage(link);
+      });
+    }
     if (goBtn) {
       goBtn.addEventListener("click", function () {
         var kind = leaveKind;
-        allowLeave = true;
-        if (activeXhr) {
-          try { activeXhr.abort(); } catch (err) {}
-        }
+        var link = leaveLink;
+        if (kind === "reload") allowLeave = true;
+        stopSharingQuiet();
         closeAlbumLeave();
+        setShareOpen(false, true);
         if (kind === "reload") window.location.reload();
+        else if (link) followInPage(link);
       });
     }
+    var dockStop = document.getElementById("albumUploadDockStop");
+    if (dockStop) dockStop.addEventListener("click", stopSharingQuiet);
 
     grid.addEventListener("change", function (event) {
       var box = event.target.closest("[data-pick]");
@@ -1317,9 +1421,12 @@
 
     var shareLayer = document.getElementById("albumShare");
 
-    function setShareOpen(open) {
+    function setShareOpen(open, force) {
       if (!shareLayer) return;
-      if (!open && uploading) return;
+      if (!open && uploading && !force && !shareAside) {
+        openAlbumLeave("close");
+        return;
+      }
       shareLayer.hidden = !open;
       shareLayer.classList.toggle("is-on", !!open);
       document.body.style.overflow = open ? "hidden" : "";
@@ -1340,8 +1447,20 @@
     }
     document.addEventListener("keydown", function (event) {
       if (event.key !== "Escape" || !shareLayer || shareLayer.hidden) return;
+      if (leaveLayer && !leaveLayer.hidden) {
+        closeAlbumLeave();
+        return;
+      }
       setShareOpen(false);
     });
+    document.addEventListener("click", function (event) {
+      if (!uploading || shareAside || allowLeave) return;
+      var link = event.target && event.target.closest && event.target.closest("#nav a[href]");
+      if (!link) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openAlbumLeave("nav", link);
+    }, true);
 
     var albumHome = document.getElementById("album");
     document.addEventListener("click", function (event) {

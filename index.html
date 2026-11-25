@@ -1912,37 +1912,53 @@
     .album-toolbar[hidden] { display: none; }
 
     .album-download-panel {
-      max-width: 26rem;
-      margin: 0.85rem auto 0;
+      max-width: 18rem;
+      margin: 0.75rem auto 0;
       text-align: center;
     }
 
     .album-download-panel[hidden] { display: none !important; }
 
-    .album-download-panel p {
-      margin: 0;
-      color: #3d3428;
-      font-size: 0.92rem;
-    }
-
     .album-download-track {
-      height: 0.45rem;
-      margin: 0.55rem 0 0.7rem;
+      position: relative;
+      height: 2.75rem;
+      margin: 0 0 0.65rem;
       overflow: hidden;
       border-radius: 999px;
-      background: rgba(13, 43, 69, 0.12);
+      background: rgba(13, 43, 69, 0.1);
+      box-shadow: inset 0 1px 2px rgba(13, 43, 69, 0.08);
     }
 
     .album-download-fill {
+      position: absolute;
       display: block;
-      height: 100%;
+      top: 0;
+      bottom: 0;
+      left: 0;
       width: 0%;
-      background: var(--deep);
+      border-radius: inherit;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 42%, rgba(13, 43, 69, 0.12)),
+        linear-gradient(90deg, #9ec9c1, #3d7f86);
     }
 
     .album-download-panel.is-wait .album-download-fill {
-      width: 38%;
-      animation: albumSaveSlide 1s ease-in-out infinite;
+      width: 42%;
+      animation: albumSaveSlide 1.15s ease-in-out infinite;
+    }
+
+    .album-download-label {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      height: 100%;
+      color: var(--deep);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      pointer-events: none;
     }
 
     .album-download-panel.is-front {
@@ -2256,6 +2272,10 @@
     }
 
     .album-leave.is-on { display: grid; }
+    #albumLeave { z-index: 760; }
+
+    .album-leave-actions.is-stack { flex-direction: column; }
+    .album-leave-actions button[hidden] { display: none; }
 
     .album-leave-card {
       width: min(24rem, 100%);
@@ -2308,6 +2328,65 @@
       color: var(--deep);
       border: 1px solid rgba(13, 43, 69, 0.28);
     }
+
+    .album-upload-dock {
+      position: fixed;
+      left: 50%;
+      bottom: 1.1rem;
+      z-index: 640;
+      width: min(22rem, calc(100% - 1.5rem));
+      margin: 0;
+      padding: 0.75rem 0.85rem 0.85rem;
+      transform: translateX(-50%);
+      background: #fffdf8;
+      border-radius: 1rem;
+      box-shadow: 0 16px 40px rgba(13, 43, 69, 0.24);
+      text-align: center;
+    }
+
+    .album-upload-dock[hidden] { display: none !important; }
+
+    .album-upload-dock p {
+      margin: 0 0 0.45rem;
+      color: #3d3428;
+      font-size: 0.82rem;
+    }
+
+    .album-upload-track {
+      position: relative;
+      height: 2.35rem;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(13, 43, 69, 0.1);
+    }
+
+    .album-upload-fill {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      display: block;
+      width: 0%;
+      border-radius: inherit;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 42%, rgba(13, 43, 69, 0.12)),
+        linear-gradient(90deg, #9ec9c1, #3d7f86);
+    }
+
+    .album-upload-label {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      height: 100%;
+      color: var(--deep);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .album-upload-dock .album-tool { margin-top: 0.6rem; }
 
     .album-viewer {
       position: fixed;
@@ -5011,9 +5090,9 @@
         <button type="button" class="album-tool is-primary" id="guestAlbumDownloadAll">Download all</button>
       </div>
       <div class="album-download-panel" id="albumDownloadPanel" hidden>
-        <p id="albumDownloadLabel">Preparing the download…</p>
-        <div class="album-download-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="albumDownloadTrack">
-          <span id="albumDownloadFill"></span>
+        <div class="album-download-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="Preparing the download" id="albumDownloadTrack">
+          <span class="album-download-fill" id="albumDownloadFill"></span>
+          <span class="album-download-label" id="albumDownloadLabel">Preparing…</span>
         </div>
         <button type="button" class="album-tool" id="albumDownloadCancel">Cancel</button>
       </div>
@@ -5051,13 +5130,22 @@
   </div>
   <div class="album-leave" id="albumLeave" role="dialog" aria-modal="true" aria-labelledby="albumLeaveTitle" hidden>
     <div class="album-leave-card">
-      <h2 id="albumLeaveTitle">Leave this page?</h2>
-      <p id="albumLeaveText">Sharing is still in progress. Stay to let it finish, or leave and stop it.</p>
-      <div class="album-leave-actions">
-        <button type="button" class="stay" id="albumLeaveStay">Stay</button>
-        <button type="button" class="leave" id="albumLeaveGo">Leave</button>
+      <h2 id="albumLeaveTitle">Sharing is still going</h2>
+      <p id="albumLeaveText">You can keep this upload going while you look around the site. A progress note will stay on the screen. Stopping will lose what has not finished.</p>
+      <div class="album-leave-actions is-stack">
+        <button type="button" class="stay" id="albumLeaveAside">Keep sharing</button>
+        <button type="button" class="leave" id="albumLeaveStay">Stay here</button>
+        <button type="button" class="leave" id="albumLeaveGo">Stop sharing</button>
       </div>
     </div>
+  </div>
+  <div class="album-upload-dock" id="albumUploadDock" hidden>
+    <p>Your photo is still sharing. You can keep looking around.</p>
+    <div class="album-upload-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="albumUploadTrack">
+      <span class="album-upload-fill" id="albumUploadFill"></span>
+      <span class="album-upload-label" id="albumUploadLabel">Sharing…</span>
+    </div>
+    <button type="button" class="album-tool" id="albumUploadDockStop">Stop sharing</button>
   </div>
   <div class="lightbox album-reel" id="guestAlbumViewer" role="dialog" aria-modal="true" aria-label="Guest album reel" hidden>
     <button type="button" class="lightbox-close" id="guestAlbumViewerClose" aria-label="Close">&times;</button>
@@ -7704,6 +7792,6 @@
     })();
   </script>
   <script src="/js/prepare-upload.js?v=2"></script>
-  <script src="/js/guest-album.js?v=29"></script>
+  <script src="/js/guest-album.js?v=32"></script>
 </body>
 </html>
