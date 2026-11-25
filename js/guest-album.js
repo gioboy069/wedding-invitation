@@ -459,6 +459,72 @@
     applyAlbumZoom(false);
   }
 
+  function hideAlbumStill(img) {
+    if (!img) return;
+    img.hidden = true;
+    img.alt = "";
+    img.removeAttribute("src");
+  }
+
+  function showAlbumStill(img) {
+    if (!img) return;
+    img.hidden = false;
+  }
+
+  function formatReelTime(seconds) {
+    var value = Math.max(0, Math.floor(Number(seconds) || 0));
+    var minutes = Math.floor(value / 60);
+    var remain = value % 60;
+    return minutes + ":" + (remain < 10 ? "0" : "") + remain;
+  }
+
+  function paintAlbumProgress(video) {
+    var bar = document.getElementById("albumReelBar");
+    var fill = document.getElementById("albumReelFill");
+    var time = document.getElementById("albumReelTime");
+    var duration = video && isFinite(video.duration) ? video.duration : 0;
+    var ratio = duration > 0 ? Math.max(0, Math.min(1, video.currentTime / duration)) : 0;
+    var percent = (ratio * 100) + "%";
+    if (bar) {
+      bar.style.setProperty("--reel-progress", percent);
+      bar.setAttribute("aria-valuenow", String(Math.round(ratio * 100)));
+      bar.setAttribute("aria-valuetext", formatReelTime(video ? video.currentTime : 0) + " of " + formatReelTime(duration));
+    }
+    if (fill) fill.style.width = percent;
+    if (time) time.textContent = formatReelTime(video ? video.currentTime : 0) + " / " + formatReelTime(duration);
+  }
+
+  function setAlbumVideoMode(on) {
+    var bar = document.getElementById("albumReelBar");
+    var hint = document.querySelector("#guestAlbumViewer .lightbox-swipe-hint");
+    if (bar) {
+      bar.classList.toggle("is-off", !on);
+      bar.setAttribute("aria-hidden", on ? "false" : "true");
+      bar.tabIndex = on ? 0 : -1;
+    }
+    if (hint) {
+      hint.textContent = on
+        ? "Drag the line to move through the video · swipe for the next"
+        : "Swipe for the next · double-tap to zoom";
+    }
+  }
+
+  function seekAlbumVideo(clientX) {
+    var bar = document.getElementById("albumReelBar");
+    var video = document.getElementById("guestAlbumViewerVideo");
+    if (!bar || !video || video.hidden) return;
+    if (!isFinite(video.duration) || video.duration <= 0) return;
+    var rect = bar.getBoundingClientRect();
+    if (!rect.width) return;
+    var ratio = (clientX - rect.left) / rect.width;
+    ratio = Math.max(0, Math.min(1, ratio));
+    var next = ratio * video.duration;
+    if (Math.abs(video.currentTime - next) > 0.05) {
+      try { video.currentTime = next; } catch (err) {}
+    }
+    paintAlbumProgress(video);
+  }
+
   function syncAlbumPause() {
     var video = document.getElementById("guestAlbumViewerVideo");
     var button = document.getElementById("albumReelPause");
@@ -515,10 +581,8 @@
       video.removeAttribute("poster");
       video.hidden = true;
     }
-    if (img) {
-      img.removeAttribute("src");
-      img.hidden = true;
-    }
+    hideAlbumStill(img);
+    setAlbumVideoMode(false);
     hideAlbumViewerNow(viewer);
     document.body.style.overflow = "";
     document.documentElement.style.overflow = "";
@@ -568,22 +632,22 @@
     viewerId = post.id;
     resetAlbumZoom();
     if (post.type === "video") {
-      img.hidden = true;
-      img.removeAttribute("src");
+      hideAlbumStill(img);
       video.hidden = false;
-      video.poster = previewSrc(post.src, 1200);
+      video.removeAttribute("poster");
       video.preload = "auto";
       video.src = post.src;
       var start = video.play();
       if (start && start.catch) start.catch(function () {});
-      if (bar) bar.classList.remove("is-off");
-      if (fill) fill.style.width = "0%";
+      setAlbumVideoMode(true);
+      paintAlbumProgress(video);
     } else {
       try { video.pause(); } catch (err) {}
       video.removeAttribute("src");
       video.removeAttribute("poster");
       video.hidden = true;
-      img.hidden = false;
+      showAlbumStill(img);
+      setAlbumVideoMode(false);
       var full = post.src;
       var preview = reelPhotoSrc(post);
       warmReelWindow(reelIndex);
@@ -602,7 +666,7 @@
           else if (loader) loader.addEventListener("load", applyFull, { once: true });
         }
       }
-      if (bar) bar.classList.add("is-off");
+      if (bar) bar.style.setProperty("--reel-progress", "0%");
       if (fill) fill.style.width = "0%";
     }
     if (caption) caption.textContent = post.caption || "";
@@ -1036,18 +1100,53 @@
       else setAlbumZoom(2.4);
     });
     if (reelVideo) {
-      reelVideo.addEventListener("timeupdate", function () {
-        var fill = document.getElementById("albumReelFill");
-        if (!fill || !isFinite(reelVideo.duration) || reelVideo.duration <= 0) return;
-        fill.style.width = Math.min(100, (reelVideo.currentTime / reelVideo.duration) * 100) + "%";
-      });
+      reelVideo.addEventListener("timeupdate", function () { paintAlbumProgress(reelVideo); });
+      reelVideo.addEventListener("loadedmetadata", function () { paintAlbumProgress(reelVideo); });
+      reelVideo.addEventListener("seeked", function () { paintAlbumProgress(reelVideo); });
+      var scrub = document.getElementById("albumReelBar");
+      if (scrub) {
+        var scrubbing = false;
+        scrub.addEventListener("pointerdown", function (event) {
+          if (reelVideo.hidden || (event.button != null && event.button !== 0)) return;
+          event.preventDefault();
+          event.stopPropagation();
+          scrubbing = true;
+          if (scrub.setPointerCapture) scrub.setPointerCapture(event.pointerId);
+          seekAlbumVideo(event.clientX);
+        });
+        scrub.addEventListener("pointermove", function (event) {
+          if (!scrubbing) return;
+          event.preventDefault();
+          seekAlbumVideo(event.clientX);
+        });
+        function endScrub(event) {
+          if (!scrubbing) return;
+          scrubbing = false;
+          if (event) seekAlbumVideo(event.clientX);
+        }
+        scrub.addEventListener("pointerup", endScrub);
+        scrub.addEventListener("pointercancel", function () { scrubbing = false; });
+        scrub.addEventListener("keydown", function (event) {
+          if (reelVideo.hidden || !isFinite(reelVideo.duration) || reelVideo.duration <= 0) return;
+          var step = event.shiftKey ? 10 : 5;
+          var next = null;
+          if (event.key === "ArrowRight") next = Math.min(reelVideo.duration, reelVideo.currentTime + step);
+          else if (event.key === "ArrowLeft") next = Math.max(0, reelVideo.currentTime - step);
+          else if (event.key === "Home") next = 0;
+          else if (event.key === "End") next = reelVideo.duration;
+          if (next == null) return;
+          event.preventDefault();
+          try { reelVideo.currentTime = next; } catch (err) {}
+          paintAlbumProgress(reelVideo);
+        });
+      }
       reelVideo.addEventListener("play", syncAlbumPause);
       reelVideo.addEventListener("pause", syncAlbumPause);
       reelVideo.addEventListener("ended", syncAlbumPause);
     }
     if (viewer) {
       function reelControl(target) {
-        return !!(target && target.closest && target.closest(".lightbox-close, .lightbox-prev, .lightbox-next, .reel-tools, .album-reel-save"));
+        return !!(target && target.closest && target.closest(".lightbox-close, .lightbox-prev, .lightbox-next, .reel-tools, .album-reel-save, .reel-bar"));
       }
       function onReelMedia(target) {
         return !!(target && target.closest && target.closest("#albumReelStage, #guestAlbumViewerImg, #guestAlbumViewerVideo"));

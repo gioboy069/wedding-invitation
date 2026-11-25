@@ -83,6 +83,11 @@
       display: block;
     }
 
+    img[hidden],
+    video[hidden] {
+      display: none !important;
+    }
+
     a {
       color: inherit;
       text-decoration: none;
@@ -2185,7 +2190,69 @@
       opacity: 0 !important;
       pointer-events: none !important;
     }
-    .album-reel .reel-bar.is-off { visibility: hidden; }
+    .album-reel .reel-bar {
+      pointer-events: auto;
+      height: 2.4rem;
+      background: transparent;
+      box-shadow: none;
+      overflow: visible;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .album-reel .reel-bar.is-off {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .album-reel .reel-bar::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 4px;
+      transform: translateY(-50%);
+      border-radius: 99px;
+      background: rgba(13, 43, 69, 0.45);
+      box-shadow: 0 0 0 1px rgba(247, 245, 241, 0.38);
+    }
+
+    .album-reel .reel-bar i {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      height: 4px;
+      width: var(--reel-progress, 0%);
+      transform: translateY(-50%);
+      border-radius: 99px;
+      max-width: 100%;
+    }
+
+    .album-reel .reel-bar::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: var(--reel-progress, 0%);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #f7f5f1;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+      transform: translate(-50%, -50%);
+    }
+
+    .album-reel .reel-time {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% - 0.2rem);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      color: rgba(247, 245, 241, 0.9);
+      pointer-events: none;
+      white-space: nowrap;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+    }
     .album-reel-save {
       position: absolute;
       top: calc(1.25rem + 52px + 0.7rem);
@@ -4733,7 +4800,7 @@
         <img id="guestAlbumViewerImg" alt="" hidden draggable="false" />
         <video id="guestAlbumViewerVideo" playsinline preload="metadata" hidden></video>
       </div>
-      <div class="reel-bar is-off" id="albumReelBar" aria-hidden="true"><i id="albumReelFill"></i></div>
+      <div class="reel-bar is-off" id="albumReelBar" role="slider" aria-label="Video position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-hidden="true" tabindex="-1"><i id="albumReelFill"></i><span class="reel-time" id="albumReelTime">0:00 / 0:00</span></div>
     </div>
     <button type="button" class="lightbox-next" id="guestAlbumNext" aria-label="Next">&#8594;</button>
     <div class="reel-tools">
@@ -7367,6 +7434,6 @@
     })();
   </script>
   <script src="/js/prepare-upload.js?v=2"></script>
-  <script src="/js/guest-album.js?v=23"></script>
+  <script src="/js/guest-album.js?v=24"></script>
 </body>
 </html>
