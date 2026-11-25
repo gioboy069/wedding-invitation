@@ -29,6 +29,7 @@ if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
 
 const sessions = new Map();
 const SESSIONS_FILE = "sessions.json";
+const BACKUP_FILES = ["content.json", "gallery.json", "guests.json", "rsvps.json", "guest-album.json"];
 
 function loadSessions() {
   try {
@@ -178,8 +179,6 @@ function readJson(name, fallback) {
   }
   return JSON.parse(readFileSync(path, "utf8"));
 }
-
-const BACKUP_FILES = ["content.json", "gallery.json", "guests.json", "rsvps.json", "guest-album.json"];
 
 function writeJson(name, data) {
   writeFileSync(join(DATA_DIR, name), JSON.stringify(data, null, 2));
