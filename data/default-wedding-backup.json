@@ -1,0 +1,343 @@
+{
+  "kind": "augiela-gio-wedding-backup",
+  "version": 1,
+  "savedAt": "2026-11-25T14:58:02.579Z",
+  "content": {
+    "bride": "Augiela Shane",
+    "groom": "Gio Anthony",
+    "weddingDate": "2027-02-18T05:00:00.000Z",
+    "weddingDateDisplay": "February 18, 2027",
+    "location": "San Luis, Tarlac City",
+    "heroPre": "Together with their families",
+    "heroPhoto": "img/couple/where-love-felt-easy.webp",
+    "heroPhotoAlt": "Gio Anthony and Augiela Shane",
+    "inviteGreeting": "Dear friends and family!",
+    "inviteBody": "With joyful hearts we invite you to celebrate the wedding of Gio Anthony and Augiela Shane. Come share in the vows, the dinner, and the dancing as we begin our life together.",
+    "ceremonyPhoto": "img/venues/church.jpg",
+    "venuePhoto": "img/venues/venue.jpg",
+    "venueName": "Uma Private Villa",
+    "venueTime": "Thursday · February 18, 2027 · 4:00 PM",
+    "venueAddress": "Blk. 5, Tarlac City, Tarlac, Philippines",
+    "venueMapUrl": "https://www.google.com/maps/place/Uma+Private+Villa/@15.4676217,120.5726434,17z/data=!4m6!3m5!1s0x3396c7604ca8952d:0x64040cd1b821995f!8m2!3d15.4676217!4d120.5726434!16s%2Fg%2F11j48dnb9p",
+    "rsvpDeadline": "January 1, 2027",
+    "storyTitle": "A Love Written in Time",
+    "storySubtitle": "Every great love story has a beginning. Ours started with a chance encounter and grew into something extraordinary.",
+    "timeline": [
+      {
+        "year": "2018",
+        "heading": "First Glance",
+        "text": "A rainy afternoon at a bookstore in San Francisco. Gio asked for directions; Augiela handed him the map. They talked for hours.",
+        "photo": "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=500&q=80",
+        "photoAlt": "2018 — First Glance"
+      },
+      {
+        "year": "2020",
+        "heading": "Building a Life",
+        "text": "Through quiet mornings and long adventures, they discovered that home wasn't a place — it was each other.",
+        "photo": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500&q=80",
+        "photoAlt": "2020 — Building a Life"
+      },
+      {
+        "year": "2024",
+        "heading": "The Proposal",
+        "text": "At sunset on the cliffs of Big Sur, Gio got down on one knee. Augiela said yes before he could finish the question.",
+        "photo": "https://images.unsplash.com/photo-1529636798458-92182e662485?w=500&q=80",
+        "photoAlt": "2024 — The Proposal"
+      },
+      {
+        "year": "2027",
+        "heading": "Forever Begins",
+        "text": "Surrounded by the people we love most, we begin the next chapter of our story — and we want you there.",
+        "photo": "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&q=80",
+        "photoAlt": "2027 — Forever Begins"
+      }
+    ],
+    "venues": [
+      {
+        "name": "Parroquia del Espiritu Santo",
+        "time": "Thursday · February 18, 2027 · 1:00 PM",
+        "address": "San Luis, Tarlac City",
+        "mapUrl": "https://www.google.com/maps/place/Parroquia+del+Espiritu+Santo+-+San+Luis,+Tarlac/@15.4728101,120.5712987,17z/data=!4m6!3m5!1s0x3396c7fda12268c7:0x296e3f479fc9c693!8m2!3d15.4728101!4d120.5712987!16s%2Fg%2F11r8zlfj5v",
+        "photo": "img/venues/church.jpg"
+      },
+      {
+        "name": "Uma Private Villa",
+        "time": "Thursday · February 18, 2027 · 4:00 PM",
+        "address": "Blk. 5, Tarlac City, Tarlac, Philippines",
+        "mapUrl": "https://www.google.com/maps/place/Uma+Private+Villa/@15.4676217,120.5726434,17z/data=!4m6!3m5!1s0x3396c7604ca8952d:0x64040cd1b821995f!8m2!3d15.4676217!4d120.5726434!16s%2Fg%2F11j48dnb9p",
+        "photo": "img/venues/venue.jpg"
+      },
+      {
+        "name": "Brunch",
+        "time": "Sunday · 11:00 AM",
+        "address": "Vineyard Terrace\n180 Rutherford Hill Road\nRutherford, CA 94573",
+        "mapUrl": "https://maps.google.com/?q=Vineyard+Terrace+Napa+Valley"
+      }
+    ],
+    "attireSummary": "We've curated a detailed attire guide with principal sponsor looks and guest dress code inspiration — all in our coastal ocean palette.",
+    "attirePhotos": {
+      "teaser": {
+        "photo": "img/attire/wedding-attire-guide.jpg",
+        "photoAlt": "Wedding attire guide: mothers, bridesmaids, maid of honor, flower maidens, bride and groom, groomsmen, attendants, parents, and principal sponsors"
+      },
+      "sponsors": {
+        "photo": "img/attire/principal-sponsors-attire.jpg",
+        "photoAlt": "Principal sponsors attire: Ninang in Filipiniana with butterfly sleeves and Ninong in beige barong with black trousers"
+      },
+      "guest": {
+        "photo": "img/attire/guest-wedding-attire.jpg",
+        "photoAlt": "Guest wedding attire: cocktail and smart-formal looks in peach, sage, taupe, dusty blue, olive, and slate"
+      }
+    },
+    "entourageTitle": "Our Entourage",
+    "entourageSubtitle": "With grateful hearts, we honor the family and friends who walk beside us.",
+    "principalSponsorsTitle": "Principal Sponsors",
+    "ninongs": [
+      {
+        "name": "Mr. Roberto Santos",
+        "photo": ""
+      },
+      {
+        "name": "Mr. Miguel Reyes",
+        "photo": ""
+      }
+    ],
+    "ninangs": [
+      {
+        "name": "Mrs. Elena Cruz",
+        "photo": ""
+      },
+      {
+        "name": "Mrs. Patricia Lim",
+        "photo": ""
+      }
+    ],
+    "entourageGroups": [
+      {
+        "role": "Parents of the Groom",
+        "names": "Mr. & Mrs. Gomez"
+      },
+      {
+        "role": "Parents of the Bride",
+        "names": "Mr. & Mrs. Santos"
+      },
+      {
+        "role": "Best Man",
+        "names": "Carlo Mendoza"
+      },
+      {
+        "role": "Maid of Honor",
+        "names": "Isabelle Santos"
+      },
+      {
+        "role": "Secondary Sponsors",
+        "names": "Candle · Veil · Cord"
+      },
+      {
+        "role": "Bearer & Flower Girls",
+        "names": "Lucas · Sofia · Amara"
+      }
+    ],
+    "footerQuote": "\"And now these three remain: faith, hope, and love. But the greatest of these is love.\"",
+    "weddingDayTitle": "The celebration unfolds",
+    "weddingDaySubtitle": "",
+    "weddingDayTimeline": [
+      {
+        "time": "12:30 pm",
+        "title": "Ceremony doors open",
+        "text": "",
+        "icon": "bird"
+      },
+      {
+        "time": "1:00 pm",
+        "title": "Wedding Ceremony",
+        "text": "",
+        "icon": "rings"
+      },
+      {
+        "time": "2:15 pm",
+        "title": "Refreshments & mingling",
+        "text": "",
+        "icon": "refreshments"
+      },
+      {
+        "time": "4:00 pm",
+        "title": "Reception doors open",
+        "text": "",
+        "icon": "doors"
+      },
+      {
+        "time": "4:30 pm",
+        "title": "Welcome guests!",
+        "text": "",
+        "icon": "microphone"
+      },
+      {
+        "time": "4:45 pm",
+        "title": "Welcome Family!",
+        "text": "",
+        "icon": "microphone"
+      },
+      {
+        "time": "5:00 pm",
+        "title": "Mr. & Mrs. arrive",
+        "text": "",
+        "icon": "couple"
+      },
+      {
+        "time": "5:30 pm",
+        "title": "Dinner begins",
+        "text": "",
+        "icon": "dinner"
+      },
+      {
+        "time": "7:00 pm",
+        "title": "Toasts & speeches",
+        "text": "",
+        "icon": "toasts"
+      },
+      {
+        "time": "7:45 pm",
+        "title": "Cake cutting",
+        "text": "",
+        "icon": "cake"
+      },
+      {
+        "time": "8:00 pm",
+        "title": "First Dance",
+        "text": "",
+        "icon": "dance"
+      },
+      {
+        "time": "8:15 pm",
+        "title": "Dancing Music",
+        "text": "",
+        "icon": "music"
+      },
+      {
+        "time": "10:00 pm",
+        "title": "Farewell Mr. & Mrs.",
+        "text": "",
+        "icon": "car"
+      },
+      {
+        "time": "11:30 pm",
+        "title": "Good Night!",
+        "text": "",
+        "icon": "moon"
+      }
+    ],
+    "fontSerif": "Cormorant Garamond",
+    "fontScript": "Allura",
+    "fontSans": "Source Sans 3",
+    "calendarSpinMode": "tick",
+    "calendarSpinSeconds": 60,
+    "envelopeAnimSpeed": 1,
+    "envelopeFontScript": "",
+    "envelopeFontSans": "",
+    "envelopeColorMode": "solid",
+    "envelopeColor": "#93c4bc",
+    "envelopeColorAlt": "#6ba7a0",
+    "envelopeInk": "#2c5853",
+    "envelopeImage": "",
+    "textFontSizes": {}
+  },
+  "gallery": [
+    {
+      "id": "g1",
+      "src": "img/couple/where-love-felt-easy.webp",
+      "caption": "Where love felt easy",
+      "alt": "Gio Anthony and Augiela Shane"
+    },
+    {
+      "id": "g2",
+      "src": "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1200&q=80",
+      "caption": "Where the land meets the sea",
+      "alt": "Couple walking along the coastline"
+    },
+    {
+      "id": "g3",
+      "src": "https://images.unsplash.com/photo-1469371670803-013ccf25f16a?w=1200&q=80",
+      "caption": "Pure joy, unscripted",
+      "alt": "Couple laughing together outdoors"
+    },
+    {
+      "id": "g4",
+      "src": "https://images.unsplash.com/photo-1606216794074-735e91aa2cfc?w=1200&q=80",
+      "caption": "Among the vines",
+      "alt": "Engagement portrait among grapevines"
+    },
+    {
+      "id": "g5",
+      "src": "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=1200&q=80",
+      "caption": "The glow of forever",
+      "alt": "Romantic couple portrait at sunset"
+    },
+    {
+      "id": "g6",
+      "src": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&q=80",
+      "caption": "Dancing in the light",
+      "alt": "Couple dancing in soft light"
+    },
+    {
+      "id": "g7",
+      "src": "https://images.unsplash.com/photo-1529636798458-92182e662485?w=1200&q=80",
+      "caption": "Hands intertwined",
+      "alt": "Close-up of couple holding hands"
+    },
+    {
+      "id": "g8",
+      "src": "https://images.unsplash.com/photo-1460978812857-470ed1c77af0?w=1200&q=80",
+      "caption": "Quiet morning light",
+      "alt": "Couple in soft morning light"
+    },
+    {
+      "id": "g9",
+      "src": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&q=80",
+      "caption": "Garden path",
+      "alt": "Couple walking a garden path"
+    },
+    {
+      "id": "g10",
+      "src": "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=1200&q=80",
+      "caption": "Forehead to forehead",
+      "alt": "Intimate couple portrait"
+    },
+    {
+      "id": "g11",
+      "src": "https://images.unsplash.com/photo-1537633552985-df8429e804cb?w=1200&q=80",
+      "caption": "Under the canopy",
+      "alt": "Couple beneath leafy trees"
+    },
+    {
+      "id": "g12",
+      "src": "https://images.unsplash.com/photo-1591604466107-ec95d7c0d4b2?w=1200&q=80",
+      "caption": "Twilight embrace",
+      "alt": "Couple embracing at twilight"
+    }
+  ],
+  "guests": [
+    {
+      "id": "guest-1787618654151-874a78",
+      "name": "Lee, Jordan",
+      "firstName": "Jordan",
+      "surname": "Lee",
+      "allocation": 3,
+      "category": "Friend",
+      "tableNumber": "2"
+    },
+    {
+      "id": "guest-1787618657187-78e851",
+      "name": "Rivera, Alex",
+      "firstName": "Alex",
+      "surname": "Rivera",
+      "allocation": 2,
+      "category": "Family",
+      "tableNumber": "4"
+    }
+  ],
+  "rsvps": [],
+  "guestAlbum": {
+    "posts": []
+  }
+}

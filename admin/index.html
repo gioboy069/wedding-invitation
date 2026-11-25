@@ -550,6 +550,39 @@
       font-weight: 500;
     }
 
+    .album-admin-view {
+      margin: 0.45rem 0.7rem 0.7rem;
+    }
+
+    .album-preview {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      padding: 4.5rem 1rem 2rem;
+      background: rgba(13, 43, 69, 0.94);
+    }
+
+    .album-preview[hidden] { display: none !important; }
+
+    .album-preview img,
+    .album-preview video {
+      max-width: min(960px, 92vw);
+      max-height: 74vh;
+      background: #0a1f30;
+    }
+
+    .album-preview p {
+      margin: 0;
+      max-width: 36rem;
+      text-align: center;
+      color: rgba(247, 245, 241, 0.9);
+    }
+
     .album-admin-card .meta p {
       margin: 0.2rem 0 0;
       font-size: 0.75rem;
@@ -935,9 +968,21 @@
           <div class="toolbar">
             <button type="button" class="btn btn-primary" data-goto="content">Edit invitation details</button>
             <button type="button" class="btn btn-ghost" data-goto="gallery">Upload photos</button>
+            <button type="button" class="btn btn-ghost" data-goto="album">Guest album</button>
             <button type="button" class="btn btn-ghost" data-goto="guests">Manage guest list</button>
             <button type="button" class="btn btn-ghost" data-goto="rsvps">Manage RSVPs</button>
           </div>
+        </div>
+        <div class="card">
+          <h3>Backup</h3>
+          <p class="lead">Download a copy of the invitation text, gallery, guest list, RSVPs, and album list. If the site is lost, upload that file here and those pieces come back. Photos and videos stay in Google Drive. When Drive is connected, a copy is saved there whenever something changes.</p>
+          <div class="toolbar">
+            <button type="button" class="btn btn-primary" id="downloadBackup">Download backup</button>
+            <button type="button" class="btn btn-ghost" id="uploadBackupBtn">Upload backup</button>
+            <input type="file" id="uploadBackup" accept="application/json,.json" hidden />
+            <button type="button" class="btn btn-ghost" id="restoreDriveBackup">Restore from Google Drive</button>
+          </div>
+          <p class="lead" id="backupStatus" style="font-size:0.8rem;margin:0.75rem 0 0;min-height:1.2em"></p>
         </div>
       </section>
 
@@ -1251,6 +1296,7 @@
           </div>
         </div>
         <div class="toolbar">
+          <input type="search" id="guestAlbumSearch" placeholder="Search name or note…" style="max-width:240px" />
           <button type="button" class="btn btn-primary" id="downloadGuestAlbum">Download album</button>
           <button type="button" class="btn btn-ghost" id="refreshGuestAlbum">Refresh</button>
           <button type="button" class="btn btn-ghost" id="guestAlbumSelectAll">Select all</button>
@@ -1323,12 +1369,17 @@
 
         <div class="card" style="margin-bottom:1.25rem">
           <h3>Excel guest list</h3>
-          <p class="lead" style="font-size:0.85rem;margin-bottom:0.9rem">Download the list as an Excel file, update names, categories, tables, and allocations, then upload it here. Leave <strong>Guest ID</strong> as it is for people already on the list. Leave it blank to add someone new. Deleting a row in Excel does not remove them on the website.</p>
+          <p class="lead" style="font-size:0.85rem;margin-bottom:0.9rem">Download the list as an Excel file, update names, categories, tables, and allocations, then upload it here. Leave <strong>Guest ID</strong> as it is for people already on the list. Leave it blank to add someone new. People left out of the file stay on the website unless you tick the remove box.</p>
           <div class="toolbar" style="margin-bottom:0">
             <button type="button" class="btn btn-primary" id="downloadGuestsExcel">Download Excel</button>
             <button type="button" class="btn btn-ghost" id="uploadGuestsExcelBtn">Upload Excel</button>
+            <button type="button" class="btn btn-ghost" id="downloadSeating">Seating sheet</button>
             <input type="file" id="uploadGuestsExcel" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
           </div>
+          <label class="lead" style="display:flex;gap:0.5rem;align-items:flex-start;margin:0.85rem 0 0;font-size:0.85rem">
+            <input type="checkbox" id="guestExcelRemoveMissing" style="margin-top:0.2rem" />
+            <span>Remove guests who are not in this file. Leave this off unless the Excel file is the full list.</span>
+          </label>
           <p class="lead" id="guestExcelStatus" style="font-size:0.8rem;margin:0.75rem 0 0;min-height:1.2em"></p>
         </div>
 
@@ -1365,6 +1416,7 @@
             <option value="declined">Declined only</option>
           </select>
           <button type="button" class="btn btn-ghost" id="exportCsv">Export CSV</button>
+          <button type="button" class="btn btn-ghost" id="exportWaiting">Not yet replied</button>
           <button type="button" class="btn btn-ghost" id="refreshRsvps">Refresh</button>
         </div>
         <div style="overflow-x:auto">
@@ -1386,6 +1438,13 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <div class="album-preview" id="albumPreview" hidden>
+    <button type="button" class="btn btn-ghost" id="albumPreviewClose">Close</button>
+    <img id="albumPreviewImg" alt="" hidden />
+    <video id="albumPreviewVideo" controls playsinline hidden></video>
+    <p id="albumPreviewCaption"></p>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -2573,10 +2632,13 @@
         const file = e.target.files && e.target.files[0];
         e.target.value = "";
         if (!file) return;
+        const removeMissing = document.getElementById("guestExcelRemoveMissing")?.checked;
+        if (removeMissing && !confirm("Remove every guest who is not in this Excel file? People left out of the file will be deleted from the website.")) return;
         const status = document.getElementById("guestExcelStatus");
         status.textContent = "Uploading…";
         const body = new FormData();
         body.append("file", file);
+        if (removeMissing) body.append("removeMissing", "yes");
         try {
           const result = await api("/api/admin/guests/import", { method: "POST", body });
           guests = await api("/api/admin/guests");
@@ -2785,6 +2847,137 @@
         a.click();
       });
 
+      function downloadCsv(filename, rows) {
+        const csv = rows.map((row) => row.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+        const blob = new Blob([csv], { type: "text/csv" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+      }
+
+      document.getElementById("exportWaiting")?.addEventListener("click", () => {
+        const rows = [["Surname", "First name", "Category", "Table", "Allocation"]];
+        guests.forEach((guest) => {
+          if (findRsvpForGuest(guest)) return;
+          const person = Names.hydratePerson(guest);
+          rows.push([
+            person.surname,
+            person.firstName,
+            guest.category || "",
+            Names.formatTableLabel(guest.tableNumber) || guest.tableNumber || "",
+            String(guest.allocation || ""),
+          ]);
+        });
+        if (rows.length === 1) {
+          toast("Everyone on the guest list has replied");
+          return;
+        }
+        downloadCsv("not-yet-replied.csv", rows);
+      });
+
+      function backupNote(result) {
+        const when = result.savedAt ? " Saved " + String(result.savedAt).slice(0, 16).replace("T", " ") + "." : "";
+        return `Restored ${result.gallery} gallery item${result.gallery === 1 ? "" : "s"}, ${result.guests} guest${result.guests === 1 ? "" : "s"}, ${result.rsvps} repl${result.rsvps === 1 ? "y" : "ies"}, and ${result.moments} album moment${result.moments === 1 ? "" : "s"}.${when}`;
+      }
+
+      document.getElementById("downloadBackup")?.addEventListener("click", async () => {
+        const button = document.getElementById("downloadBackup");
+        const status = document.getElementById("backupStatus");
+        button.disabled = true;
+        if (status) status.textContent = "Preparing the backup…";
+        try {
+          const headers = {};
+          if (adminToken) {
+            headers.Authorization = "Bearer " + adminToken;
+            headers["X-Admin-Token"] = adminToken;
+          }
+          const res = await fetch("/api/admin/backup", { credentials: "include", headers });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || "The backup could not be downloaded.");
+          }
+          const blob = await res.blob();
+          const header = res.headers.get("content-disposition") || "";
+          const match = header.match(/filename="([^"]+)"/);
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = match ? match[1] : "wedding-backup.json";
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+          if (status) status.textContent = "Backup downloaded. Keep that file somewhere safe.";
+          toast("Backup downloaded");
+        } catch (ex) {
+          if (status) status.textContent = "";
+          toast(ex.message, true);
+        } finally {
+          button.disabled = false;
+        }
+      });
+
+      document.getElementById("uploadBackupBtn")?.addEventListener("click", () => {
+        document.getElementById("uploadBackup").click();
+      });
+
+      document.getElementById("uploadBackup")?.addEventListener("change", async (event) => {
+        const file = event.target.files && event.target.files[0];
+        event.target.value = "";
+        if (!file) return;
+        if (!confirm("Replace the invitation, gallery, guest list, RSVPs, and album list with this backup? Photos and videos in Google Drive stay where they are.")) return;
+        const status = document.getElementById("backupStatus");
+        if (status) status.textContent = "Restoring…";
+        const body = new FormData();
+        body.append("file", file);
+        try {
+          const result = await api("/api/admin/backup", { method: "POST", body });
+          await loadAll();
+          if (status) status.textContent = backupNote(result);
+          toast("Backup restored");
+        } catch (ex) {
+          if (status) status.textContent = "";
+          toast(ex.message, true);
+        }
+      });
+
+      document.getElementById("restoreDriveBackup")?.addEventListener("click", async () => {
+        if (!confirm("Replace the site with the backup saved in Google Drive?")) return;
+        const status = document.getElementById("backupStatus");
+        if (status) status.textContent = "Restoring from Google Drive…";
+        try {
+          const result = await api("/api/admin/backup/restore-drive", { method: "POST" });
+          await loadAll();
+          if (status) status.textContent = backupNote(result);
+          toast("Drive backup restored");
+        } catch (ex) {
+          if (status) status.textContent = "";
+          toast(ex.message, true);
+        }
+      });
+
+      document.getElementById("downloadSeating")?.addEventListener("click", () => {
+        const rows = [["Table", "Surname", "First name", "Category", "Allocation", "RSVP"]];
+        const sorted = guests.slice().sort((a, b) => {
+          const tableA = String(a.tableNumber || "zzz");
+          const tableB = String(b.tableNumber || "zzz");
+          if (tableA !== tableB) return tableA.localeCompare(tableB, undefined, { numeric: true });
+          return Names.hydratePerson(a).surname.localeCompare(Names.hydratePerson(b).surname);
+        });
+        sorted.forEach((guest) => {
+          const person = Names.hydratePerson(guest);
+          const rsvp = findRsvpForGuest(guest);
+          rows.push([
+            Names.formatTableLabel(guest.tableNumber) || guest.tableNumber || "Unassigned",
+            person.surname,
+            person.firstName,
+            guest.category || "",
+            String(guest.allocation || ""),
+            rsvp ? (rsvp.attendance === "attending" ? "Attending" : "Declined") : "Waiting",
+          ]);
+        });
+        downloadCsv("seating-sheet.csv", rows);
+      });
+
       function syncAlbumPickUi() {
         const count = albumPicked.size;
         const del = document.getElementById("guestAlbumDeleteSelected");
@@ -2796,9 +2989,18 @@
         if (all) all.textContent = guestAlbum.length && count === guestAlbum.length ? "Clear all" : "Select all";
       }
 
+      function visibleGuestAlbum() {
+        const search = (document.getElementById("guestAlbumSearch")?.value || "").trim().toLowerCase();
+        if (!search) return guestAlbum;
+        return guestAlbum.filter((post) => {
+          return [post.name, post.caption, post.type].join(" ").toLowerCase().includes(search);
+        });
+      }
+
       function renderGuestAlbumAdmin() {
         const root = document.getElementById("guestAlbumAdmin");
         if (!root) return;
+        const visible = visibleGuestAlbum();
         const alive = new Set(guestAlbum.map((post) => post.id));
         for (const id of albumPicked) {
           if (!alive.has(id)) albumPicked.delete(id);
@@ -2808,7 +3010,11 @@
           root.innerHTML = '<p class="lead">No guest photos yet.</p>';
           return;
         }
-        root.innerHTML = guestAlbum.map((post) => {
+        if (!visible.length) {
+          root.innerHTML = '<p class="lead">No photos match that search.</p>';
+          return;
+        }
+        root.innerHTML = visible.map((post) => {
           const selected = albumPicked.has(post.id);
           const film = post.type === "video" ? '<span class="album-admin-badge">Film</span>' : "";
           const note = post.caption ? `<p>${escapeHtml(post.caption)}</p>` : "";
@@ -2822,8 +3028,51 @@
               <strong>${escapeHtml(post.name || "Guest")}</strong>
               ${note}
             </div>
+            <button type="button" class="btn btn-ghost album-admin-view" data-album-view="${escapeAttr(post.id)}">View</button>
           </article>`;
         }).join("");
+      }
+
+      function openAlbumPreview(id) {
+        const post = guestAlbum.find((item) => item.id === id);
+        const preview = document.getElementById("albumPreview");
+        const img = document.getElementById("albumPreviewImg");
+        const video = document.getElementById("albumPreviewVideo");
+        const caption = document.getElementById("albumPreviewCaption");
+        if (!post || !preview || !img || !video) return;
+        const text = [post.name, post.caption].filter(Boolean).join(" — ");
+        if (caption) caption.textContent = text;
+        if (post.type === "video") {
+          img.hidden = true;
+          img.removeAttribute("src");
+          video.hidden = false;
+          video.src = post.src;
+          video.play().catch(() => {});
+        } else {
+          try { video.pause(); } catch (err) {}
+          video.removeAttribute("src");
+          video.hidden = true;
+          img.hidden = false;
+          img.src = post.src;
+          img.alt = post.caption || "Guest photo";
+        }
+        preview.hidden = false;
+      }
+
+      function closeAlbumPreview() {
+        const preview = document.getElementById("albumPreview");
+        const img = document.getElementById("albumPreviewImg");
+        const video = document.getElementById("albumPreviewVideo");
+        if (video) {
+          try { video.pause(); } catch (err) {}
+          video.removeAttribute("src");
+          video.hidden = true;
+        }
+        if (img) {
+          img.removeAttribute("src");
+          img.hidden = true;
+        }
+        if (preview) preview.hidden = true;
       }
 
       async function loadDriveStatus() {
@@ -2888,9 +3137,22 @@
       document.getElementById("refreshGuestAlbum")?.addEventListener("click", () => {
         loadGuestAlbum().catch((ex) => toast(ex.message, true));
       });
+      document.getElementById("guestAlbumSearch")?.addEventListener("input", () => renderGuestAlbumAdmin());
+      document.getElementById("albumPreviewClose")?.addEventListener("click", closeAlbumPreview);
+      document.getElementById("albumPreview")?.addEventListener("click", (event) => {
+        if (event.target.id === "albumPreview") closeAlbumPreview();
+      });
+      document.getElementById("guestAlbumAdmin")?.addEventListener("click", (event) => {
+        const view = event.target.closest("[data-album-view]");
+        if (!view) return;
+        openAlbumPreview(view.dataset.albumView);
+      });
       document.getElementById("guestAlbumSelectAll")?.addEventListener("click", () => {
-        if (guestAlbum.length && albumPicked.size === guestAlbum.length) albumPicked.clear();
-        else guestAlbum.forEach((post) => albumPicked.add(post.id));
+        const visible = visibleGuestAlbum();
+        const visibleIds = visible.map((post) => post.id);
+        const allVisible = visibleIds.length && visibleIds.every((id) => albumPicked.has(id));
+        if (allVisible) visibleIds.forEach((id) => albumPicked.delete(id));
+        else visibleIds.forEach((id) => albumPicked.add(id));
         renderGuestAlbumAdmin();
       });
       document.getElementById("guestAlbumDeleteSelected")?.addEventListener("click", async () => {
@@ -2922,32 +3184,44 @@
         if (card) card.classList.toggle("is-selected", box.checked);
         syncAlbumPickUi();
       });
-      document.getElementById("downloadGuestAlbum")?.addEventListener("click", async () => {
+      document.getElementById("downloadGuestAlbum")?.addEventListener("click", () => {
         const button = document.getElementById("downloadGuestAlbum");
+        const label = button.textContent;
         button.disabled = true;
-        try {
-          const headers = {};
-          if (adminToken) {
-            headers.Authorization = "Bearer " + adminToken;
-            headers["X-Admin-Token"] = adminToken;
+        button.textContent = "Preparing…";
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "/api/admin/guest-album/download");
+        xhr.responseType = "blob";
+        xhr.withCredentials = true;
+        if (adminToken) {
+          xhr.setRequestHeader("Authorization", "Bearer " + adminToken);
+          xhr.setRequestHeader("X-Admin-Token", adminToken);
+        }
+        xhr.onprogress = (event) => {
+          if (event.lengthComputable && event.total > 0) {
+            button.textContent = Math.round((event.loaded / event.total) * 100) + "%";
           }
-          const res = await fetch("/api/admin/guest-album/download", { credentials: "include", headers });
-          if (!res.ok) {
-            const data = await res.json().catch(() => ({}));
-            throw new Error(data.error || "Could not download the album");
+        };
+        xhr.onload = () => {
+          button.disabled = false;
+          button.textContent = label;
+          if (xhr.status < 200 || xhr.status >= 300) {
+            toast("Could not download the album", true);
+            return;
           }
-          const blob = await res.blob();
           const a = document.createElement("a");
-          a.href = URL.createObjectURL(blob);
+          a.href = URL.createObjectURL(xhr.response);
           a.download = "gio-augiela-guest-album.zip";
           a.click();
-          URL.revokeObjectURL(a.href);
+          setTimeout(() => URL.revokeObjectURL(a.href), 1500);
           toast("Album download started");
-        } catch (ex) {
-          toast(ex.message, true);
-        } finally {
+        };
+        xhr.onerror = () => {
           button.disabled = false;
-        }
+          button.textContent = label;
+          toast("Could not download the album", true);
+        };
+        xhr.send();
       });
       function escapeHtml(s) {
         return String(s)

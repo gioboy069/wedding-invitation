@@ -22,11 +22,9 @@ npm run dev
 
 ### Admin login
 
-The login page does not show the password. Sign in with the password you chose, or tap **Forgot password?** to email a reset link to `gomez.wed2027@gmail.com`. The link expires in one hour.
+The login page does not show a password. Sign in with the password you chose. **Forgot password?** emails a reset link to `gomez.wed2027@gmail.com`. The link expires in one hour. After eight wrong tries, sign-in pauses for fifteen minutes.
 
-The first-time password (until you reset it) is `gomeZ120822@`. After the first launch, change it with Forgot password rather than the environment variable.
-
-To set a different first-time password, set `ADMIN_PASSWORD` **before** the first launch (before `data/admin.json` exists):
+Set `ADMIN_PASSWORD` **before** the first launch (before `data/admin.json` exists) if you want a password of your own:
 
 ```bash
 ADMIN_PASSWORD='your-secure-password' npm run dev
@@ -47,9 +45,11 @@ Drive files stay permanent. If Render redeploys and clears `data/gallery.json`, 
 
 ## Guest album
 
-Guests post their own photos and videos from the celebration on the home **Gallery** page, under **Guest album**. Photos are prepared on the phone before they upload, then kept to a longest side of 2560 pixels as a high-quality JPEG (quality 85). A photo that is already that size is not encoded again. Videos can be up to 1 minute. Longer clips are declined before the upload starts. Videos that need it are scaled so the long side is at most 1920 pixels at the same clean setting. A file that is already small is left as it is. The old `/#album` address still opens that part of the same page. They can select one file or many at once. Each post goes into Main album, Photographer, Ceremony, or Reception, and is uploaded to the connected Google Drive account. The album shows a collage, with **View more** once there are more than nine moments. Anyone can leave a heart or a haha, and download one file, a selection, or the whole album.
+Guests post their own photos and videos from the celebration on the home **Gallery** page, under **Guest album**. There is one album. Photos are saved with a longest side of 3200 pixels as a JPEG at quality 90. A photo that is already that size and orientation is kept as uploaded. Videos can be up to 1 minute. The album is three rows that slide sideways. Sharer names are hidden on the public album and on guest downloads. Anyone can leave a heart or a haha, and download one file, a selection, or the whole album. The full-size Download button shows progress. A video shows how much is already loaded, and you can drag the line to move through it.
 
-In **Admin → Guest album**, connect Google Drive, open the album folder, or download a ZIP of the photos, films, captions, and reactions. Connecting, reconnecting, or pressing Refresh reads the files already in those Drive folders and shows them in the album.
+The public album reads Google Drive about once a minute, so photos appear even after a fresh deploy. In **Admin → Overview → Backup**, download a JSON file of the invitation text, gallery, guest list, RSVPs, and album list. Upload that file to put them back after a crash. Photos and videos stay in Google Drive. When Drive is connected, the same backup is saved in the private **Wedding records** folder whenever something changes, and **Restore from Google Drive** loads it. A starter copy of the current design also ships as `data/default-wedding-backup.json`.
+
+In **Admin → Guest album**, connect Google Drive, search, view a photo or video, select and delete, or download a ZIP. Connecting, reconnecting, or pressing Refresh reads the files already in Drive. A new share also emails `gomez.wed2027@gmail.com`.
 
 Guests can also open a short upload page at `/share`. **Admin → Guest album** shows a QR code for that page, and `/share-card` is the printable table card. On the live site the code points at `https://wedding-invitation-gomez-2027.onrender.com/share`.
 
@@ -62,7 +62,7 @@ Guests can also open a short upload page at `/share`. **Admin → Guest album** 
 5. Save the client id and client secret as the app secrets `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
 6. Open **Admin → Guest album** and choose **Connect Google Drive**. Pick the Google account, and if Google warns that the app is unverified, continue to allow access.
 
-New guest photos and films then land in a Drive folder named **Augiela & Gio — Guest album**, with a folder for each album. Until Drive is connected, guests see a message and the photo is not stored on the server.
+New guest photos and films then land in a Drive folder named **Augiela & Gio — Guest album**. Until Drive is connected, guests see a message and the photo is not stored on the server.
 
 ## Our Story photos (Google Drive)
 

@@ -142,6 +142,31 @@ async function sendAdminResetEmail(resetUrl) {
   return true;
 }
 
+async function sendGuestShareEmail(req, post) {
+  const kind = post.type === "video" ? "video" : "photo";
+  const emailRes = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(RSVP_EMAIL)}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      _subject: `Guest album: new ${kind}`,
+      _template: "box",
+      _captcha: "false",
+      name: post.name || "Guest",
+      message:
+        `${post.name || "A guest"} shared a ${kind} in the guest album.\n\n` +
+        (post.caption ? `Note: ${post.caption}\n\n` : "") +
+        `Open the album: ${publicBaseUrl(req)}/#gallery`,
+    }),
+  });
+  if (!emailRes.ok) {
+    const body = await emailRes.text();
+    throw new Error(body || "Email could not be sent");
+  }
+}
+
 loadSessions();
 ensureAdminPassword();
 
@@ -154,8 +179,86 @@ function readJson(name, fallback) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
+const BACKUP_FILES = ["content.json", "gallery.json", "guests.json", "rsvps.json", "guest-album.json"];
+
 function writeJson(name, data) {
   writeFileSync(join(DATA_DIR, name), JSON.stringify(data, null, 2));
+  if (BACKUP_FILES.includes(name)) scheduleRecordBackup();
+}
+
+let backupTimer = null;
+
+function scheduleRecordBackup() {
+  if (!driveAlbum || !driveAlbum.connected()) return;
+  clearTimeout(backupTimer);
+  backupTimer = setTimeout(() => {
+    driveAlbum.saveJsonRecord("wedding-backup.json", readBackupBundle()).catch((err) => {
+      console.error("Could not back up the wedding settings", err.detail || err.message);
+    });
+  }, 1500);
+}
+
+function readBackupBundle() {
+  return {
+    kind: "augiela-gio-wedding-backup",
+    version: 1,
+    savedAt: new Date().toISOString(),
+    content: readJson("content.json", {}),
+    gallery: readJson("gallery.json", []),
+    guests: readJson("guests.json", []),
+    rsvps: readJson("rsvps.json", []),
+    guestAlbum: readJson("guest-album.json", { posts: [] }),
+  };
+}
+
+function assertBackupBundle(bundle) {
+  if (!bundle || bundle.kind !== "augiela-gio-wedding-backup" || Number(bundle.version) !== 1) {
+    const error = new Error("That file is not a wedding backup.");
+    error.status = 400;
+    throw error;
+  }
+  if (!bundle.content || typeof bundle.content !== "object" || Array.isArray(bundle.content)) {
+    const error = new Error("The backup is missing the invitation details.");
+    error.status = 400;
+    throw error;
+  }
+  if (!Array.isArray(bundle.gallery) || !Array.isArray(bundle.guests) || !Array.isArray(bundle.rsvps)) {
+    const error = new Error("The backup is missing the gallery, guest list, or RSVPs.");
+    error.status = 400;
+    throw error;
+  }
+  const posts = bundle.guestAlbum && Array.isArray(bundle.guestAlbum.posts) ? bundle.guestAlbum.posts : null;
+  if (!posts) {
+    const error = new Error("The backup is missing the guest album list.");
+    error.status = 400;
+    throw error;
+  }
+  return {
+    content: bundle.content,
+    gallery: bundle.gallery,
+    guests: bundle.guests,
+    rsvps: bundle.rsvps,
+    guestAlbum: { posts },
+    savedAt: String(bundle.savedAt || ""),
+  };
+}
+
+function applyBackupBundle(bundle) {
+  const next = assertBackupBundle(bundle);
+  writeFileSync(join(DATA_DIR, "content.json"), JSON.stringify(next.content, null, 2));
+  writeFileSync(join(DATA_DIR, "gallery.json"), JSON.stringify(next.gallery, null, 2));
+  writeFileSync(join(DATA_DIR, "guests.json"), JSON.stringify(next.guests, null, 2));
+  writeFileSync(join(DATA_DIR, "rsvps.json"), JSON.stringify(next.rsvps, null, 2));
+  writeFileSync(join(DATA_DIR, "guest-album.json"), JSON.stringify(next.guestAlbum, null, 2));
+  scheduleRecordBackup();
+  return {
+    ok: true,
+    savedAt: next.savedAt,
+    guests: next.guests.length,
+    rsvps: next.rsvps.length,
+    gallery: next.gallery.length,
+    moments: next.guestAlbum.posts.length,
+  };
 }
 
 function createToken() {
@@ -240,6 +343,17 @@ function isAllowedGallerySrc(src) {
   if (value.startsWith("img/") || value.startsWith("/img/")) return true;
   return false;
 }
+
+const backupUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const name = String(file.originalname || "").toLowerCase();
+    const type = String(file.mimetype || "").toLowerCase();
+    if (name.endsWith(".json") || type.includes("json") || type === "text/plain" || type === "application/octet-stream") cb(null, true);
+    else cb(new Error("Please upload the backup .json file."));
+  },
+});
 
 const spreadsheetUpload = multer({
   storage: multer.memoryStorage(),
@@ -782,7 +896,7 @@ app.get("/api/admin/guests.xlsx", requireAdmin, async (_req, res) => {
     "Table is the table number they will see on the RSVP form.",
     "Allocation is how many seats that invitation includes (1–10).",
     "The RSVP column is for your reference only — uploading will not change replies.",
-    "Removing a row from Excel does not delete that guest on the website. Delete guests in Admin.",
+    "Guests left out of the file stay on the website unless you tick Remove guests who are not in this file.",
   ].forEach((line, i) => {
     help.getCell(i + 1, 1).value = line;
   });
@@ -821,9 +935,11 @@ app.post("/api/admin/guests/import", requireAdmin, (req, res) => {
       const guests = readJson("guests.json", []).map(hydratePerson);
       const seenNames = new Set();
       const seenIds = new Set();
+      const keptIds = new Set();
       let added = 0;
       let updated = 0;
       const skipped = [];
+      const removeMissing = String(req.body?.removeMissing || "") === "yes";
 
       sheet.eachRow((row, rowNumber) => {
         if (rowNumber === 1) return;
@@ -881,13 +997,14 @@ app.post("/api/admin/guests/import", requireAdmin, (req, res) => {
             category: placement.category,
             tableNumber: placement.tableNumber,
           };
+          keptIds.add(guests[idx].id);
           updated += 1;
           return;
         }
 
         if (!Number.isFinite(allocation)) allocation = 1;
         allocation = Math.min(10, Math.max(1, Math.round(allocation)));
-        guests.push({
+        const item = {
           id: `guest-${Date.now()}-${randomBytes(3).toString("hex")}-${rowNumber}`,
           name: person.name,
           firstName: person.firstName,
@@ -895,19 +1012,36 @@ app.post("/api/admin/guests/import", requireAdmin, (req, res) => {
           allocation,
           category: placement.category,
           tableNumber: placement.tableNumber,
-        });
+        };
+        guests.push(item);
+        keptIds.add(item.id);
         added += 1;
       });
 
-      sortGuestsBySurname(guests);
-      writeJson("guests.json", guests);
+      let removed = 0;
+      let nextGuests = guests;
+      if (removeMissing) {
+        if (!keptIds.size) {
+          return res.status(400).json({ error: "That file has no guests, so nobody was removed." });
+        }
+        nextGuests = guests.filter((guest) => {
+          if (keptIds.has(guest.id)) return true;
+          removed += 1;
+          return false;
+        });
+      }
+
+      sortGuestsBySurname(nextGuests);
+      writeJson("guests.json", nextGuests);
+      const removedNote = removed ? ` Removed ${removed} guest${removed === 1 ? "" : "s"} who were not in the file.` : "";
       res.json({
         ok: true,
         added,
         updated,
+        removed,
         skipped,
-        total: guests.length,
-        message: `Imported ${updated} update${updated === 1 ? "" : "s"} and ${added} new guest${added === 1 ? "" : "s"}.`,
+        total: nextGuests.length,
+        message: `Imported ${updated} update${updated === 1 ? "" : "s"} and ${added} new guest${added === 1 ? "" : "s"}.${removedNote}`,
       });
     } catch (error) {
       console.error("Guest Excel import failed:", error);
@@ -994,11 +1128,28 @@ app.delete("/api/admin/guests/:id", requireAdmin, (req, res) => {
 
 // ── Admin auth ──
 
+const loginAttempts = new Map();
+
 app.post("/api/admin/login", (req, res) => {
   const { password } = req.body || {};
+  const key = String(req.ip || "unknown");
+  const now = Date.now();
+  const attempt = loginAttempts.get(key) || { fails: 0, reset: now + 15 * 60 * 1000 };
+  if (now > attempt.reset) {
+    attempt.fails = 0;
+    attempt.reset = now + 15 * 60 * 1000;
+  }
+  if (attempt.fails >= 8) {
+    loginAttempts.set(key, attempt);
+    return res.status(429).json({ error: "Too many sign-in attempts. Wait a few minutes and try again." });
+  }
   if (!verifyPassword(password || "")) {
+    attempt.fails += 1;
+    loginAttempts.set(key, attempt);
     return res.status(401).json({ error: "Invalid password." });
   }
+  attempt.fails = 0;
+  loginAttempts.set(key, attempt);
   const token = createToken();
   sessions.set(token, Date.now());
   persistSessions();
@@ -1035,10 +1186,6 @@ app.post("/api/admin/forgot-password", async (req, res) => {
   } catch (err) {
     console.error("Admin reset email error:", err);
   }
-  if (!emailed) {
-    console.log("Admin password reset link (email delivery failed):", resetUrl);
-  }
-
   res.json({
     ok: true,
     emailed,
@@ -1752,15 +1899,14 @@ function safeGuestFile(src) {
   return full;
 }
 
-function publicGuestPost(post, tokenHash) {
+function publicGuestPost(post, tokenHash, options = {}) {
   const hearts = Array.isArray(post.hearts) ? post.hearts : [];
   const laughs = Array.isArray(post.laughs) ? post.laughs : [];
-  return {
+  const row = {
     id: post.id,
     album: post.album,
     type: post.type === "video" ? "video" : "photo",
     src: post.src,
-    name: post.name || "",
     caption: post.caption || "",
     createdAt: post.createdAt,
     heartCount: hearts.length,
@@ -1768,6 +1914,8 @@ function publicGuestPost(post, tokenHash) {
     laughCount: laughs.length,
     laughed: !!(tokenHash && laughs.includes(tokenHash)),
   };
+  if (options.includeName) row.name = post.name || "";
+  return row;
 }
 
 function guestFileExt(contentType, type) {
@@ -1793,8 +1941,9 @@ function guestFileType(ext, fallback) {
   }[ext] || fallback || "application/octet-stream";
 }
 
-function guestDownloadName(post, ext, used) {
-  const base = clipText(post.name, 40).replace(/[^\w.-]+/g, "-").replace(/^-+|-+$/g, "") || "guest";
+function guestDownloadName(post, ext, used, hideName) {
+  const raw = hideName ? (post.caption || "moment") : (post.name || "guest");
+  const base = clipText(raw, 40).replace(/[^\w.-]+/g, "-").replace(/^-+|-+$/g, "") || (hideName ? "moment" : "guest");
   let name = `${base}${ext}`;
   if (used.has(name.toLowerCase())) name = `${base}-${String(post.id).replace(/[^\w.-]+/g, "").slice(-8)}${ext}`;
   used.add(name.toLowerCase());
@@ -1836,7 +1985,15 @@ function sortedGuestPosts(posts) {
   return posts.slice().sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
 }
 
-app.get("/api/guest-album", (req, res) => {
+app.get("/api/guest-album", async (req, res) => {
+  try {
+    await Promise.race([
+      refreshGuestAlbumFromDrive(false),
+      new Promise((resolve) => setTimeout(resolve, 12000)),
+    ]);
+  } catch (err) {
+    console.error("Guest album sync failed:", err.detail || err.message);
+  }
   const album = readGuestAlbum();
   const tokenHash = readGuestToken(req);
   const posts = sortedGuestPosts(album.posts);
@@ -1890,6 +2047,7 @@ app.post("/api/guest-album", guestUpload.single("media"), async (req, res) => {
     const album = readGuestAlbum();
     album.posts.push(post);
     writeGuestAlbum(album);
+    sendGuestShareEmail(req, post).catch((err) => console.error("Guest share email failed:", err.message));
     res.status(201).json(publicGuestPost(post, readGuestToken(req)));
   } catch (err) {
     removeUpload(req.file);
@@ -1927,7 +2085,7 @@ app.get("/api/guest-album/:id/file", async (req, res) => {
   try {
     const file = await readGuestMedia(post);
     if (!file) return res.status(404).json({ error: "That file is not available to download." });
-    sendAttachment(res, file.buffer, guestDownloadName(post, file.ext, new Set()), file.contentType);
+    sendAttachment(res, file.buffer, guestDownloadName(post, file.ext, new Set(), true), file.contentType);
   } catch (err) {
     res.status(err.status || 502).json({ error: err.message || "That file could not be downloaded." });
   }
@@ -1957,7 +2115,7 @@ app.post("/api/guest-album/download", async (req, res) => {
       const folderName = GUEST_ALBUM_LABEL;
       const folder = join(dir, folderName);
       if (!existsSync(folder)) mkdirSync(folder, { recursive: true });
-      writeFileSync(join(folder, guestDownloadName(post, file.ext, used)), file.buffer);
+      writeFileSync(join(folder, guestDownloadName(post, file.ext, used, true)), file.buffer);
       saved += 1;
     }
     if (!saved) {
@@ -2062,20 +2220,32 @@ async function syncGuestAlbumFromDrive() {
   return { connected: true, added, total: mediaCount };
 }
 
-app.get("/api/admin/guest-album", requireAdmin, async (_req, res) => {
-  let drive = { connected: driveAlbum.connected(), added: 0, total: 0 };
-  if (drive.connected) {
-    try {
-      drive = await syncGuestAlbumFromDrive();
-    } catch (err) {
+let albumSyncAt = 0;
+let albumSyncing = null;
+
+async function refreshGuestAlbumFromDrive(force) {
+  if (!driveAlbum.connected()) return { connected: false, added: 0, total: 0 };
+  const now = Date.now();
+  if (!force && now - albumSyncAt < 60 * 1000) return { connected: true, added: 0, total: 0, cached: true };
+  if (albumSyncing) return albumSyncing;
+  albumSyncing = syncGuestAlbumFromDrive()
+    .catch((err) => {
       console.error("Drive album sync failed:", err.detail || err.message);
-      drive = { connected: true, added: 0, total: 0, error: "Google Drive is connected, but the album files could not be loaded. Try Refresh." };
-    }
-  }
+      return { connected: true, added: 0, total: 0, error: "Google Drive is connected, but the album files could not be loaded. Try Refresh." };
+    })
+    .finally(() => {
+      albumSyncAt = Date.now();
+      albumSyncing = null;
+    });
+  return albumSyncing;
+}
+
+app.get("/api/admin/guest-album", requireAdmin, async (_req, res) => {
+  const drive = await refreshGuestAlbumFromDrive(true);
   const album = readGuestAlbum();
   res.json({
     albums: [{ id: "main", label: GUEST_ALBUM_LABEL }],
-    posts: sortedGuestPosts(album.posts).map((post) => publicGuestPost(post, "")),
+    posts: sortedGuestPosts(album.posts).map((post) => publicGuestPost(post, "", { includeName: true })),
     drive,
   });
 });
@@ -2088,7 +2258,7 @@ app.delete("/api/admin/guest-album/:id/comments/:commentId", requireAdmin, (req,
   post.comments = (post.comments || []).filter((comment) => comment.id !== req.params.commentId);
   if (post.comments.length === before) return res.status(404).json({ error: "Comment not found" });
   writeGuestAlbum(album);
-  res.json(publicGuestPost(post, ""));
+  res.json(publicGuestPost(post, "", { includeName: true }));
 });
 
 async function removeGuestPosts(ids) {
@@ -2134,7 +2304,7 @@ app.get("/api/admin/guest-album/download", requireAdmin, async (_req, res) => {
   const dir = mkdtempSync(join(tmpdir(), "guest-album-"));
   const zipPath = join(tmpdir(), `guest-album-${Date.now()}.zip`);
   try {
-    const rows = [["Album", "Name", "Caption", "Type", "File", "Hearts", "Comments", "Posted"]];
+    const rows = [["Album", "Name", "Caption", "Type", "File", "Hearts", "Hahas", "Posted"]];
     for (const post of sortedGuestPosts(album.posts)) {
       const label = GUEST_ALBUM_LABEL;
       const folder = join(dir, label);
@@ -2160,7 +2330,6 @@ app.get("/api/admin/guest-album/download", requireAdmin, async (_req, res) => {
         fileName = basename(source);
         copyFileSync(source, join(folder, fileName));
       }
-      const comments = (post.comments || []).map((comment) => `${comment.name}: ${comment.text}`).join(" | ");
       rows.push([
         label,
         post.name || "",
@@ -2168,7 +2337,7 @@ app.get("/api/admin/guest-album/download", requireAdmin, async (_req, res) => {
         post.type || "photo",
         fileName,
         String((post.hearts || []).length),
-        comments,
+        String((post.laughs || []).length),
         post.createdAt || "",
       ]);
     }
@@ -2238,13 +2407,90 @@ app.post("/api/admin/drive/disconnect", requireAdmin, (_req, res) => {
   res.json({ ok: true });
 });
 
+app.get("/api/admin/backup", requireAdmin, (_req, res) => {
+  const bundle = readBackupBundle();
+  const stamp = String(bundle.savedAt).slice(0, 10);
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="wedding-backup-${stamp}.json"`);
+  res.send(JSON.stringify(bundle, null, 2));
+});
+
+app.post("/api/admin/backup", requireAdmin, (req, res) => {
+  backupUpload.single("file")(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message || "Please upload the backup file." });
+    if (!req.file?.buffer) return res.status(400).json({ error: "Choose the backup .json file." });
+    let bundle;
+    try {
+      bundle = JSON.parse(req.file.buffer.toString("utf8"));
+    } catch {
+      return res.status(400).json({ error: "That file could not be read as a backup." });
+    }
+    try {
+      res.json(applyBackupBundle(bundle));
+    } catch (error) {
+      res.status(error.status || 400).json({ error: error.message || "The backup could not be restored." });
+    }
+  });
+});
+
+app.post("/api/admin/backup/restore-drive", requireAdmin, async (_req, res) => {
+  if (!driveAlbum.connected()) {
+    return res.status(400).json({ error: "Connect Google Drive first, or upload a backup file." });
+  }
+  try {
+    const bundle = await driveAlbum.loadJsonRecord("wedding-backup.json");
+    if (!bundle) return res.status(404).json({ error: "There is no backup in Google Drive yet. Download one and keep it, or change the site while Drive is connected." });
+    res.json(applyBackupBundle(bundle));
+  } catch (err) {
+    console.error("Drive backup restore failed:", err.detail || err.message);
+    res.status(502).json({ error: "The Google Drive backup could not be restored." });
+  }
+});
+
 app.use((err, _req, res, _next) => {
   console.error(err);
   res.status(400).json({ error: err.message || "Request failed" });
 });
 
-app.listen(PORT, HOST, () => {
-  console.log(`Wedding invitation server running at http://${HOST}:${PORT}`);
-  console.log(`Local preview: http://127.0.0.1:${PORT}`);
-  console.log(`Admin dashboard: http://127.0.0.1:${PORT}/admin/`);
+async function restoreWeddingRecords() {
+  if (!driveAlbum.connected()) return;
+  const work = (async () => {
+    let bundle = null;
+    try {
+      bundle = await driveAlbum.loadJsonRecord("wedding-backup.json");
+    } catch (err) {
+      console.error("Could not read the Drive backup", err.detail || err.message);
+    }
+    const fromBundle = bundle && bundle.kind === "augiela-gio-wedding-backup" ? {
+      "content.json": bundle.content,
+      "gallery.json": bundle.gallery,
+      "guests.json": bundle.guests,
+      "rsvps.json": bundle.rsvps,
+      "guest-album.json": bundle.guestAlbum,
+    } : {};
+    for (const name of BACKUP_FILES) {
+      const path = join(DATA_DIR, name);
+      if (existsSync(path)) continue;
+      let data = fromBundle[name];
+      if (data == null && (name === "rsvps.json" || name === "guests.json")) {
+        try {
+          data = await driveAlbum.loadJsonRecord(name);
+        } catch (err) {
+          console.error("Could not restore", name, err.detail || err.message);
+        }
+      }
+      if (data == null) continue;
+      writeFileSync(path, JSON.stringify(data, null, 2));
+      console.log("Restored", name, "from Google Drive");
+    }
+  })();
+  await Promise.race([work, new Promise((resolve) => setTimeout(resolve, 8000))]);
+}
+
+restoreWeddingRecords().finally(() => {
+  app.listen(PORT, HOST, () => {
+    console.log(`Wedding invitation server running at http://${HOST}:${PORT}`);
+    console.log(`Local preview: http://127.0.0.1:${PORT}`);
+    console.log(`Admin dashboard: http://127.0.0.1:${PORT}/admin/`);
+  });
 });
