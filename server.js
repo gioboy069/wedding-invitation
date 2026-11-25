@@ -1315,6 +1315,24 @@ app.put("/api/admin/content", requireAdmin, (req, res) => {
   res.json({ ok: true, content });
 });
 
+function clampAlbumNumber(value, min, max, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
+
+app.put("/api/admin/album-look", requireAdmin, (req, res) => {
+  const content = readJson("content.json", {});
+  content.albumPreviewSize = Math.round(clampAlbumNumber(req.body?.albumPreviewSize, 96, 240, 168));
+  content.albumSlideSpeed = Math.round(clampAlbumNumber(req.body?.albumSlideSpeed, 0, 2, 0.55) * 100) / 100;
+  writeJson("content.json", content);
+  res.json({
+    ok: true,
+    albumPreviewSize: content.albumPreviewSize,
+    albumSlideSpeed: content.albumSlideSpeed,
+  });
+});
+
 // Generic image upload (envelope texture, etc.) — does not add to gallery
 app.post("/api/admin/upload", requireAdmin, upload.single("file"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });

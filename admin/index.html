@@ -1295,6 +1295,17 @@
             <a class="btn btn-ghost" href="/share" target="_blank" rel="noopener">Open the upload page</a>
           </div>
         </div>
+        <div class="card" style="margin-bottom:1.25rem">
+          <h3>Home preview</h3>
+          <p class="lead">Guests see this photo line before they press View more. Size is how tall each photo is. Speed is how fast the line slides. Still keeps it in place until someone swipes.</p>
+          <label for="albumPreviewSize">Photo size <strong id="albumPreviewSizeLabel">Medium</strong></label>
+          <input type="range" id="albumPreviewSize" min="96" max="240" step="4" value="168" />
+          <label for="albumSlideSpeed">Slide speed <strong id="albumSlideSpeedLabel">Gentle</strong></label>
+          <input type="range" id="albumSlideSpeed" min="0" max="2" step="0.05" value="0.55" />
+          <div class="toolbar" style="margin:0.85rem 0 0">
+            <button type="button" class="btn btn-primary" id="saveAlbumLook">Save preview</button>
+          </div>
+        </div>
         <div class="toolbar">
           <input type="search" id="guestAlbumSearch" placeholder="Search name or note…" style="max-width:240px" />
           <button type="button" class="btn btn-primary" id="downloadGuestAlbum">Download album</button>
@@ -1883,6 +1894,37 @@
         syncAppearancePreview();
         syncEnvelopeAdminUI();
         wireTextareaFontSizes();
+        paintAlbumLook();
+      }
+
+      function albumSizeWord(value) {
+        const n = Number(value);
+        if (n < 130) return "Small";
+        if (n < 180) return "Medium";
+        if (n < 220) return "Large";
+        return "Extra large";
+      }
+
+      function albumSpeedWord(value) {
+        const n = Number(value);
+        if (n <= 0) return "Still";
+        if (n < 0.35) return "Slow";
+        if (n < 0.9) return "Gentle";
+        if (n < 1.45) return "Lively";
+        return "Fast";
+      }
+
+      function paintAlbumLook() {
+        const sizeEl = document.getElementById("albumPreviewSize");
+        const speedEl = document.getElementById("albumSlideSpeed");
+        const size = Number(content.albumPreviewSize);
+        const speed = Number(content.albumSlideSpeed);
+        if (sizeEl) sizeEl.value = Number.isFinite(size) && size ? String(size) : "168";
+        if (speedEl) speedEl.value = Number.isFinite(speed) ? String(speed) : "0.55";
+        const sizeLabel = document.getElementById("albumPreviewSizeLabel");
+        const speedLabel = document.getElementById("albumSlideSpeedLabel");
+        if (sizeLabel && sizeEl) sizeLabel.textContent = albumSizeWord(sizeEl.value);
+        if (speedLabel && speedEl) speedLabel.textContent = albumSpeedWord(speedEl.value);
       }
 
       document.getElementById("weddingDateTime").addEventListener("change", syncWeddingFieldsFromPicker);
@@ -3137,6 +3179,30 @@
       document.getElementById("refreshGuestAlbum")?.addEventListener("click", () => {
         loadGuestAlbum().catch((ex) => toast(ex.message, true));
       });
+      document.getElementById("albumPreviewSize")?.addEventListener("input", paintAlbumLook);
+      document.getElementById("albumSlideSpeed")?.addEventListener("input", paintAlbumLook);
+      document.getElementById("saveAlbumLook")?.addEventListener("click", async () => {
+        const button = document.getElementById("saveAlbumLook");
+        button.disabled = true;
+        try {
+          const result = await api("/api/admin/album-look", {
+            method: "PUT",
+            body: JSON.stringify({
+              albumPreviewSize: Number(document.getElementById("albumPreviewSize").value),
+              albumSlideSpeed: Number(document.getElementById("albumSlideSpeed").value),
+            }),
+          });
+          content.albumPreviewSize = result.albumPreviewSize;
+          content.albumSlideSpeed = result.albumSlideSpeed;
+          paintAlbumLook();
+          toast("Home preview saved");
+        } catch (ex) {
+          toast(ex.message, true);
+        } finally {
+          button.disabled = false;
+        }
+      });
+
       document.getElementById("guestAlbumSearch")?.addEventListener("input", () => renderGuestAlbumAdmin());
       document.getElementById("albumPreviewClose")?.addEventListener("click", closeAlbumPreview);
       document.getElementById("albumPreview")?.addEventListener("click", (event) => {

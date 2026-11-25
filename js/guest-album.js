@@ -92,6 +92,33 @@
     img.src = src;
   }
 
+  var albumLook = { size: 168, speed: 0.55 };
+
+  function clampLook(value, min, max, fallback) {
+    var n = Number(value);
+    if (!isFinite(n)) return fallback;
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function readAlbumLook(source) {
+    return {
+      size: clampLook(source && source.albumPreviewSize, 96, 240, 168),
+      speed: clampLook(source && source.albumSlideSpeed, 0, 2, 0.55)
+    };
+  }
+
+  albumLook = readAlbumLook(window.__albumLook);
+
+  window.setAlbumLook = function (source) {
+    albumLook = readAlbumLook(source);
+    layoutAlbumLine();
+  };
+
+  function albumIsOpen() {
+    var section = document.getElementById("album");
+    return !!(section && !section.hidden);
+  }
+
   var albumLine = {
     x: 0,
     vx: 0,
@@ -132,6 +159,17 @@
     if (!strip || !grid) return;
     if (grid.classList.contains("is-empty") || !grid.querySelector(".album-tile")) {
       grid.style.transform = "";
+      grid.style.removeProperty("--album-rows");
+      return;
+    }
+    if (!albumIsOpen()) {
+      var photo = albumLook.size;
+      var tile = Math.round(photo * 0.72 + 16);
+      strip.style.setProperty("--album-fit", "none");
+      strip.style.setProperty("--album-photo", photo.toFixed(0) + "px");
+      strip.style.setProperty("--album-tile", tile.toFixed(0) + "px");
+      grid.style.setProperty("--album-rows", "1");
+      applyAlbumLine();
       return;
     }
     var view = window.visualViewport;
@@ -140,6 +178,7 @@
     var navH = Math.max(72, nav ? Math.min(96, nav.getBoundingClientRect().height || 72) : 72);
     var available = Math.max(150, viewH - navH - 80);
     var gap = 8;
+    grid.style.setProperty("--album-rows", "3");
     strip.style.setProperty("--album-fit", available.toFixed(2) + "px");
     var trial = Math.max(40, available / 4.2);
     strip.style.setProperty("--album-photo", trial.toFixed(2) + "px");
@@ -148,11 +187,11 @@
     var photoEl = sample && sample.querySelector(".album-tile-open");
     var extra = 52;
     if (sample && photoEl) extra = Math.max(24, sample.offsetHeight - photoEl.offsetHeight);
-    var photo = (available - gap * 2 - extra * 3) / 3;
-    if (photo < 28) photo = 28;
-    var tile = photo * 0.8 + 12;
-    strip.style.setProperty("--album-photo", photo.toFixed(2) + "px");
-    strip.style.setProperty("--album-tile", tile.toFixed(2) + "px");
+    var fitted = (available - gap * 2 - extra * 3) / 3;
+    if (fitted < 28) fitted = 28;
+    var fittedTile = fitted * 0.8 + 12;
+    strip.style.setProperty("--album-photo", fitted.toFixed(2) + "px");
+    strip.style.setProperty("--album-tile", fittedTile.toFixed(2) + "px");
     var tilesNow = grid.querySelectorAll(".album-tile");
     var used = 0;
     if (tilesNow.length) {
@@ -166,10 +205,10 @@
       used = maxBottom - minTop;
     }
     if (used > available - 8 && used > 0) {
-      photo = Math.max(24, photo * ((available - 8) / used));
-      tile = photo * 0.8 + 12;
-      strip.style.setProperty("--album-photo", photo.toFixed(2) + "px");
-      strip.style.setProperty("--album-tile", tile.toFixed(2) + "px");
+      fitted = Math.max(24, fitted * ((available - 8) / used));
+      fittedTile = fitted * 0.8 + 12;
+      strip.style.setProperty("--album-photo", fitted.toFixed(2) + "px");
+      strip.style.setProperty("--album-tile", fittedTile.toFixed(2) + "px");
     }
     applyAlbumLine();
   }
@@ -186,8 +225,8 @@
     } else {
       albumLine.vx = 0;
       var bounds = albumLineBounds();
-      if (bounds.min < -8 && albumLine.auto) {
-        albumLine.x += albumLine.autoDir * 0.1;
+      if (bounds.min < -8 && albumLine.auto && albumLook.speed > 0) {
+        albumLine.x += albumLine.autoDir * albumLook.speed;
         if (albumLine.x <= bounds.min) {
           albumLine.x = bounds.min;
           albumLine.autoDir = 1;
@@ -272,6 +311,12 @@
     var visible = postsForActive();
     grid.classList.toggle("is-selecting", selecting);
     grid.classList.toggle("is-empty", !visible.length);
+    var homeNote = document.getElementById("albumHomeNote");
+    if (homeNote) {
+      homeNote.textContent = visible.length
+        ? visible.length + (visible.length === 1 ? " moment" : " moments") + " from the day. Swipe the line, then open the album to share one of your own."
+        : "Photos and videos guests share from the day. Swipe the line, then open the album to share one of your own.";
+    }
     if (!visible.length) {
       grid.innerHTML = '<p class="album-empty">Nothing in the album yet. Share a photo or video from the day.</p>';
       syncDownloadBar(0);
@@ -1143,7 +1188,7 @@
         galleryMore.setAttribute("aria-expanded", open ? "true" : "false");
         galleryMore.textContent = open ? "View less" : "View more";
       }
-      if (open) requestAnimationFrame(layoutAlbumLine);
+      requestAnimationFrame(layoutAlbumLine);
     }
 
     var galleryLess = document.getElementById("galleryViewLess");
