@@ -85,6 +85,7 @@
       padding: 0.55rem 0.75rem;
     }
     .file {
+      position: relative;
       display: flex;
       align-items: center;
       min-height: 52px;
@@ -94,13 +95,23 @@
       border-radius: 0.75rem;
       color: var(--teal);
       cursor: pointer;
+      touch-action: manipulation;
     }
     .file input {
       position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0 0 0 0);
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    html.is-ios-picking,
+    html.is-ios-picking body {
+      overflow: visible !important;
+      position: static !important;
+      height: auto !important;
     }
     button {
       width: 100%;
@@ -204,6 +215,44 @@
       color: var(--deep);
       border: 1px solid rgba(13, 43, 69, 0.28);
     }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    .album-upload-bubble {
+      position: fixed;
+      z-index: 40;
+      right: max(0.7rem, env(safe-area-inset-right));
+      top: 46%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      width: 4.35rem;
+      pointer-events: none;
+    }
+    .album-upload-bubble[hidden] { display: none !important; }
+    .album-upload-ring {
+      position: relative;
+      width: 4.35rem;
+      height: 4.35rem;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: #fffdf8;
+      box-shadow: 0 10px 28px rgba(13, 43, 69, 0.22);
+      pointer-events: auto;
+    }
+    .album-upload-ring svg { display: block; width: 100%; height: 100%; transform: rotate(-90deg); }
+    .album-upload-track-ring, .album-upload-fill-ring { fill: none; stroke-width: 2.6; }
+    .album-upload-track-ring { stroke: rgba(13, 43, 69, 0.12); }
+    .album-upload-fill-ring { stroke: #3d7f86; stroke-linecap: round; stroke-dasharray: 97.39; stroke-dashoffset: 97.39; }
+    .album-upload-ring span {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--deep);
+      font-size: 0.72rem;
+      font-weight: 650;
+    }
   </style>
 </head>
 <body>
@@ -216,8 +265,8 @@
       <input id="shareName" name="name" maxlength="60" autocomplete="name" required placeholder="Maria Cruz" />
       <label for="shareCaption">Note</label>
       <input id="shareCaption" name="caption" maxlength="240" placeholder="The first dance" />
-      <label class="file" for="shareFile">
-        <input id="shareFile" name="media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" multiple required />
+      <label class="file">
+        <input id="shareFile" name="media" type="file" accept="image/*,video/mp4,video/quicktime,video/webm,.heic,.heif,.mov" multiple />
         <span id="shareFileLabel">Take or choose photos and videos</span>
       </label>
       <button type="submit" id="shareSubmit">Share</button>
@@ -244,7 +293,16 @@
     </div>
     <p class="foot"><a href="/">Back to the invitation</a></p>
   </main>
-  <script src="/js/prepare-upload.js?v=3"></script>
+  <div class="album-upload-bubble" id="shareBubble" hidden>
+    <div class="album-upload-ring" id="shareBubbleRing" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Sharing">
+      <svg viewBox="0 0 36 36" aria-hidden="true">
+        <circle class="album-upload-track-ring" cx="18" cy="18" r="15.5"></circle>
+        <circle class="album-upload-fill-ring" id="shareBubbleFill" cx="18" cy="18" r="15.5"></circle>
+      </svg>
+      <span id="shareBubbleLabel">0%</span>
+    </div>
+  </div>
+  <script src="/js/prepare-upload.js?v=5"></script>
   <script>
     (function () {
       var form = document.getElementById("shareForm");
@@ -258,13 +316,20 @@
       var guardPushed = false;
       var leaveKind = "";
       var leaveHref = "/";
+      var pickedFiles = [];
+
+      function isAppleTouch() {
+        var ua = navigator.userAgent || "";
+        if (/iPad|iPhone|iPod/.test(ua)) return true;
+        return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+      }
 
       function needsGuard() {
         if (allowLeave || thanks.classList.contains("is-on")) return false;
         if (uploading) return true;
         var name = document.getElementById("shareName").value.trim();
         var caption = document.getElementById("shareCaption").value.trim();
-        return !!(name || caption || (file.files && file.files.length));
+        return !!(name || caption || pickedFiles.length || (file.files && file.files.length));
       }
 
       function refreshStayNote() {
@@ -390,8 +455,18 @@
         return parts.join(" and ") + " selected";
       }
 
+      file.addEventListener("click", function () {
+        if (!isAppleTouch()) return;
+        document.documentElement.classList.add("is-ios-picking");
+        document.body.style.overflow = "";
+      });
       file.addEventListener("change", function () {
-        document.getElementById("shareFileLabel").textContent = selectionLabel(file.files);
+        pickedFiles = file.files ? Array.prototype.slice.call(file.files) : [];
+        document.getElementById("shareFileLabel").textContent = selectionLabel(pickedFiles);
+        document.documentElement.classList.remove("is-ios-picking");
+      });
+      file.addEventListener("cancel", function () {
+        document.documentElement.classList.remove("is-ios-picking");
       });
 
       function notifyCouple(post, fields) {
@@ -411,6 +486,27 @@
             message: who + " shared a " + kind + " in the guest album.\n\n" + note + "Open the album: " + location.origin + "/#gallery"
           })
         }).catch(function () {});
+      }
+
+      function paintBubble(pct) {
+        var bubble = document.getElementById("shareBubble");
+        var fill = document.getElementById("shareBubbleFill");
+        var label = document.getElementById("shareBubbleLabel");
+        var ring = document.getElementById("shareBubbleRing");
+        var shown = Math.max(0, Math.min(100, Math.round(pct || 0)));
+        if (bubble) bubble.hidden = false;
+        if (label) label.textContent = shown + "%";
+        if (fill) {
+          var length = 97.389;
+          fill.style.strokeDasharray = String(length);
+          fill.style.strokeDashoffset = String(length - (length * shown) / 100);
+        }
+        if (ring) ring.setAttribute("aria-valuenow", String(shown));
+      }
+
+      function hideBubble() {
+        var bubble = document.getElementById("shareBubble");
+        if (bubble) bubble.hidden = true;
       }
 
       function shareOne(mediaFile, fields, onProgress) {
@@ -440,7 +536,7 @@
       form.addEventListener("submit", async function (event) {
         event.preventDefault();
         var submit = document.getElementById("shareSubmit");
-        var chosen = file.files ? Array.prototype.slice.call(file.files) : [];
+        var chosen = pickedFiles.length ? pickedFiles.slice() : (file.files ? Array.prototype.slice.call(file.files) : []);
         if (!chosen.length) {
           setStatus("Choose a photo or video first.", "error");
           return;
@@ -453,7 +549,8 @@
         uploading = true;
         refreshStayNote();
         submit.disabled = true;
-        submit.textContent = "Preparing";
+        submit.textContent = "Sharing…";
+        paintBubble(0);
         try {
           var prepared = [];
           for (var p = 0; p < chosen.length; p += 1) {
@@ -463,6 +560,7 @@
         } catch (err) {
           uploading = false;
           refreshStayNote();
+          hideBubble();
           submit.disabled = false;
           submit.textContent = "Share";
           setStatus(err.message || "That moment could not be shared.", "error");
@@ -473,7 +571,8 @@
         var saved = 0;
         refreshStayNote();
         submit.disabled = true;
-        submit.textContent = "Sharing 0%";
+        submit.textContent = "Sharing…";
+        paintBubble(0);
         setStatus(chosen.length > 1 ? "Sharing 1 of " + chosen.length : "");
         try {
           for (var i = 0; i < chosen.length; i += 1) {
@@ -482,12 +581,12 @@
             if (chosen.length > 1) setStatus("Sharing " + (i + 1) + " of " + chosen.length);
             var savedPost = await shareOne(current, fields, function (loaded) {
               var pct = Math.round(((finishedBytes + Math.min(loaded, currentSize)) / totalBytes) * 100);
-              submit.textContent = "Sharing " + Math.min(99, Math.max(0, pct)) + "%";
+              paintBubble(Math.min(99, Math.max(0, pct)));
             });
             notifyCouple(savedPost, fields);
             finishedBytes += currentSize;
             saved += 1;
-            submit.textContent = "Sharing " + Math.min(100, Math.round((finishedBytes / totalBytes) * 100)) + "%";
+            paintBubble(Math.min(100, Math.round((finishedBytes / totalBytes) * 100)));
           }
           document.getElementById("shareThanksText").textContent = saved === 1
             ? "It’s in the album now."
@@ -499,6 +598,7 @@
         } finally {
           uploading = false;
           refreshStayNote();
+          hideBubble();
           submit.disabled = false;
           submit.textContent = "Share";
         }
@@ -507,6 +607,7 @@
       document.getElementById("shareAnother").addEventListener("click", function (event) {
         event.preventDefault();
         form.reset();
+        pickedFiles = [];
         document.getElementById("shareFileLabel").textContent = "Take or choose photos and videos";
         allowLeave = false;
         refreshStayNote();

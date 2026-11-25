@@ -1775,23 +1775,35 @@
     }
 
     .album-file {
+      position: relative;
       display: flex;
       align-items: center;
-      min-height: 44px;
+      min-height: 48px;
       margin: 0.35rem 0 0.8rem;
       padding: 0.55rem 0.75rem;
       border: 1px dashed rgba(30, 90, 110, 0.45);
       cursor: pointer;
       color: var(--teal);
       font-size: 0.92rem;
+      touch-action: manipulation;
     }
 
     .album-file input {
       position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0 0 0 0);
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    html.is-ios-picking,
+    html.is-ios-picking body {
+      overflow: visible !important;
+      position: static !important;
+      height: auto !important;
     }
 
     .album-status {
@@ -1841,6 +1853,12 @@
 
     .album-share-open:hover { background: var(--teal, #6ba7a0); }
 
+    .album-share-open:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      background: var(--deep);
+    }
+
     .album-share {
       position: fixed;
       inset: 0;
@@ -1854,7 +1872,7 @@
     .album-share.is-on { display: grid; }
     .album-share[hidden] { display: none !important; }
 
-    #albumDownloadAsk { z-index: 560; }
+    #albumDownloadAsk { z-index: 780; }
 
     #albumDownloadAsk p {
       margin: 0;
@@ -2229,19 +2247,21 @@
     .album-save svg { width: 11px; height: 11px; }
 
     .album-pick {
-      top: 0.85rem;
-      left: 0.85rem;
+      top: 0.4rem;
+      left: 0.4rem;
+      z-index: 5;
       display: none;
-      width: 28px;
-      height: 28px;
-      border-radius: 0.45rem;
-      background: rgba(247, 245, 241, 0.92);
+      width: 44px;
+      height: 44px;
+      border-radius: 0.55rem;
+      background: rgba(247, 245, 241, 0.96);
       align-items: center;
       justify-content: center;
+      touch-action: manipulation;
     }
 
     .album-collage.is-selecting .album-pick { display: flex; }
-    .album-pick input { width: 16px; height: 16px; margin: 0; }
+    .album-pick input { width: 22px; height: 22px; margin: 0; }
 
     .album-more {
       display: block;
@@ -2329,64 +2349,82 @@
       border: 1px solid rgba(13, 43, 69, 0.28);
     }
 
-    .album-upload-dock {
+    .album-upload-bubble {
       position: fixed;
-      left: 50%;
-      bottom: 1.1rem;
-      z-index: 640;
-      width: min(22rem, calc(100% - 1.5rem));
+      z-index: 720;
+      right: max(0.7rem, env(safe-area-inset-right));
+      top: 46%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      width: 4.35rem;
       margin: 0;
-      padding: 0.75rem 0.85rem 0.85rem;
-      transform: translateX(-50%);
+      padding: 0;
+      pointer-events: none;
+    }
+
+    .album-upload-bubble[hidden] { display: none !important; }
+
+    .album-upload-ring {
+      position: relative;
+      width: 4.35rem;
+      height: 4.35rem;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
       background: #fffdf8;
-      border-radius: 1rem;
-      box-shadow: 0 16px 40px rgba(13, 43, 69, 0.24);
-      text-align: center;
+      box-shadow: 0 10px 28px rgba(13, 43, 69, 0.22);
+      pointer-events: auto;
+      cursor: default;
     }
 
-    .album-upload-dock[hidden] { display: none !important; }
-
-    .album-upload-dock p {
-      margin: 0 0 0.45rem;
-      color: #3d3428;
-      font-size: 0.82rem;
-    }
-
-    .album-upload-track {
-      position: relative;
-      height: 2.35rem;
-      overflow: hidden;
-      border-radius: 999px;
-      background: rgba(13, 43, 69, 0.1);
-    }
-
-    .album-upload-fill {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
+    .album-upload-ring svg {
       display: block;
-      width: 0%;
-      border-radius: inherit;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 42%, rgba(13, 43, 69, 0.12)),
-        linear-gradient(90deg, #9ec9c1, #3d7f86);
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
     }
 
-    .album-upload-label {
-      position: relative;
-      z-index: 1;
+    .album-upload-track-ring,
+    .album-upload-fill-ring {
+      fill: none;
+      stroke-width: 2.6;
+    }
+
+    .album-upload-track-ring { stroke: rgba(13, 43, 69, 0.12); }
+
+    .album-upload-fill-ring {
+      stroke: #3d7f86;
+      stroke-linecap: round;
+      stroke-dasharray: 97.39;
+      stroke-dashoffset: 97.39;
+    }
+
+    .album-upload-ring span {
+      position: absolute;
+      inset: 0;
       display: grid;
       place-items: center;
-      height: 100%;
       color: var(--deep);
       font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
+      font-weight: 650;
     }
 
-    .album-upload-dock .album-tool { margin-top: 0.6rem; }
+    .album-upload-stop {
+      pointer-events: auto;
+      border: 0;
+      border-radius: 999px;
+      padding: 0.28rem 0.55rem;
+      background: #fffdf8;
+      color: var(--deep);
+      box-shadow: 0 6px 16px rgba(13, 43, 69, 0.16);
+      font: inherit;
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
 
     .album-viewer {
       position: fixed;
@@ -5109,8 +5147,8 @@
         <input class="form-input" id="guestAlbumName" name="name" maxlength="60" autocomplete="name" required placeholder="Maria Cruz" />
         <label class="form-label" for="guestAlbumCaption">Note</label>
         <input class="form-input" id="guestAlbumCaption" name="caption" maxlength="240" placeholder="The first dance" />
-        <label class="album-file" for="guestAlbumFile">
-          <input id="guestAlbumFile" name="media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" multiple required />
+        <label class="album-file">
+          <input id="guestAlbumFile" name="media" type="file" accept="image/*,video/mp4,video/quicktime,video/webm,.heic,.heif,.mov" multiple />
           <span id="guestAlbumFileLabel">Choose photos or videos</span>
         </label>
         <button class="form-submit" type="submit" id="guestAlbumSubmit">Share</button>
@@ -5139,13 +5177,15 @@
       </div>
     </div>
   </div>
-  <div class="album-upload-dock" id="albumUploadDock" hidden>
-    <p>Your photo is still sharing. You can keep looking around.</p>
-    <div class="album-upload-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="albumUploadTrack">
-      <span class="album-upload-fill" id="albumUploadFill"></span>
-      <span class="album-upload-label" id="albumUploadLabel">Sharing…</span>
-    </div>
-    <button type="button" class="album-tool" id="albumUploadDockStop">Stop sharing</button>
+  <div class="album-upload-bubble" id="albumUploadDock" hidden>
+    <button type="button" class="album-upload-ring" id="albumUploadRing" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Sharing">
+      <svg viewBox="0 0 36 36" aria-hidden="true">
+        <circle class="album-upload-track-ring" cx="18" cy="18" r="15.5"></circle>
+        <circle class="album-upload-fill-ring" id="albumUploadFill" cx="18" cy="18" r="15.5"></circle>
+      </svg>
+      <span id="albumUploadLabel">0%</span>
+    </button>
+    <button type="button" class="album-upload-stop" id="albumUploadDockStop">Stop</button>
   </div>
   <div class="lightbox album-reel" id="guestAlbumViewer" role="dialog" aria-modal="true" aria-label="Guest album reel" hidden>
     <button type="button" class="lightbox-close" id="guestAlbumViewerClose" aria-label="Close">&times;</button>
@@ -7791,7 +7831,7 @@
       window.WeddingUI.closeGalleryLightbox = closeGalleryLightbox;
     })();
   </script>
-  <script src="/js/prepare-upload.js?v=3"></script>
-  <script src="/js/guest-album.js?v=33"></script>
+  <script src="/js/prepare-upload.js?v=5"></script>
+  <script src="/js/guest-album.js?v=35"></script>
 </body>
 </html>

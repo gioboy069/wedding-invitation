@@ -294,13 +294,12 @@
         albumLine.dragArmed = true;
         strip.classList.add("is-dragging");
       }
-      event.preventDefault();
       albumLine.x += dx;
       albumLine.vx = dx / dt * 16;
       albumLine.lastX = event.clientX;
       albumLine.lastT = now;
       applyAlbumLine();
-    }, { passive: false });
+    });
 
     window.addEventListener("pointerup", endDrag);
     window.addEventListener("pointercancel", endDrag);
@@ -1100,17 +1099,39 @@
       });
     }
 
+    var pickedFiles = [];
+
+    function isAppleTouch() {
+      var ua = navigator.userAgent || "";
+      if (/iPad|iPhone|iPod/.test(ua)) return true;
+      return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+    }
+
+    function releaseIosPicker() {
+      document.documentElement.classList.remove("is-ios-picking");
+      var shareLayerNow = document.getElementById("albumShare");
+      if (shareLayerNow && !shareLayerNow.hidden) document.body.style.overflow = "hidden";
+    }
+
     if (file) {
-      file.addEventListener("change", function () {
-        var label = document.getElementById("guestAlbumFileLabel");
-        if (label) label.textContent = selectionLabel(file.files);
+      file.addEventListener("click", function () {
+        if (!isAppleTouch()) return;
+        document.documentElement.classList.add("is-ios-picking");
+        document.body.style.overflow = "";
       });
+      file.addEventListener("change", function () {
+        pickedFiles = file.files ? Array.prototype.slice.call(file.files) : [];
+        var label = document.getElementById("guestAlbumFileLabel");
+        if (label) label.textContent = selectionLabel(pickedFiles);
+        releaseIosPicker();
+      });
+      file.addEventListener("cancel", releaseIosPicker);
     }
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
       var submit = document.getElementById("guestAlbumSubmit");
-      var chosen = file && file.files ? Array.prototype.slice.call(file.files) : [];
+      var chosen = pickedFiles.length ? pickedFiles.slice() : (file && file.files ? Array.prototype.slice.call(file.files) : []);
       if (!chosen.length) {
         setStatus("Choose photos or videos first.", "error");
         return;
@@ -1121,9 +1142,12 @@
         caption: (document.getElementById("guestAlbumCaption") || {}).value || ""
       };
       uploading = true;
+      lockShareButton(true);
+      shareProgress = { pct: 0, label: "Sharing…" };
+      paintUploadDock("0%");
       if (submit) {
         submit.disabled = true;
-        submit.textContent = "Preparing";
+        submit.textContent = "Sharing…";
       }
       try {
         var prepared = [];
@@ -1133,6 +1157,8 @@
         chosen = prepared;
       } catch (err) {
         uploading = false;
+        lockShareButton(false);
+        hideUploadDock();
         if (submit) {
           submit.disabled = false;
           submit.textContent = "Share";
@@ -1145,10 +1171,11 @@
       var saved = 0;
       if (submit) {
         submit.disabled = true;
-        submit.textContent = "Sharing 0%";
+        submit.textContent = "Sharing…";
         submit.setAttribute("aria-busy", "true");
       }
       shareProgress = { pct: 0, label: "Sharing…" };
+      paintUploadDock("0%");
       setStatus(chosen.length > 1 ? "Sharing 1 of " + chosen.length : "");
       try {
         for (var i = 0; i < chosen.length; i += 1) {
@@ -1166,6 +1193,7 @@
           noteShareProgress(Math.min(100, Math.round((finishedBytes / totalBytes) * 100)));
         }
         form.reset();
+        pickedFiles = [];
         var label = document.getElementById("guestAlbumFileLabel");
         if (label) label.textContent = "Choose photos or videos";
         await loadAlbum();
@@ -1173,7 +1201,7 @@
         shareAside = false;
         setStatus(saved === 1 ? "Shared. It is in the album now." : "Shared " + saved + " moments. They are in the album now.", "ok");
         setShareOpen(false, true);
-        if (wasAside) flashUploadDock("Shared");
+        if (wasAside) flashUploadDock("Done");
         else hideUploadDock();
       } catch (err) {
         var quiet = shareStopQuiet;
@@ -1188,6 +1216,7 @@
         );
       } finally {
         uploading = false;
+        lockShareButton(false);
         if (submit) {
           submit.disabled = false;
           submit.textContent = "Share";
@@ -1200,28 +1229,40 @@
     var leaveKind = "";
     var leaveLink = null;
 
+    function lockShareButton(busy) {
+      var open = document.getElementById("albumShareOpen");
+      if (!open) return;
+      open.disabled = !!busy;
+      open.setAttribute("aria-disabled", busy ? "true" : "false");
+      if (busy) open.setAttribute("aria-busy", "true");
+      else open.removeAttribute("aria-busy");
+    }
+
     function noteShareProgress(pct, caption) {
       var shown = Math.max(0, Math.min(100, Math.round(pct)));
       shareProgress.pct = shown;
       shareProgress.label = caption || ("Sharing " + shown + "%");
-      var submit = document.getElementById("guestAlbumSubmit");
-      if (submit) submit.textContent = "Sharing " + shown + "%";
-      if (shareAside) paintUploadDock();
+      paintUploadDock(shown + "%");
     }
 
     function paintUploadDock(labelText) {
       var dock = document.getElementById("albumUploadDock");
       var fill = document.getElementById("albumUploadFill");
       var label = document.getElementById("albumUploadLabel");
-      var track = document.getElementById("albumUploadTrack");
+      var ring = document.getElementById("albumUploadRing");
       if (!dock) return;
       dock.hidden = false;
-      var text = labelText || shareProgress.label || "Sharing…";
+      var pct = Math.max(0, Math.min(100, shareProgress.pct || 0));
+      var text = labelText || (pct + "%");
       if (label) label.textContent = text;
-      if (fill) fill.style.width = (shareProgress.pct || 0) + "%";
-      if (track) {
-        track.setAttribute("aria-valuenow", String(shareProgress.pct || 0));
-        track.setAttribute("aria-valuetext", text);
+      if (fill && fill.tagName === "circle") {
+        var length = 97.389;
+        fill.style.strokeDasharray = String(length);
+        fill.style.strokeDashoffset = String(length - (length * pct) / 100);
+      }
+      if (ring) {
+        ring.setAttribute("aria-valuenow", String(pct));
+        ring.setAttribute("aria-valuetext", shareProgress.label || text);
       }
     }
 
@@ -1355,6 +1396,10 @@
     });
 
     grid.addEventListener("click", async function (event) {
+      if (event.target.closest(".album-pick, [data-pick]")) {
+        albumLine.suppressClick = false;
+        return;
+      }
       if (albumLine.suppressClick) {
         albumLine.suppressClick = false;
         return;
@@ -1443,6 +1488,7 @@
 
     function setShareOpen(open, force) {
       if (!shareLayer) return;
+      if (open && uploading && !force) return;
       if (!open && uploading && !force && !shareAside) {
         openAlbumLeave("close");
         return;

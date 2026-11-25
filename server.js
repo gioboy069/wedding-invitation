@@ -334,6 +334,37 @@ const storage = multer.diskStorage({
 
 const IMAGE_MIME = /^image\/(jpeg|png|webp|gif)$/;
 const VIDEO_MIME = /^video\/(mp4|webm|quicktime)$/;
+const HEIC_MIME = /^image\/(heic|heif|heic-sequence|heif-sequence)$/i;
+const GUEST_EXTS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif", ".mp4", ".mov", ".webm"];
+
+function guestMediaAllowed(file) {
+  const mime = String(file?.mimetype || "").toLowerCase();
+  const ext = extname(file?.originalname || "").toLowerCase();
+  if (IMAGE_MIME.test(mime) || VIDEO_MIME.test(mime) || HEIC_MIME.test(mime)) return true;
+  if (ext === ".heic" || ext === ".heif") return true;
+  if ((mime === "" || mime === "application/octet-stream") && GUEST_EXTS.includes(ext)) return true;
+  return false;
+}
+
+function normalizeGuestMime(file) {
+  if (!file) return;
+  const mime = String(file.mimetype || "").toLowerCase();
+  if (mime && mime !== "application/octet-stream") return;
+  const ext = extname(file.originalname || "").toLowerCase();
+  const map = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+    ".heic": "image/heic",
+    ".heif": "image/heif",
+    ".mp4": "video/mp4",
+    ".mov": "video/quicktime",
+    ".webm": "video/webm",
+  };
+  if (map[ext]) file.mimetype = map[ext];
+}
 
 const upload = multer({
   storage,
@@ -1991,6 +2022,8 @@ const guestStorage = multer.diskStorage({
       ".png": ".png",
       ".webp": ".webp",
       ".gif": ".gif",
+      ".heic": ".heic",
+      ".heif": ".heif",
       ".mp4": ".mp4",
       ".webm": ".webm",
       ".mov": ".mov",
@@ -2004,8 +2037,8 @@ const guestUpload = multer({
   storage: guestStorage,
   limits: { fileSize: 40 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (IMAGE_MIME.test(file.mimetype) || VIDEO_MIME.test(file.mimetype)) cb(null, true);
-    else cb(new Error("Only photo (JPEG/PNG/WebP/GIF) or short video (MP4/WebM/MOV) uploads are allowed"));
+    if (guestMediaAllowed(file)) cb(null, true);
+    else cb(new Error("Only photo (JPEG/PNG/WebP/GIF/HEIC) or short video (MP4/WebM/MOV) uploads are allowed"));
   },
 });
 
@@ -2181,6 +2214,7 @@ app.post("/api/guest-album", (req, res, next) => {
   guestUpload.single("media")(req, res, (err) => (err ? rejectUpload(err, res) : next()));
 }, async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Choose a photo or video to share." });
+  normalizeGuestMime(req.file);
   const name = clipText(req.body?.name, 60);
   const caption = clipText(req.body?.caption, 240);
   if (name.length < 2) {
