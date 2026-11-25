@@ -484,6 +484,83 @@
       flex-wrap: wrap;
     }
 
+    .album-admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .album-admin-card {
+      position: relative;
+      background: var(--white);
+      border: 1px solid rgba(95, 168, 184, 0.28);
+      overflow: hidden;
+    }
+
+    .album-admin-card.is-selected {
+      border-color: var(--sea-deep);
+      box-shadow: inset 0 0 0 2px var(--sea-deep);
+    }
+
+    .album-admin-hit {
+      position: relative;
+      display: block;
+      cursor: pointer;
+    }
+
+    .album-admin-hit img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+      background: #e8eef2;
+    }
+
+    .album-admin-hit input {
+      position: absolute;
+      top: 0.45rem;
+      left: 0.45rem;
+      z-index: 2;
+      width: 1.15rem;
+      height: 1.15rem;
+      margin: 0;
+      accent-color: var(--sea-deep);
+    }
+
+    .album-admin-badge {
+      position: absolute;
+      top: 0.4rem;
+      right: 0.4rem;
+      z-index: 2;
+      padding: 0.15rem 0.4rem;
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #f7f5f1;
+      background: rgba(13, 43, 69, 0.72);
+    }
+
+    .album-admin-card .meta {
+      padding: 0.55rem 0.65rem 0.7rem;
+    }
+
+    .album-admin-card .meta strong {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .album-admin-card .meta p {
+      margin: 0.2rem 0 0;
+      font-size: 0.75rem;
+      color: var(--text-soft);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -1154,7 +1231,7 @@
       <!-- Guest album -->
       <section class="panel" id="panel-album">
         <h2>Guest album</h2>
-        <p class="lead">Guest photos and videos are kept in your Google Drive. Connecting, reconnecting, or refreshing loads whatever is already in those folders.</p>
+        <p class="lead">Guest photos and videos are kept in one album in your Google Drive. Connecting, reconnecting, or refreshing loads whatever is already there.</p>
         <div class="card" id="driveCard" style="margin-bottom:1.25rem">
           <h3>Google Drive</h3>
           <p class="lead" id="driveStatus">Checking the connection…</p>
@@ -1176,15 +1253,10 @@
         <div class="toolbar">
           <button type="button" class="btn btn-primary" id="downloadGuestAlbum">Download album</button>
           <button type="button" class="btn btn-ghost" id="refreshGuestAlbum">Refresh</button>
-          <select id="guestAlbumFilter">
-            <option value="">All albums</option>
-            <option value="main">Main album</option>
-            <option value="photographer">Photographer</option>
-            <option value="ceremony">Ceremony</option>
-            <option value="reception">Reception</option>
-          </select>
+          <button type="button" class="btn btn-ghost" id="guestAlbumSelectAll">Select all</button>
+          <button type="button" class="btn btn-danger" id="guestAlbumDeleteSelected" disabled>Delete selected</button>
         </div>
-        <div id="guestAlbumAdmin"></div>
+        <div class="album-admin-grid" id="guestAlbumAdmin"></div>
       </section>
 
       <!-- Guest List -->
@@ -1331,6 +1403,7 @@
       let rsvps = [];
       let guests = [];
       let guestAlbum = [];
+      const albumPicked = new Set();
       const Names = window.WeddingNames;
 
       function toast(msg, isError) {
@@ -2712,32 +2785,43 @@
         a.click();
       });
 
-      const albumLabels = {
-        main: "Main album",
-        photographer: "Photographer",
-        ceremony: "Ceremony",
-        reception: "Reception",
-      };
+      function syncAlbumPickUi() {
+        const count = albumPicked.size;
+        const del = document.getElementById("guestAlbumDeleteSelected");
+        const all = document.getElementById("guestAlbumSelectAll");
+        if (del) {
+          del.disabled = count === 0;
+          del.textContent = count ? `Delete selected (${count})` : "Delete selected";
+        }
+        if (all) all.textContent = guestAlbum.length && count === guestAlbum.length ? "Clear all" : "Select all";
+      }
 
       function renderGuestAlbumAdmin() {
         const root = document.getElementById("guestAlbumAdmin");
         if (!root) return;
-        const filter = document.getElementById("guestAlbumFilter")?.value || "";
-        const visible = guestAlbum.filter((post) => !filter || post.album === filter);
-        if (!visible.length) {
-          root.innerHTML = '<p class="lead">No guest moments in this album yet.</p>';
+        const alive = new Set(guestAlbum.map((post) => post.id));
+        for (const id of albumPicked) {
+          if (!alive.has(id)) albumPicked.delete(id);
+        }
+        syncAlbumPickUi();
+        if (!guestAlbum.length) {
+          root.innerHTML = '<p class="lead">No guest photos yet.</p>';
           return;
         }
-        root.innerHTML = visible.map((post) => {
-          const media = post.type === "video"
-            ? `<video src="${escapeAttr(post.src)}" poster="${escapeAttr(previewMedia(post.src))}" controls playsinline preload="none" style="width:100%;max-height:240px;background:#111"></video>`
-            : `<img src="${escapeAttr(previewMedia(post.src))}" alt="" style="width:100%;max-height:240px;object-fit:cover" />`;
-          return `<article class="card" style="margin-bottom:1rem">
-            ${media}
-            <p style="margin:0.7rem 0 0.2rem"><strong>${escapeHtml(albumLabels[post.album] || post.album)}</strong> · ${escapeHtml(post.name || "Guest")}</p>
-            <p class="lead" style="margin:0">${escapeHtml(post.caption || "")}</p>
-            <p class="lead" style="margin:0.35rem 0 0.6rem">${post.heartCount || 0} hearts · ${post.laughCount || 0} hahas</p>
-            <button type="button" class="btn btn-ghost" data-album-del="${escapeAttr(post.id)}">Delete moment</button>
+        root.innerHTML = guestAlbum.map((post) => {
+          const selected = albumPicked.has(post.id);
+          const film = post.type === "video" ? '<span class="album-admin-badge">Film</span>' : "";
+          const note = post.caption ? `<p>${escapeHtml(post.caption)}</p>` : "";
+          return `<article class="album-admin-card${selected ? " is-selected" : ""}">
+            <label class="album-admin-hit">
+              <input type="checkbox" data-album-pick="${escapeAttr(post.id)}"${selected ? " checked" : ""} aria-label="Select ${escapeAttr(post.name || "guest photo")}" />
+              <img src="${escapeAttr(previewMedia(post.src))}" alt="" />
+              ${film}
+            </label>
+            <div class="meta">
+              <strong>${escapeHtml(post.name || "Guest")}</strong>
+              ${note}
+            </div>
           </article>`;
         }).join("");
       }
@@ -2804,7 +2888,40 @@
       document.getElementById("refreshGuestAlbum")?.addEventListener("click", () => {
         loadGuestAlbum().catch((ex) => toast(ex.message, true));
       });
-      document.getElementById("guestAlbumFilter")?.addEventListener("change", renderGuestAlbumAdmin);
+      document.getElementById("guestAlbumSelectAll")?.addEventListener("click", () => {
+        if (guestAlbum.length && albumPicked.size === guestAlbum.length) albumPicked.clear();
+        else guestAlbum.forEach((post) => albumPicked.add(post.id));
+        renderGuestAlbumAdmin();
+      });
+      document.getElementById("guestAlbumDeleteSelected")?.addEventListener("click", async () => {
+        const ids = Array.from(albumPicked);
+        if (!ids.length) return;
+        const noun = ids.length === 1 ? "this photo" : `these ${ids.length} photos`;
+        if (!confirm(`Delete ${noun} from the guest album? This also removes them from Google Drive.`)) return;
+        const button = document.getElementById("guestAlbumDeleteSelected");
+        button.disabled = true;
+        try {
+          const result = await api("/api/admin/guest-album/bulk-delete", {
+            method: "POST",
+            body: JSON.stringify({ ids }),
+          });
+          albumPicked.clear();
+          await loadGuestAlbum();
+          toast(result.deleted === 1 ? "Photo deleted" : `${result.deleted} photos deleted`);
+        } catch (ex) {
+          toast(ex.message, true);
+          syncAlbumPickUi();
+        }
+      });
+      document.getElementById("guestAlbumAdmin")?.addEventListener("change", (event) => {
+        const box = event.target.closest("[data-album-pick]");
+        if (!box) return;
+        if (box.checked) albumPicked.add(box.dataset.albumPick);
+        else albumPicked.delete(box.dataset.albumPick);
+        const card = box.closest(".album-admin-card");
+        if (card) card.classList.toggle("is-selected", box.checked);
+        syncAlbumPickUi();
+      });
       document.getElementById("downloadGuestAlbum")?.addEventListener("click", async () => {
         const button = document.getElementById("downloadGuestAlbum");
         button.disabled = true;
@@ -2832,19 +2949,6 @@
           button.disabled = false;
         }
       });
-      document.getElementById("guestAlbumAdmin")?.addEventListener("click", async (event) => {
-        const delBtn = event.target.closest("[data-album-del]");
-        try {
-          if (!delBtn) return;
-          if (!confirm("Delete this guest moment? The photo or film will be removed.")) return;
-          await api("/api/admin/guest-album/" + delBtn.dataset.albumDel, { method: "DELETE" });
-          await loadGuestAlbum();
-          toast("Moment deleted");
-        } catch (ex) {
-          toast(ex.message, true);
-        }
-      });
-
       function escapeHtml(s) {
         return String(s)
           .replace(/&/g, "&amp;")

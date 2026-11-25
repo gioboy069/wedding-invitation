@@ -1666,13 +1666,7 @@ app.delete("/api/admin/rsvps/:id", requireAdmin, (req, res) => {
 
 // ── Guest album: photos and short films from the day ──
 
-const GUEST_ALBUMS = ["main", "photographer", "ceremony", "reception"];
-const GUEST_ALBUM_LABELS = {
-  main: "Main album",
-  photographer: "Photographer",
-  ceremony: "Ceremony",
-  reception: "Reception",
-};
+const GUEST_ALBUM_LABEL = "Guest album";
 const guestRateBuckets = new Map();
 
 const guestStorage = multer.diskStorage({
@@ -1732,7 +1726,16 @@ function allowGuestAction(req, action, limit, windowMs) {
 function readGuestAlbum() {
   const saved = readJson("guest-album.json", { posts: [] });
   const posts = Array.isArray(saved.posts) ? saved.posts : [];
-  return { posts };
+  let changed = false;
+  for (const post of posts) {
+    if (post.album !== "main") {
+      post.album = "main";
+      changed = true;
+    }
+  }
+  const album = { posts };
+  if (changed) writeGuestAlbum(album);
+  return album;
 }
 
 function writeGuestAlbum(album) {
@@ -1836,15 +1839,9 @@ function sortedGuestPosts(posts) {
 app.get("/api/guest-album", (req, res) => {
   const album = readGuestAlbum();
   const tokenHash = readGuestToken(req);
-  const filter = String(req.query.album || "").trim();
-  let posts = sortedGuestPosts(album.posts);
-  if (GUEST_ALBUMS.includes(filter)) posts = posts.filter((post) => post.album === filter);
-  const counts = {};
-  GUEST_ALBUMS.forEach((id) => {
-    counts[id] = album.posts.filter((post) => post.album === id).length;
-  });
+  const posts = sortedGuestPosts(album.posts);
   res.json({
-    albums: GUEST_ALBUMS.map((id) => ({ id, label: GUEST_ALBUM_LABELS[id], count: counts[id] })),
+    albums: [{ id: "main", label: GUEST_ALBUM_LABEL, count: posts.length }],
     posts: posts.map((post) => publicGuestPost(post, tokenHash)),
   });
 });
@@ -1858,14 +1855,9 @@ app.post("/api/guest-album", guestUpload.single("media"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Choose a photo or video to share." });
   const name = clipText(req.body?.name, 60);
   const caption = clipText(req.body?.caption, 240);
-  const albumId = String(req.body?.album || "main").trim();
   if (name.length < 2) {
     removeUpload(req.file);
     return res.status(400).json({ error: "Add your name so guests know who shared this." });
-  }
-  if (!GUEST_ALBUMS.includes(albumId)) {
-    removeUpload(req.file);
-    return res.status(400).json({ error: "Choose Main album, Photographer, Ceremony, or Reception." });
   }
   if (!driveAlbum.configured() || !driveAlbum.connected()) {
     removeUpload(req.file);
@@ -1880,12 +1872,12 @@ app.post("/api/guest-album", guestUpload.single("media"), async (req, res) => {
       originalName: req.file.originalname,
       guestName: name,
       caption,
-      albumId,
+      albumId: "main",
     });
     removeUpload(req.file);
     const post = {
       id: `p_${Date.now().toString(36)}${randomBytes(3).toString("hex")}`,
-      album: albumId,
+      album: "main",
       type: type === "video" ? "video" : "photo",
       src: `/api/media/drive/${driveId}${type === "video" ? "?type=video" : ""}`,
       driveId,
@@ -1947,13 +1939,10 @@ app.post("/api/guest-album/download", async (req, res) => {
   }
   const album = readGuestAlbum();
   const ids = Array.isArray(req.body?.ids) ? req.body.ids.map((id) => String(id)) : [];
-  const albumId = String(req.body?.album || "").trim();
   let chosen = sortedGuestPosts(album.posts);
   if (ids.length) {
     const wanted = new Set(ids);
     chosen = chosen.filter((post) => wanted.has(post.id));
-  } else if (GUEST_ALBUMS.includes(albumId)) {
-    chosen = chosen.filter((post) => post.album === albumId);
   }
   if (!chosen.length) return res.status(404).json({ error: "Choose at least one photo or video to download." });
   if (chosen.length > 200) return res.status(400).json({ error: "That is a very large set. Download a smaller selection." });
@@ -1965,7 +1954,7 @@ app.post("/api/guest-album/download", async (req, res) => {
     for (const post of chosen) {
       const file = await readGuestMedia(post);
       if (!file) continue;
-      const folderName = GUEST_ALBUM_LABELS[post.album] || "Main album";
+      const folderName = GUEST_ALBUM_LABEL;
       const folder = join(dir, folderName);
       if (!existsSync(folder)) mkdirSync(folder, { recursive: true });
       writeFileSync(join(folder, guestDownloadName(post, file.ext, used)), file.buffer);
@@ -2044,8 +2033,8 @@ async function syncGuestAlbumFromDrive() {
         existing.type = kind;
         changed = true;
       }
-      if (existing.album !== file.albumId && GUEST_ALBUMS.includes(file.albumId)) {
-        existing.album = file.albumId;
+      if (existing.album !== "main") {
+        existing.album = "main";
         changed = true;
       }
       continue;
@@ -2053,7 +2042,7 @@ async function syncGuestAlbumFromDrive() {
     const named = guestNameFromDrive(file);
     const post = {
       id: `p_${file.id}`,
-      album: GUEST_ALBUMS.includes(file.albumId) ? file.albumId : "main",
+      album: "main",
       type: kind,
       src,
       driveId: file.id,
@@ -2085,7 +2074,7 @@ app.get("/api/admin/guest-album", requireAdmin, async (_req, res) => {
   }
   const album = readGuestAlbum();
   res.json({
-    albums: GUEST_ALBUMS.map((id) => ({ id, label: GUEST_ALBUM_LABELS[id] })),
+    albums: [{ id: "main", label: GUEST_ALBUM_LABEL }],
     posts: sortedGuestPosts(album.posts).map((post) => publicGuestPost(post, "")),
     drive,
   });
@@ -2102,20 +2091,41 @@ app.delete("/api/admin/guest-album/:id/comments/:commentId", requireAdmin, (req,
   res.json(publicGuestPost(post, ""));
 });
 
-app.delete("/api/admin/guest-album/:id", requireAdmin, async (req, res) => {
+async function removeGuestPosts(ids) {
+  const wanted = new Set(ids.map((id) => String(id)));
   const album = readGuestAlbum();
-  const idx = album.posts.findIndex((item) => item.id === req.params.id);
-  if (idx < 0) return res.status(404).json({ error: "Not found" });
-  const [removed] = album.posts.splice(idx, 1);
+  const removed = [];
+  album.posts = album.posts.filter((post) => {
+    if (!wanted.has(String(post.id))) return true;
+    removed.push(post);
+    return false;
+  });
+  if (!removed.length) return [];
   writeGuestAlbum(album);
-  const filePath = safeGuestFile(removed.src);
-  if (filePath) {
-    try { unlinkSync(filePath); } catch { /* ignore */ }
+  for (const post of removed) {
+    const filePath = safeGuestFile(post.src);
+    if (filePath) {
+      try { unlinkSync(filePath); } catch { /* ignore */ }
+    }
+    const driveId = post.driveId || driveIdFromSrc(post.src);
+    if (driveId) {
+      try { await driveAlbum.deleteFile(driveId); } catch (err) { console.error(err.message); }
+    }
   }
-  const driveId = removed.driveId || driveIdFromSrc(removed.src);
-  if (driveId) {
-    try { await driveAlbum.deleteFile(driveId); } catch (err) { console.error(err.message); }
-  }
+  return removed;
+}
+
+app.post("/api/admin/guest-album/bulk-delete", requireAdmin, async (req, res) => {
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids.map((id) => String(id)).filter(Boolean) : [];
+  if (!ids.length) return res.status(400).json({ error: "Choose at least one photo to delete." });
+  const removed = await removeGuestPosts(ids);
+  if (!removed.length) return res.status(404).json({ error: "Those photos are no longer in the album." });
+  res.json({ ok: true, deleted: removed.length });
+});
+
+app.delete("/api/admin/guest-album/:id", requireAdmin, async (req, res) => {
+  const removed = await removeGuestPosts([req.params.id]);
+  if (!removed.length) return res.status(404).json({ error: "Not found" });
   res.json({ ok: true });
 });
 
@@ -2126,7 +2136,7 @@ app.get("/api/admin/guest-album/download", requireAdmin, async (_req, res) => {
   try {
     const rows = [["Album", "Name", "Caption", "Type", "File", "Hearts", "Comments", "Posted"]];
     for (const post of sortedGuestPosts(album.posts)) {
-      const label = GUEST_ALBUM_LABELS[post.album] || "Main album";
+      const label = GUEST_ALBUM_LABEL;
       const folder = join(dir, label);
       if (!existsSync(folder)) mkdirSync(folder, { recursive: true });
       const source = safeGuestFile(post.src);

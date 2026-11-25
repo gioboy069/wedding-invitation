@@ -214,13 +214,6 @@
     <form id="shareForm">
       <label for="shareName">Your name</label>
       <input id="shareName" name="name" maxlength="60" autocomplete="name" required placeholder="Maria Cruz" />
-      <label for="shareAlbum">Album</label>
-      <select id="shareAlbum" name="album">
-        <option value="main">Main album</option>
-        <option value="photographer">Photographer</option>
-        <option value="ceremony">Ceremony</option>
-        <option value="reception">Reception</option>
-      </select>
       <label for="shareCaption">Note</label>
       <input id="shareCaption" name="caption" maxlength="240" placeholder="The first dance" />
       <label class="file" for="shareFile">
@@ -271,8 +264,7 @@
         if (uploading) return true;
         var name = document.getElementById("shareName").value.trim();
         var caption = document.getElementById("shareCaption").value.trim();
-        var album = document.getElementById("shareAlbum").value;
-        return !!(name || caption || album !== "main" || (file.files && file.files.length));
+        return !!(name || caption || (file.files && file.files.length));
       }
 
       function refreshStayNote() {
@@ -436,7 +428,7 @@
         }
         var fields = {
           name: document.getElementById("shareName").value,
-          album: document.getElementById("shareAlbum").value,
+          album: "main",
           caption: document.getElementById("shareCaption").value
         };
         uploading = true;

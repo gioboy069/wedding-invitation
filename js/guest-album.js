@@ -1,14 +1,6 @@
 (function () {
   "use strict";
 
-  var ALBUMS = [
-    { id: "main", label: "Main album" },
-    { id: "photographer", label: "Photographer" },
-    { id: "ceremony", label: "Ceremony" },
-    { id: "reception", label: "Reception" }
-  ];
-
-  var activeAlbum = "main";
   var posts = [];
   var memoryToken = "";
   var warmed = {};
@@ -65,22 +57,7 @@
   }
 
   function postsForActive() {
-    return posts.filter(function (post) { return post.album === activeAlbum; });
-  }
-
-  function renderTabs() {
-    var tabs = document.getElementById("guestAlbumTabs");
-    if (!tabs) return;
-    var counts = {};
-    ALBUMS.forEach(function (album) { counts[album.id] = 0; });
-    posts.forEach(function (post) {
-      if (counts[post.album] != null) counts[post.album] += 1;
-    });
-    tabs.innerHTML = ALBUMS.map(function (album) {
-      var selected = album.id === activeAlbum;
-      return '<button type="button" class="album-tab' + (selected ? " is-active" : "") + '" role="tab" aria-selected="' + (selected ? "true" : "false") + '" data-album="' + album.id + '">' +
-        escapeHtml(album.label) + " (" + counts[album.id] + ")</button>";
-    }).join("");
+    return posts;
   }
 
   function tileShape(index) {
@@ -293,11 +270,10 @@
     var grid = document.getElementById("guestAlbumGrid");
     if (!grid) return;
     var visible = postsForActive();
-    var album = ALBUMS.find(function (item) { return item.id === activeAlbum; });
     grid.classList.toggle("is-selecting", selecting);
     grid.classList.toggle("is-empty", !visible.length);
     if (!visible.length) {
-      grid.innerHTML = '<p class="album-empty">Nothing in the ' + escapeHtml(album ? album.label : "album") + ' yet. Share a photo or video from that part of the day.</p>';
+      grid.innerHTML = '<p class="album-empty">Nothing in the album yet. Share a photo or video from the day.</p>';
       syncDownloadBar(0);
       layoutAlbumLine();
       return;
@@ -337,7 +313,6 @@
   }
 
   function render() {
-    renderTabs();
     renderGrid();
   }
 
@@ -675,7 +650,6 @@
   function bind() {
     var form = document.getElementById("guestAlbumForm");
     var grid = document.getElementById("guestAlbumGrid");
-    var tabs = document.getElementById("guestAlbumTabs");
     var file = document.getElementById("guestAlbumFile");
     var viewer = document.getElementById("guestAlbumViewer");
     if (viewer && viewer.parentElement !== document.body) document.body.appendChild(viewer);
@@ -749,7 +723,7 @@
       }
       var fields = {
         name: (document.getElementById("guestAlbumName") || {}).value || "",
-        album: (document.getElementById("guestAlbumPick") || {}).value || "main",
+        album: "main",
         caption: (document.getElementById("guestAlbumCaption") || {}).value || ""
       };
       uploading = true;
@@ -786,20 +760,17 @@
           var current = chosen[i];
           var currentSize = current.size || 1;
           if (chosen.length > 1) setStatus("Sharing " + (i + 1) + " of " + chosen.length);
-          var body = await shareOne(current, fields, function (loaded) {
+          await shareOne(current, fields, function (loaded) {
             var pct = Math.round(((finishedBytes + Math.min(loaded, currentSize)) / totalBytes) * 100);
             if (submit) submit.textContent = "Sharing " + Math.min(99, Math.max(0, pct)) + "%";
           });
           finishedBytes += currentSize;
           saved += 1;
-          activeAlbum = body.album || fields.album;
           if (submit) submit.textContent = "Sharing " + Math.min(100, Math.round((finishedBytes / totalBytes) * 100)) + "%";
         }
         form.reset();
         var label = document.getElementById("guestAlbumFileLabel");
         if (label) label.textContent = "Choose photos or videos";
-        var pick = document.getElementById("guestAlbumPick");
-        if (pick) pick.value = activeAlbum;
         await loadAlbum();
         setStatus(saved === 1 ? "Shared. It is in the album now." : "Shared " + saved + " moments. They are in the album now.", "ok");
       } catch (err) {
@@ -872,20 +843,6 @@
       });
     }
 
-    if (tabs) {
-      tabs.addEventListener("click", function (event) {
-        var button = event.target.closest("[data-album]");
-        if (!button) return;
-        activeAlbum = button.getAttribute("data-album");
-        selecting = false;
-        picked = {};
-        albumLine.x = 0;
-        albumLine.vx = 0;
-        albumLine.autoDir = -1;
-        render();
-      });
-    }
-
     grid.addEventListener("change", function (event) {
       var box = event.target.closest("[data-pick]");
       if (!box) return;
@@ -951,7 +908,7 @@
     }
     if (allBtn) {
       allBtn.addEventListener("click", function () {
-        downloadMany({ album: activeAlbum }, allBtn, "Download all");
+        downloadMany({}, allBtn, "Download all");
       });
     }
     var viewerSave = document.getElementById("guestAlbumViewerSave");
