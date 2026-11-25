@@ -408,6 +408,64 @@
       accent-color: var(--sage);
     }
 
+    .album-look-card input[type="range"] {
+      margin: 0 0 0.85rem;
+      padding: 0;
+      height: 1.75rem;
+      accent-color: var(--sage);
+    }
+
+    .album-look-stage {
+      overflow: hidden;
+      margin: 0.35rem 0 0.85rem;
+      padding: 0.85rem 0 0.7rem;
+      border-radius: 1rem;
+      background:
+        radial-gradient(280px 140px at 8% 10%, rgba(143, 168, 122, 0.22), transparent 70%),
+        linear-gradient(165deg, #f7f3ea 0%, #efe4d2 100%);
+    }
+
+    .album-look-track {
+      display: flex;
+      gap: 0.7rem;
+      width: max-content;
+      padding: 0 0.75rem;
+      will-change: transform;
+    }
+
+    .album-look-tile {
+      flex: 0 0 auto;
+      padding: 0.35rem 0.35rem 0.4rem;
+      background: #fffdf8;
+      box-shadow: 0 10px 18px rgba(72, 48, 28, 0.14);
+    }
+
+    .album-look-tile img,
+    .album-look-swatch {
+      display: block;
+      width: var(--demo-w, 137px);
+      height: var(--demo-h, 168px);
+      object-fit: cover;
+      background: #e7dfd2;
+    }
+
+    .album-look-swatch {
+      display: grid;
+      place-items: center;
+      color: #3d3428;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 1rem;
+    }
+
+    .album-look-tile span {
+      display: block;
+      margin-top: 0.25rem;
+      text-align: center;
+      font-size: 0.72rem;
+      color: #3d3428;
+    }
+
     .textarea-size-row input[type="number"] {
       width: 4.25rem;
       margin: 0;
@@ -1295,9 +1353,13 @@
             <a class="btn btn-ghost" href="/share" target="_blank" rel="noopener">Open the upload page</a>
           </div>
         </div>
-        <div class="card" style="margin-bottom:1.25rem">
+        <div class="card album-look-card" style="margin-bottom:1.25rem">
           <h3>Home preview</h3>
-          <p class="lead">Guests see this photo line before they press View more. Size is how tall each photo is. Speed is how fast the line slides. Still keeps it in place until someone swipes.</p>
+          <p class="lead">This sample is the photo line guests see before they press View more. Drag the sliders and the example changes immediately. Save preview to keep it on the invitation.</p>
+          <div class="album-look-stage" id="albumLookStage">
+            <div class="album-look-track" id="albumLookTrack"></div>
+          </div>
+          <p class="lead" id="albumLookHint">Medium photos, gentle slide.</p>
           <label for="albumPreviewSize">Photo size <strong id="albumPreviewSizeLabel">Medium</strong></label>
           <input type="range" id="albumPreviewSize" min="96" max="240" step="4" value="168" />
           <label for="albumSlideSpeed">Slide speed <strong id="albumSlideSpeedLabel">Gentle</strong></label>
@@ -1914,6 +1976,77 @@
         return "Fast";
       }
 
+      const albumLookSamples = [
+        ["#8fa87a", "Sample"],
+        ["#c4a27a", "Sample"],
+        ["#6ba7a0", "Sample"],
+        ["#d7c4a3", "Sample"],
+        ["#1b4965", "Sample"],
+        ["#e7dfd2", "Sample"],
+      ];
+      let albumLookX = 0;
+      let albumLookFrame = 0;
+
+      function renderAlbumLookExamples() {
+        const track = document.getElementById("albumLookTrack");
+        if (!track) return;
+        const photos = (guestAlbum || []).filter((post) => post && post.src).slice(0, 8);
+        const source = photos.length ? photos : albumLookSamples;
+        const row = source.map((item, index) => {
+          if (Array.isArray(item)) {
+            return `<div class="album-look-tile"><div class="album-look-swatch" style="background:${item[0]}">${item[1]}</div><span>Example ${index + 1}</span></div>`;
+          }
+          const label = item.caption || item.name || "Guest photo";
+          return `<div class="album-look-tile"><img src="${escapeAttr(previewMedia(item.src))}" alt="" /><span>${escapeHtml(label)}</span></div>`;
+        }).join("");
+        track.innerHTML = row + row;
+        albumLookX = 0;
+      }
+
+      function syncAlbumLookDemo() {
+        const sizeEl = document.getElementById("albumPreviewSize");
+        const speedEl = document.getElementById("albumSlideSpeed");
+        const stage = document.getElementById("albumLookStage");
+        const hint = document.getElementById("albumLookHint");
+        if (!sizeEl || !speedEl) return;
+        const size = Number(sizeEl.value);
+        const speed = Number(speedEl.value);
+        const sizeWord = albumSizeWord(size);
+        const speedWord = albumSpeedWord(speed);
+        const sizeLabel = document.getElementById("albumPreviewSizeLabel");
+        const speedLabel = document.getElementById("albumSlideSpeedLabel");
+        if (sizeLabel) sizeLabel.textContent = sizeWord;
+        if (speedLabel) speedLabel.textContent = speedWord;
+        if (stage) {
+          stage.style.setProperty("--demo-h", size + "px");
+          stage.style.setProperty("--demo-w", Math.round(size * 0.72 + 16) + "px");
+        }
+        if (hint) {
+          const motion = speed <= 0 ? "The line stays still until a guest swipes." : `The line slides at “${speedWord.toLowerCase()}”.`;
+          hint.textContent = `${sizeWord} photos, about ${Math.round(size)}px tall. ${motion}`;
+        }
+      }
+
+      function tickAlbumLook() {
+        albumLookFrame = requestAnimationFrame(tickAlbumLook);
+        const stage = document.getElementById("albumLookStage");
+        const track = document.getElementById("albumLookTrack");
+        const speedEl = document.getElementById("albumSlideSpeed");
+        if (!stage || !track || !speedEl) return;
+        if (!document.getElementById("panel-album")?.classList.contains("active")) return;
+        const speed = Number(speedEl.value) || 0;
+        if (speed <= 0) {
+          albumLookX = 0;
+          track.style.transform = "translate3d(0,0,0)";
+          return;
+        }
+        const loop = track.scrollWidth / 2;
+        if (loop < 8) return;
+        albumLookX -= speed;
+        if (albumLookX <= -loop) albumLookX += loop;
+        track.style.transform = `translate3d(${albumLookX.toFixed(2)}px,0,0)`;
+      }
+
       function paintAlbumLook() {
         const sizeEl = document.getElementById("albumPreviewSize");
         const speedEl = document.getElementById("albumSlideSpeed");
@@ -1921,10 +2054,8 @@
         const speed = Number(content.albumSlideSpeed);
         if (sizeEl) sizeEl.value = Number.isFinite(size) && size ? String(size) : "168";
         if (speedEl) speedEl.value = Number.isFinite(speed) ? String(speed) : "0.55";
-        const sizeLabel = document.getElementById("albumPreviewSizeLabel");
-        const speedLabel = document.getElementById("albumSlideSpeedLabel");
-        if (sizeLabel && sizeEl) sizeLabel.textContent = albumSizeWord(sizeEl.value);
-        if (speedLabel && speedEl) speedLabel.textContent = albumSpeedWord(speedEl.value);
+        syncAlbumLookDemo();
+        if (!albumLookFrame) albumLookFrame = requestAnimationFrame(tickAlbumLook);
       }
 
       document.getElementById("weddingDateTime").addEventListener("change", syncWeddingFieldsFromPicker);
@@ -3148,6 +3279,7 @@
         const stat = document.getElementById("statAlbum");
         if (stat) stat.textContent = String(guestAlbum.length);
         renderGuestAlbumAdmin();
+        renderAlbumLookExamples();
         if (data.drive?.error) toast(data.drive.error, true);
         else if (data.drive?.added) toast(`Brought in ${data.drive.added} from Google Drive.`);
       }
@@ -3179,8 +3311,10 @@
       document.getElementById("refreshGuestAlbum")?.addEventListener("click", () => {
         loadGuestAlbum().catch((ex) => toast(ex.message, true));
       });
-      document.getElementById("albumPreviewSize")?.addEventListener("input", paintAlbumLook);
-      document.getElementById("albumSlideSpeed")?.addEventListener("input", paintAlbumLook);
+      renderAlbumLookExamples();
+      if (!albumLookFrame) albumLookFrame = requestAnimationFrame(tickAlbumLook);
+      document.getElementById("albumPreviewSize")?.addEventListener("input", syncAlbumLookDemo);
+      document.getElementById("albumSlideSpeed")?.addEventListener("input", syncAlbumLookDemo);
       document.getElementById("saveAlbumLook")?.addEventListener("click", async () => {
         const button = document.getElementById("saveAlbumLook");
         button.disabled = true;
